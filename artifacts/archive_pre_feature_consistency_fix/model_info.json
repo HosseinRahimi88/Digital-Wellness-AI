@@ -1,0 +1,17 @@
+{
+    "project": "Digital Wellness AI",
+    "task": "classification",
+    "version": "1.0.0",
+    "saved_at": "2026-08-07T03:12:02.092604",
+    "model_name": "hist_gradient_boosting",
+    "target_column": "future_health_class_7d",
+    "number_of_features": 52,
+    "python_version": "3.12.3",
+    "pandas_version": "3.0.5",
+    "sklearn_version": "1.8.0",
+    "classes": [
+        "At Risk",
+        "Healthy",
+        "Moderate"
+    ]
+}

@@ -1,0 +1,118 @@
+{
+  "project": "Digital Wellness AI",
+  "task": "persona_clustering",
+  "version": "1.0.0",
+  "saved_at": "2026-08-07T07:23:12.564855",
+  "algorithm": "KMeans",
+  "k": 4,
+  "candidate_k_values": [
+    4,
+    5,
+    6,
+    7
+  ],
+  "silhouette_score": 0.0774,
+  "training_rows": 92867,
+  "feature_names": [
+    "sleep_hours",
+    "sleep_quality_1_10",
+    "stress_0_10",
+    "mental_fatigue_0_10",
+    "happiness_0_10",
+    "loneliness_1_10",
+    "life_satisfaction_1_10",
+    "social_ratio",
+    "gaming_ratio",
+    "night_ratio",
+    "fragmentation_index_0_100",
+    "focus_0_100",
+    "productivity_0_100",
+    "digital_dependence_0_100",
+    "physical_activity_min_per_day"
+  ],
+  "python_version": "3.12.3",
+  "pandas_version": "3.0.5",
+  "sklearn_version": "1.8.0",
+  "clusters": [
+    {
+      "cluster_id": 0,
+      "name": "Fatigued High-Stress",
+      "size": 30604,
+      "size_pct": 32.95,
+      "defining_traits": [
+        {
+          "feature": "mental_fatigue_0_10",
+          "z_score": 0.394,
+          "direction": "high",
+          "value": 6.09
+        },
+        {
+          "feature": "stress_0_10",
+          "z_score": 0.382,
+          "direction": "high",
+          "value": 6.3
+        }
+      ]
+    },
+    {
+      "cluster_id": 1,
+      "name": "Digitally-Dependent High-Stress",
+      "size": 15799,
+      "size_pct": 17.01,
+      "defining_traits": [
+        {
+          "feature": "digital_dependence_0_100",
+          "z_score": 1.421,
+          "direction": "high",
+          "value": 55.3
+        },
+        {
+          "feature": "stress_0_10",
+          "z_score": 1.085,
+          "direction": "high",
+          "value": 7.5
+        }
+      ]
+    },
+    {
+      "cluster_id": 2,
+      "name": "Productive Low-Stress",
+      "size": 26006,
+      "size_pct": 28.0,
+      "defining_traits": [
+        {
+          "feature": "productivity_0_100",
+          "z_score": 0.696,
+          "direction": "high",
+          "value": 71.51
+        },
+        {
+          "feature": "stress_0_10",
+          "z_score": -0.686,
+          "direction": "low",
+          "value": 4.48
+        }
+      ]
+    },
+    {
+      "cluster_id": 3,
+      "name": "Night-Owl Fragmented-Attention",
+      "size": 20458,
+      "size_pct": 22.03,
+      "defining_traits": [
+        {
+          "feature": "night_ratio",
+          "z_score": 1.156,
+          "direction": "high",
+          "value": 0.32
+        },
+        {
+          "feature": "fragmentation_index_0_100",
+          "z_score": 1.149,
+          "direction": "high",
+          "value": 64.49
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+# Keep the build context small and avoid baking dev-only / huge files
+# into the image.
+__pycache__/
+*.pyc
+.pytest_cache/
+.git/
+.env
+.env.example
+
+# Multi-hundred-MB training CSVs - never read at API runtime, only by
+# models/train_*.py and models/regenerate_user_split.py.
+data/
+
+# Streamlit UI - separate deployable, not part of this image.
+app/
+
+# Tests - not needed in the production image.
+tests/
+
+# Backups from prior data-pipeline fixes - historical reference only.
+storage/archive_pre_user_split_fix/
+artifacts/archive_pre_user_split_fix/
+artifacts/archive_pre_feature_consistency_fix/
+
+*.md

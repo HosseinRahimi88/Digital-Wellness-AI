@@ -1,0 +1,7 @@
+{
+  "cache_key": "2026-08-07T03:12:02.092604|2026-08-07T07:22:16.120746|alpha=0.1",
+  "regression_quantile": 1.763307539084954,
+  "classification_quantile": 0.7993987509590798,
+  "calibration_size": 5800,
+  "alpha": 0.1
+}

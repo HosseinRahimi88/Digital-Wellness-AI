@@ -1,0 +1,35 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Install dependencies",
+            "type": "shell",
+            "command": "${command:python.interpreterPath}",
+            "args": ["-m", "pip", "install", "-r", "requirements.txt"],
+            "problemMatcher": []
+        },
+        {
+            "label": "Run FastAPI backend",
+            "type": "shell",
+            "command": "${command:python.interpreterPath}",
+            "args": ["-m", "uvicorn", "api.main:app", "--reload"],
+            "isBackground": true,
+            "problemMatcher": []
+        },
+        {
+            "label": "Run Streamlit app",
+            "type": "shell",
+            "command": "${command:python.interpreterPath}",
+            "args": ["-m", "streamlit", "run", "app/Home.py"],
+            "isBackground": true,
+            "problemMatcher": []
+        },
+        {
+            "label": "Run tests",
+            "type": "shell",
+            "command": "${command:python.interpreterPath}",
+            "args": ["-m", "pytest", "-v"],
+            "problemMatcher": []
+        }
+    ]
+}
