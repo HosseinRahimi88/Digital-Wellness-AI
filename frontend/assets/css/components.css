@@ -1,0 +1,295 @@
+/* ===================== Navbar ===================== */
+.navbar {
+  position: sticky; top: 0; z-index: var(--z-nav);
+  display: flex; align-items: center; justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  backdrop-filter: blur(14px) saturate(140%);
+  /* Opaque enough that page content scrolling underneath does not read
+     through it - the old 72% mix let headings ghost through and look
+     "cut off" at the top of the viewport. */
+  background: var(--chrome-bg);
+  border-bottom: 1px solid var(--surface-border);
+  flex-wrap: nowrap;
+}
+.brand {
+  font-family: var(--font-brand); font-size: 1.15rem; letter-spacing: .04em;
+  display: flex; align-items: center; gap: var(--space-2); color: var(--text-primary);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0;
+}
+.brand-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--neon-cyan); box-shadow: 0 0 12px var(--neon-cyan); }
+.nav-links { display: flex; gap: var(--space-5); align-items: center; }
+.nav-links a { color: var(--text-secondary); font-family: var(--font-label); font-size: .92rem; }
+.nav-links a:hover { color: var(--text-primary); }
+.nav-controls { display: flex; align-items: center; gap: var(--space-3); flex-shrink: 0; }
+
+/* Narrow screens: the brand text is the only expendable element, so it
+   collapses to just the dot rather than wrapping the whole bar onto
+   three lines (which pushed the header to ~200px tall and shoved
+   "Log out" off-screen). */
+@media (max-width: 560px) {
+  .navbar { padding: 10px var(--space-4); gap: var(--space-2); }
+  .brand { font-size: 0; gap: 0; }
+  .brand-dot { width: 12px; height: 12px; }
+  .nav-controls { gap: 6px; }
+  .nav-links { display: none; }
+}
+
+/* ===================== Buttons ===================== */
+.btn {
+  position: relative; overflow: hidden; cursor: pointer; border: none;
+  font-family: var(--font-cta); font-weight: 600; font-size: .95rem;
+  padding: 13px 26px; border-radius: var(--radius-pill);
+  display: inline-flex; align-items: center; gap: 8px; justify-content: center;
+  transition: transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out), opacity var(--dur-fast);
+  white-space: nowrap;
+}
+.btn:active { transform: scale(.97); }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.btn-primary {
+  background: linear-gradient(90deg, var(--neon-cyan), var(--neon-blue));
+  color: #04140f;
+  box-shadow: 0 8px 24px rgba(34,245,198,.25);
+}
+.btn-primary:hover { box-shadow: 0 10px 30px rgba(34,245,198,.4); transform: translateY(-2px); }
+.btn-ghost {
+  background: var(--surface); color: var(--text-primary); border: 1px solid var(--surface-border);
+}
+.btn-ghost:hover { background: var(--surface-strong); }
+.btn-danger { background: linear-gradient(90deg, var(--accent-danger), #ff8a65); color: #23060c; }
+.btn-block { width: 100%; }
+.btn-sm { padding: 9px 18px; font-size: .85rem; }
+.icon-btn {
+  width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--surface); border: 1px solid var(--surface-border); color: var(--text-primary);
+  cursor: pointer; transition: background var(--dur-fast), transform var(--dur-fast);
+}
+.icon-btn:hover { background: var(--surface-strong); transform: translateY(-2px); }
+
+/* ===================== Cards ===================== */
+/* Real glass: background blur + a bright hairline edge + a soft inner
+   sheen along the top edge + depth shadow. The background token is
+   opaque enough that body text keeps its contrast over the animated
+   canvas behind it (see variables.css). */
+.card {
+  position: relative;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  box-shadow: var(--card-shadow), inset 0 1px 0 var(--glass-sheen);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+}
+/* Browsers without backdrop-filter get a more opaque solid so text is
+   still readable over the moving background. */
+@supports not (backdrop-filter: blur(1px)) {
+  .card, .mascot-bubble, .music-widget { background: var(--bg-2); }
+}
+.card-glow { position: relative; }
+.card-glow::before {
+  content: ''; position: absolute; inset: -1px; border-radius: inherit; padding: 1px;
+  background: linear-gradient(135deg, var(--neon-cyan), transparent 40%, var(--neon-blue));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none; opacity: .6;
+}
+
+/* ===================== Forms ===================== */
+.field { margin-bottom: var(--space-4); }
+.field label {
+  display: block; font-family: var(--font-label); font-size: .82rem;
+  color: var(--text-secondary); margin-bottom: 6px; letter-spacing: .01em;
+}
+.field .hint { font-size: .76rem; color: var(--text-muted); margin-top: 4px; }
+.field .err { font-size: .78rem; color: var(--accent-danger); margin-top: 4px; display: none; }
+.field.has-error .err { display: block; }
+.field.has-error input, .field.has-error select { border-color: var(--accent-danger); }
+
+.input, select.input {
+  width: 100%; padding: 12px 14px; border-radius: var(--radius-sm);
+  background: var(--bg-1); border: 1px solid var(--surface-border); color: var(--text-primary);
+  font-family: var(--font-body); font-size: .95rem; transition: border-color var(--dur-fast), box-shadow var(--dur-fast);
+}
+.input:focus, select.input:focus { border-color: var(--neon-cyan); box-shadow: 0 0 0 3px rgba(34,245,198,.15); outline: none; }
+.input[type="checkbox"] { width: auto; accent-color: var(--neon-cyan); }
+
+.checkbox-row { display: flex; align-items: center; gap: 10px; }
+.checkbox-row label { margin: 0; }
+
+.range-row { display: flex; align-items: center; gap: var(--space-3); }
+input[type="range"] {
+  -webkit-appearance: none; width: 100%; height: 6px; border-radius: var(--radius-pill);
+  background: linear-gradient(90deg, var(--neon-cyan), var(--neon-blue)); outline: none;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%;
+  background: #fff; border: 3px solid var(--neon-blue); cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,.3);
+}
+.range-value {
+  font-family: var(--font-mono); min-width: 46px; text-align: center; padding: 4px 8px;
+  background: var(--surface-strong); border-radius: var(--radius-sm); font-size: .85rem;
+}
+
+.field-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-4) var(--space-5); }
+@media (max-width: 640px) { .field-grid { grid-template-columns: 1fr; } }
+
+/* Derived field readouts */
+.derived-panel {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: var(--space-3);
+  margin-top: var(--space-4); padding: var(--space-4); border-radius: var(--radius-md);
+  background: var(--surface); border: 1px dashed var(--surface-border);
+}
+.derived-item { text-align: center; }
+.derived-item .val { font-family: var(--font-mono); font-size: 1.1rem; color: var(--neon-cyan); }
+.derived-item .lbl { font-size: .7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: .06em; }
+
+/* ===================== Wizard / Steps ===================== */
+.wizard-progress { display: flex; align-items: center; gap: 6px; margin-bottom: var(--space-6); }
+.wizard-progress .dot {
+  flex: 1; height: 6px; border-radius: var(--radius-pill); background: var(--surface-strong); position: relative; overflow: hidden;
+}
+.wizard-progress .dot.active, .wizard-progress .dot.done {
+  background: linear-gradient(90deg, var(--neon-cyan), var(--neon-blue));
+}
+.wizard-step-title { font-family: var(--font-label); color: var(--text-muted); font-size: .8rem; text-transform: uppercase; letter-spacing: .1em; margin-bottom: 4px; }
+.wizard-nav { display: flex; justify-content: space-between; margin-top: var(--space-6); gap: var(--space-3); }
+
+/* ===================== Toast ===================== */
+/* Offset by the real sticky-chrome height so a toast never lands on top
+   of the header or the first row of page content (that is what clipped
+   the "Baseline" demo chip to "B..." in earlier builds). */
+.toast-stack {
+  position: fixed; top: calc(var(--header-h) + var(--space-3)); z-index: var(--z-toast);
+  display: flex; flex-direction: column; gap: 10px; width: min(340px, calc(100vw - 32px));
+  pointer-events: none;
+}
+.toast-stack > * { pointer-events: auto; }
+html:not([dir="rtl"]) .toast-stack { right: var(--space-5); }
+html[dir="rtl"] .toast-stack { left: var(--space-5); }
+@media (max-width: 560px) {
+  html:not([dir="rtl"]) .toast-stack { right: 16px; left: 16px; width: auto; }
+  html[dir="rtl"] .toast-stack { left: 16px; right: 16px; width: auto; }
+}
+.toast {
+  padding: 14px 16px; border-radius: var(--radius-md); background: var(--bg-2);
+  border: 1px solid var(--surface-border); box-shadow: var(--card-shadow);
+  display: flex; gap: 10px; align-items: flex-start; position: relative; overflow: hidden;
+}
+.toast .icon { font-size: 1.2rem; line-height: 1; }
+.toast .msg { flex: 1; font-size: .88rem; color: var(--text-primary); }
+.toast .bar { position: absolute; bottom: 0; left: 0; height: 3px; background: var(--neon-cyan); }
+.toast--success .bar { background: var(--accent-success); }
+.toast--danger .bar { background: var(--accent-danger); }
+.toast--info .bar { background: var(--neon-blue); }
+.toast--warning .bar { background: var(--accent-amber); }
+
+/* ===================== Thinking overlay ===================== */
+.think-overlay {
+  position: fixed; inset: 0; z-index: var(--z-modal); display: grid; place-items: center;
+  background: color-mix(in srgb, var(--bg-0) 78%, transparent); backdrop-filter: blur(6px);
+}
+.think-box { text-align: center; }
+.think-status { font-family: var(--font-mono); margin-top: var(--space-4); color: var(--neon-cyan); min-height: 1.4em; }
+
+/* ===================== Mascot widget =====================
+   The bubble is pointer-transparent and the whole widget sits at
+   --z-floating (below toasts, above page background but never above a
+   modal). On small screens both companions shrink and the page gets
+   bottom padding instead, so they can no longer sit on top of the
+   wizard's Back/Next buttons. */
+.mascot-widget { position: fixed; bottom: 22px; z-index: var(--z-floating); display: flex; flex-direction: column; align-items: flex-end; gap: 10px; pointer-events: none; }
+.mascot-widget > * { pointer-events: auto; }
+html:not([dir="rtl"]) .mascot-widget { right: 22px; }
+html[dir="rtl"] .mascot-widget { left: 22px; right: auto; align-items: flex-start; }
+.mascot-bubble {
+  max-width: 250px; background: var(--glass-bg); border: 1px solid var(--glass-border);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  border-radius: var(--radius-md); padding: 12px 14px; font-family: var(--font-mascot);
+  font-size: .88rem; color: var(--text-primary); box-shadow: var(--card-shadow); display: none;
+  /* Speech is decoration, never an obstacle: clicks pass straight
+     through to whatever is underneath (it was swallowing taps on the
+     wizard's Next button on small screens). */
+  pointer-events: none;
+}
+.mascot-bubble.show { display: block; }
+.mascot-btn { width: 64px; height: 64px; cursor: pointer; border-radius: 50%; }
+
+/* ===================== Music player ===================== */
+.music-widget {
+  position: fixed; bottom: 22px; z-index: var(--z-floating);
+  display: flex; align-items: center; gap: 10px;
+  background: var(--glass-bg); backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  border: 1px solid var(--glass-border); border-radius: var(--radius-pill);
+  padding: 8px 14px 8px 8px; box-shadow: var(--card-shadow);
+}
+html:not([dir="rtl"]) .music-widget { left: 22px; }
+html[dir="rtl"] .music-widget { right: 22px; left: auto; }
+
+@media (max-width: 700px) {
+  .mascot-widget { bottom: 12px; }
+  html:not([dir="rtl"]) .mascot-widget { right: 12px; }
+  html[dir="rtl"] .mascot-widget { left: 12px; }
+  .mascot-btn { width: 48px; height: 48px; }
+  .mascot-bubble { max-width: min(220px, calc(100vw - 90px)); font-size: .82rem; padding: 10px 12px; }
+  .music-widget { bottom: 12px; padding: 6px 10px 6px 6px; }
+  html:not([dir="rtl"]) .music-widget { left: 12px; }
+  html[dir="rtl"] .music-widget { right: 12px; }
+  .music-widget .play { width: 34px; height: 34px; }
+  .music-track-name { max-width: 74px; font-size: .72rem; }
+}
+.music-widget .play { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; background: linear-gradient(135deg, var(--neon-cyan), var(--neon-blue)); color: #04140f; cursor: pointer; flex-shrink: 0; }
+.music-track-name { font-size: .78rem; color: var(--text-secondary); max-width: 120px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.music-bars { display: flex; align-items: flex-end; gap: 2px; height: 16px; }
+.music-bars span { width: 3px; background: var(--neon-cyan); border-radius: 2px; animation: bar-bounce 1s ease-in-out infinite; }
+.music-bars span:nth-child(2) { animation-delay: .15s; }
+.music-bars span:nth-child(3) { animation-delay: .3s; }
+@keyframes bar-bounce { 0%,100% { height: 4px; } 50% { height: 14px; } }
+.music-widget.paused .music-bars span { animation-play-state: paused; height: 4px; }
+
+/* ===================== Chip options (intake / focus-area tags) ===================== */
+.intake-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: var(--space-3); }
+.chip-option {
+  padding: 8px 16px; border-radius: var(--radius-pill); border: 1px solid var(--surface-border);
+  background: var(--surface); cursor: pointer; font-size: .85rem; transition: all var(--dur-fast);
+}
+.chip-option.selected { background: linear-gradient(90deg, var(--neon-cyan), var(--neon-blue)); color: #04140f; border-color: transparent; }
+
+/* ===================== Badges / chips ===================== */
+.badge { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: var(--radius-pill); font-size: .78rem; font-family: var(--font-label); }
+.badge--healthy { background: rgba(43,232,154,.14); color: var(--accent-success); }
+.badge--moderate { background: rgba(255,184,77,.14); color: var(--accent-amber); }
+.badge--risk { background: rgba(255,92,122,.14); color: var(--accent-danger); }
+.badge--priority-high { background: rgba(255,92,122,.14); color: var(--accent-danger); }
+.badge--priority-medium { background: rgba(255,184,77,.14); color: var(--accent-amber); }
+.badge--priority-low { background: rgba(58,167,255,.14); color: var(--neon-blue); }
+
+/* ===================== Tabs ===================== */
+.tabs { display: flex; gap: 6px; padding: 5px; background: var(--surface); border-radius: var(--radius-pill); border: 1px solid var(--surface-border); width: fit-content; margin: 0 auto var(--space-6); }
+.tab-btn { padding: 9px 20px; border: none; background: transparent; color: var(--text-secondary); border-radius: var(--radius-pill); cursor: pointer; font-family: var(--font-label); font-size: .85rem; transition: all var(--dur-fast); }
+.tab-btn.active { background: linear-gradient(90deg, var(--neon-cyan), var(--neon-blue)); color: #04140f; }
+
+/* ===================== Switches ===================== */
+.switch { position: relative; width: 46px; height: 26px; }
+.switch input { opacity: 0; width: 0; height: 0; }
+.switch .track { position: absolute; inset: 0; background: var(--surface-strong); border-radius: var(--radius-pill); cursor: pointer; transition: background var(--dur-fast); border: 1px solid var(--surface-border); }
+.switch .thumb { position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; border-radius: 50%; background: var(--text-primary); transition: transform var(--dur-fast) var(--ease-spring); }
+.switch input:checked + .track { background: linear-gradient(90deg, var(--neon-cyan), var(--neon-blue)); }
+.switch input:checked + .track .thumb { transform: translateX(20px); }
+html[dir="rtl"] .switch input:checked + .track .thumb { transform: translateX(-20px); }
+
+/* ===================== Select dropdown (lang) ===================== */
+.select-pill { position: relative; }
+.select-pill select {
+  appearance: none; background: var(--surface); border: 1px solid var(--surface-border); color: var(--text-primary);
+  padding: 8px 30px 8px 14px; border-radius: var(--radius-pill); font-size: .82rem; cursor: pointer; font-family: var(--font-label);
+}
+html[dir="rtl"] .select-pill select { padding: 8px 14px 8px 30px; }
+
+/* ===================== Modal ===================== */
+.modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.6); z-index: var(--z-modal); display: none; place-items: center; padding: var(--space-4); }
+.modal-backdrop.show { display: grid; }
+.modal { max-width: 520px; width: 100%; max-height: 80vh; overflow-y: auto; }
+
+/* ===================== Progress bars ===================== */
+.bar-track { height: 8px; border-radius: var(--radius-pill); background: var(--surface-strong); overflow: hidden; }
+.bar-fill { height: 100%; border-radius: var(--radius-pill); background: linear-gradient(90deg, var(--neon-cyan), var(--neon-blue)); transition: width 1s var(--ease-out); }

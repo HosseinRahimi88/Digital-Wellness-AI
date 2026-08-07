@@ -32,7 +32,9 @@ from models.model_manager import ModelManager
 from services.account_service import Account, AccountService
 from services.cohort_service import CohortService
 from services.history_service import HistoryService
+from services.improvement_plan_service import ImprovementPlanService
 from services.persona_service import PersonaService
+from services.plan_progress_service import PlanProgressService
 from services.prediction_service import PredictionService
 from services.recommendation_service import RecommendationService
 from services.report_service import ReportService
@@ -132,6 +134,25 @@ def get_history_service(
     overridable via FastAPI's dependency_overrides in tests, without
     ever touching the production data file."""
     return HistoryService(user_id=account.user_id, storage=storage) if storage else HistoryService(user_id=account.user_id)
+
+
+def get_plan_progress_service(
+    account: Account,
+    storage: StorageBackend | None = None,
+) -> PlanProgressService:
+    """Same shape as get_history_service() above: not itself a FastAPI
+    dependency (needs the authenticated account), a small factory
+    routers call directly with `get_plan_progress_service(account)`."""
+    return PlanProgressService(user_id=account.user_id, backend=storage) if storage else PlanProgressService(user_id=account.user_id)
+
+
+@lru_cache(maxsize=1)
+def _improvement_plan_service_singleton() -> ImprovementPlanService:
+    return ImprovementPlanService()
+
+
+def get_improvement_plan_service() -> ImprovementPlanService:
+    return _improvement_plan_service_singleton()
 
 
 def get_history_storage_backend() -> StorageBackend | None:

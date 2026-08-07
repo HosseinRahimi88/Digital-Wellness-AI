@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#05080f" />
+<title>Digital Wellness AI — App</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧠</text></svg>" />
+<link rel="manifest" href="manifest.webmanifest" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=Orbitron:wght@600;700&family=JetBrains+Mono:wght@500&family=Baloo+2:wght@600&family=Playfair+Display:ital@1&family=Sora:wght@600;700&family=IBM+Plex+Sans:wght@500&family=Cairo:wght@500;700&family=Noto+Sans+SC:wght@500;700&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="assets/css/variables.css" />
+<link rel="stylesheet" href="assets/css/base.css" />
+<link rel="stylesheet" href="assets/css/animations.css" />
+<link rel="stylesheet" href="assets/css/components.css" />
+<link rel="stylesheet" href="assets/css/processing.css" />
+<link rel="stylesheet" href="assets/css/app.css" />
+</head>
+<body>
+
+<div class="bg-layer">
+  <canvas id="bgCanvas"></canvas>
+  <div class="blob blob--cyan blob--a" style="width:30vw;height:30vw;top:-8%;right:-6%;opacity:.35;"></div>
+  <div class="blob blob--blue blob--b" style="width:26vw;height:26vw;bottom:-10%;left:-6%;opacity:.3;"></div>
+</div>
+
+<div class="app-shell">
+  <header class="navbar">
+    <a class="brand" href="dashboard.html"><span class="brand-dot"></span> Digital Wellness AI</a>
+    <div class="nav-controls">
+      <div class="select-pill">
+        <select data-lang-select aria-label="Language">
+          <option value="en">EN</option>
+          <option value="fa">فا</option><option value="ar">AR</option>
+          <option value="zh">中文</option>
+        </select>
+      </div>
+      <button class="icon-btn" data-theme-toggle aria-label="Toggle theme"><span data-theme-icon>☀️</span></button>
+      <button class="icon-btn" id="settingsBtn" aria-label="Settings">⚙️</button>
+      <button class="btn btn-ghost btn-sm hidden" id="logoutBtn" data-i18n="nav_logout">Log out</button>
+    </div>
+  </header>
+  <nav class="app-nav-row hidden" id="appNavRow">
+    <a class="app-nav-link" data-page="dashboard" href="dashboard.html">🏠 <span data-i18n="nav_dashboard">Dashboard</span></a>
+    <a class="app-nav-link active" data-page="checkin" href="app.html">📝 <span data-i18n="nav_checkin">Check-in</span></a>
+    <a class="app-nav-link" data-page="weekly" href="weekly.html">🗓️ <span data-i18n="nav_weekly">Weekly Plan</span></a>
+    <a class="app-nav-link" data-page="coach" href="coach.html">🤖 <span data-i18n="nav_coach">AI Coach</span></a>
+    <a class="app-nav-link" data-page="analytics" href="analytics.html">📈 <span data-i18n="nav_analytics">Analytics</span></a>
+    <a class="app-nav-link" data-page="whatif" href="whatif.html">🧪 <span data-i18n="nav_whatif">What-if</span></a>
+    <a class="app-nav-link" data-page="model" href="model-performance.html">🏆 <span data-i18n="nav_model">Model</span></a>
+    <a class="app-nav-link" data-page="profile" href="profile.html">👤 <span data-i18n="nav_profile">Profile</span></a>
+    <a class="app-nav-link" data-page="about" href="about.html">ℹ️ <span data-i18n="nav_about">About</span></a>
+  </nav>
+
+  <main class="app-main">
+    <div class="container">
+
+      <!-- AUTH -->
+      <section class="view active" id="view-auth">
+        <div class="auth-wrap">
+          <div class="tabs">
+            <button class="tab-btn active" data-auth-tab="login" data-i18n="auth_switch_login">Log in</button>
+            <button class="tab-btn" data-auth-tab="register" data-i18n="auth_switch_register">Sign up</button>
+          </div>
+
+          <form class="card auth-card" id="loginForm">
+            <h2 class="auth-title" data-i18n="auth_login_title">Welcome back</h2>
+            <p class="auth-sub" data-i18n="auth_login_sub">Log in to see your wellness dashboard.</p>
+            <div class="field">
+              <label data-i18n="auth_email">Email</label>
+              <input class="input" type="email" name="email" required autocomplete="email" />
+              <div class="err"></div>
+            </div>
+            <div class="field">
+              <label data-i18n="auth_password">Password</label>
+              <input class="input" type="password" name="password" required autocomplete="current-password" />
+              <div class="err"></div>
+            </div>
+            <button class="btn btn-primary btn-block btn-shine" type="submit" data-i18n="auth_login_btn">Log in</button>
+          </form>
+
+          <form class="card auth-card hidden" id="registerForm">
+            <h2 class="auth-title" data-i18n="auth_register_title">Create your account</h2>
+            <p class="auth-sub" data-i18n="auth_register_sub">Takes less than a minute.</p>
+            <div class="field">
+              <label data-i18n="auth_name">Display name</label>
+              <input class="input" type="text" name="display_name" required minlength="1" maxlength="120" />
+              <div class="err"></div>
+            </div>
+            <div class="field">
+              <label data-i18n="auth_email">Email</label>
+              <input class="input" type="email" name="email" required autocomplete="email" />
+              <div class="err"></div>
+            </div>
+            <div class="field">
+              <label data-i18n="auth_password">Password</label>
+              <input class="input" type="password" name="password" required autocomplete="new-password" />
+              <div class="err"></div>
+            </div>
+            <div class="terms-row">
+              <input type="checkbox" id="termsCheck" required />
+              <label for="termsCheck"><span data-i18n="auth_terms_prefix">I agree to the</span> <a href="terms.html" target="_blank" data-i18n="auth_terms_link">Terms & Privacy Notice</a></label>
+            </div>
+            <button class="btn btn-primary btn-block btn-shine" type="submit" data-i18n="auth_register_btn">Create account</button>
+          </form>
+        </div>
+      </section>
+
+      <!-- ONBOARDING -->
+      <section class="view" id="view-onboarding">
+        <div class="onboard-wrap card">
+          <h2 class="text-center" data-i18n="onboard_title">Let's tailor things to you</h2>
+          <p class="text-center" data-i18n="onboard_sub">Optional — answer what you like, skip the rest.</p>
+
+          <div style="margin-top:24px;">
+            <p class="wizard-step-title" data-i18n="onboard_goal">What would you most like to improve?</p>
+            <div id="goalOptions"></div>
+          </div>
+          <div style="margin-top:20px;">
+            <p class="wizard-step-title" data-i18n="onboard_purpose">What do you mainly use your devices for?</p>
+            <div id="purposeOptions"></div>
+          </div>
+          <div style="margin-top:20px;">
+            <p class="wizard-step-title" data-i18n="onboard_schedule">What does your daily schedule look like?</p>
+            <div id="scheduleOptions"></div>
+          </div>
+
+          <div class="wizard-nav">
+            <button class="btn btn-ghost" id="onboardSkip" data-i18n="onboard_skip">Skip for now</button>
+            <button class="btn btn-primary btn-shine" id="onboardSave" data-i18n="onboard_save">Save & continue</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- PREDICT WIZARD -->
+      <section class="view" id="view-predict">
+        <div class="predict-wrap">
+          <div class="section-head" style="margin-bottom:20px;">
+            <h2 data-i18n="predict_title">Daily wellness check-in</h2>
+            <p data-i18n="predict_sub">Answer honestly — the model only works as well as your data.</p>
+          </div>
+
+          <div class="demo-bar">
+            <span class="muted" data-i18n="demo_label" style="align-self:center;">Or try a demo profile:</span>
+            <button class="btn btn-ghost btn-sm" data-demo="healthy">🌿 Healthy</button>
+            <button class="btn btn-ghost btn-sm" data-demo="borderline">🌗 Borderline</button>
+            <button class="btn btn-ghost btn-sm" data-demo="at_risk">🔥 At Risk</button>
+            <button class="btn btn-ghost btn-sm" data-demo="baseline">⚪ Baseline</button>
+          </div>
+
+          <div class="card">
+            <div class="wizard-progress" id="wizardProgress"></div>
+            <p class="wizard-step-title" id="wizardStepTitle"></p>
+            <form id="wizardForm">
+              <div id="wizardFields" class="field-grid step-in"></div>
+            </form>
+            <div class="derived-panel" id="derivedPanel">
+              <p class="muted" style="grid-column:1/-1;font-size:.78rem;" data-i18n="derived_title">Auto-calculated (from what you entered above)</p>
+            </div>
+            <div class="wizard-nav">
+              <button class="btn btn-ghost" id="wizardBack" data-i18n="predict_back">Back</button>
+              <button class="btn btn-primary btn-shine" id="wizardNext" data-i18n="predict_next">Next</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- RESULT -->
+      <section class="view" id="view-result">
+        <div class="result-wrap">
+          <p class="result-narrative" id="resultNarrative"></p>
+          <div class="card pop-in">
+            <div class="result-hero">
+              <div class="score-ring-wrap">
+                <svg viewBox="0 0 160 160">
+                  <circle class="score-ring-bg" cx="80" cy="80" r="70"/>
+                  <circle class="score-ring-fg" id="scoreRing" cx="80" cy="80" r="70" style="stroke:var(--neon-cyan)"/>
+                </svg>
+                <div class="score-center">
+                  <div class="num" id="scoreNum">--</div>
+                  <div class="lbl" data-i18n="result_score_label">Wellness score</div>
+                </div>
+              </div>
+              <div class="result-info">
+                <span class="badge" id="classBadge"></span>
+                <h2 id="resultTitle" data-i18n="result_title">Your wellness result</h2>
+                <div class="confidence-row">
+                  <span class="muted" data-i18n="result_confidence">Confidence</span>
+                  <div class="wave-bar conf-wave" id="confidenceBar" style="flex:1;height:10px;" data-fill="0"></div>
+                  <span class="mono" id="confidenceNum">--%</span>
+                </div>
+                <p class="muted" id="personaLine" style="margin-top:10px;font-size:.85rem;"></p>
+              </div>
+            </div>
+
+            <div class="uncertainty-note" id="uncertaintyNote"></div>
+
+            <div class="result-grid">
+              <div>
+                <h3 data-i18n="result_shap_title">What drove this score</h3>
+                <div id="shapBars"></div>
+              </div>
+              <div>
+                <h3 data-i18n="result_rec_title">Recommended for you</h3>
+                <div id="recCards"></div>
+              </div>
+            </div>
+
+            <div class="result-actions">
+              <button class="btn btn-ghost" id="downloadPdfBtn" data-i18n="result_download">Download PDF report</button>
+              <a class="btn btn-ghost" href="dashboard.html" data-i18n="result_dashboard">Go to Dashboard</a>
+              <button class="btn btn-primary btn-shine" id="runAgainBtn" data-i18n="result_again">Run another check-in</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<!-- Settings modal -->
+<div class="modal-backdrop" id="settingsModal">
+  <div class="card modal">
+    <h3 data-i18n="settings_title">Settings</h3>
+    <div class="settings-row">
+      <span data-i18n="settings_theme">Dark mode</span>
+      <label class="switch"><input type="checkbox" id="settingsThemeSwitch"><span class="track"><span class="thumb"></span></span></label>
+    </div>
+    <div class="settings-row">
+      <span data-i18n="settings_music">Ambient sound</span>
+      <label class="switch"><input type="checkbox" id="settingsMusicSwitch"><span class="track"><span class="thumb"></span></span></label>
+    </div>
+    <div class="settings-row">
+      <span data-i18n="settings_reduce_motion">Reduce motion</span>
+      <label class="switch"><input type="checkbox" id="settingsMotionSwitch"><span class="track"><span class="thumb"></span></span></label>
+    </div>
+    <div class="settings-row">
+      <span data-i18n="nav_logout">Log out</span>
+      <button class="btn btn-danger btn-sm" id="settingsLogoutBtn" data-i18n="nav_logout">Log out</button>
+    </div>
+    <button class="btn btn-ghost btn-block" id="settingsCloseBtn" style="margin-top:14px;">✕</button>
+  </div>
+</div>
+
+<div class="mascot-widget">
+  <div class="mascot-bubble" id="mascotBubble" role="status" aria-live="polite"></div>
+  <svg id="mascotBtn" class="mascot-btn mascot-orb" viewBox="0 0 100 100" role="button" aria-label="Guide character" tabindex="0">
+    <defs><radialGradient id="orbGrad2" cx="35%" cy="30%" r="75%"><stop offset="0%" stop-color="#7ffbe0"/><stop offset="55%" stop-color="#22f5c6"/><stop offset="100%" stop-color="#3aa7ff"/></radialGradient></defs>
+    <circle cx="50" cy="52" r="40" fill="url(#orbGrad2)"/>
+    <g class="mascot-brows"></g>
+    <g class="mascot-eye"><circle cx="36" cy="48" r="6" fill="#04140f"/><circle cx="64" cy="48" r="6" fill="#04140f"/></g>
+    <path class="mascot-mouth" d="M38 67 Q50 71 62 67" stroke="#04140f" stroke-width="4" fill="none" stroke-linecap="round"/>
+  </svg>
+</div>
+<div class="music-widget" id="musicWidget">
+  <div class="play" id="musicPlayBtn">▶</div>
+  <div class="music-track-name" id="musicTrackName">Calm Focus</div>
+  <div class="music-bars"><span></span><span></span><span></span></div>
+</div>
+
+<script src="assets/js/theme.js"></script>
+<script src="assets/js/motion.js"></script>
+<script src="assets/js/i18n.js"></script>
+<script src="assets/js/loading-messages.js"></script>
+<script src="assets/js/processing-screen.js"></script>
+<script src="assets/js/toast.js"></script>
+<script src="assets/js/particles.js"></script>
+<script src="assets/js/mascot.js"></script>
+<script src="assets/js/music-player.js"></script>
+<script src="assets/js/api.js"></script>
+<script src="assets/js/schema.js"></script>
+<script src="assets/js/onboarding-options.js"></script>
+<script src="assets/js/app.js"></script>
+</body>
+</html>

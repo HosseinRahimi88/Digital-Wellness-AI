@@ -1,0 +1,209 @@
+/* ===================== Background canvas + blobs ===================== */
+.bg-layer {
+  position: fixed; inset: 0; z-index: var(--z-bg); overflow: hidden; pointer-events: none;
+}
+.bg-layer canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+/* The gradient blobs are now painted inside the background canvas (see
+   drawBlobs() in particles.js). The DOM elements are kept in the markup
+   only as a no-JS fallback: a large animated `filter: blur()` measured
+   ~47fps of frame budget on a 1920px viewport, so it must never run
+   alongside the canvas. */
+.blob { display: none; }
+.no-js .blob, .bg-static .blob {
+  display: block;
+  position: absolute; border-radius: 50%; filter: blur(70px); opacity: .35;
+}
+.no-js .blob--cyan, .bg-static .blob--cyan { background: radial-gradient(circle, var(--neon-cyan), transparent 70%); }
+.no-js .blob--blue, .bg-static .blob--blue { background: radial-gradient(circle, var(--neon-blue), transparent 70%); }
+.no-js .blob--purple, .bg-static .blob--purple { background: radial-gradient(circle, var(--neon-purple), transparent 70%); }
+
+/* Long, prime-ish durations that don't share a common period, so the
+   two blobs never visibly re-sync into a short repeating loop. */
+@keyframes float-a {
+  0%,100% { transform: translate(0,0) scale(1); }
+  27%  { transform: translate(5vw, 4vh) scale(1.10); }
+  53%  { transform: translate(-3vw, 7vh) scale(.93); }
+  78%  { transform: translate(4vw, -3vh) scale(1.05); }
+}
+@keyframes float-b {
+  0%,100% { transform: translate(0,0) scale(1); }
+  31%  { transform: translate(-6vw, -5vh) scale(1.12); }
+  64%  { transform: translate(3vw, -8vh) scale(.96); }
+}
+.blob--a { animation: float-a 71s ease-in-out infinite; }
+.blob--b { animation: float-b 89s ease-in-out infinite; }
+
+/* ===================== Entrance reveal ===================== */
+.reveal { opacity: 0; transform: translateY(24px); transition: opacity var(--dur-slow) var(--ease-out), transform var(--dur-slow) var(--ease-out); }
+.reveal.is-visible { opacity: 1; transform: translateY(0); }
+
+/* ===================== Glow pulse ===================== */
+@keyframes pulse-glow {
+  0%,100% { box-shadow: 0 0 0 rgba(34,245,198,0); }
+  50% { box-shadow: var(--shadow-glow-cyan); }
+}
+.glow-pulse { animation: pulse-glow 3.2s ease-in-out infinite; }
+
+/* ===================== Mascot ===================== */
+@keyframes mascot-bob {
+  0%,100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-8px) rotate(-1.5deg); }
+}
+@keyframes mascot-blink {
+  0%, 91%, 100% { opacity: 1; }
+  93%, 95% { opacity: .06; }
+}
+@keyframes mascot-attention {
+  0%, 100% { transform: scale(1) rotate(0deg); }
+  25% { transform: scale(1.1) rotate(-6deg); }
+  55% { transform: scale(1.06) rotate(5deg); }
+}
+@keyframes mascot-tilt {
+  0%, 100% { transform: rotate(0deg); }
+  40% { transform: rotate(-9deg); }
+}
+.mascot-orb { animation: mascot-bob 4.6s ease-in-out infinite; transform-origin: 50% 60%; }
+/* Blink via opacity, not scaleY: scaling the group also squashed the
+   pupil offset used for gaze-following. */
+.mascot-eye { animation: mascot-blink 6.4s ease-in-out infinite; }
+.mascot-attention { animation: mascot-attention .7s var(--ease-spring); }
+.mascot-tilt { animation: mascot-tilt 1.4s var(--ease-out); transform-origin: 50% 70%; }
+
+/* The face itself morphs smoothly between expressions. */
+.mascot-mouth { transition: d var(--dur-med) var(--ease-out); }
+
+.force-reduce-motion .mascot-orb,
+.force-reduce-motion .mascot-eye,
+.force-reduce-motion .mascot-attention,
+.force-reduce-motion .mascot-tilt { animation: none; }
+
+@keyframes bubble-in {
+  from { opacity: 0; transform: translateY(8px) scale(.92); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.mascot-bubble.show { animation: bubble-in var(--dur-med) var(--ease-spring); }
+
+/* ===================== Toasts ===================== */
+@keyframes toast-in {
+  from { opacity: 0; transform: translateX(120%); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes toast-out {
+  from { opacity: 1; transform: translateX(0); }
+  to { opacity: 0; transform: translateX(120%); }
+}
+.toast.toast-in { animation: toast-in .38s var(--ease-out); }
+.toast.toast-out { animation: toast-out .32s var(--ease-out) forwards; }
+/* Toasts live on the LEFT in RTL, so they must slide in from the left
+   too - the LTR keyframes would have flown them off-screen. */
+@keyframes toast-in-rtl  { from { opacity: 0; transform: translateX(-120%); } to { opacity: 1; transform: translateX(0); } }
+@keyframes toast-out-rtl { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(-120%); } }
+html[dir="rtl"] .toast.toast-in  { animation-name: toast-in-rtl; }
+html[dir="rtl"] .toast.toast-out { animation-name: toast-out-rtl; }
+
+/* ===================== Thinking loader ===================== */
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes spin-rev { to { transform: rotate(-360deg); } }
+.gear-outer { animation: spin 6s linear infinite; }
+.gear-inner { animation: spin-rev 4s linear infinite; }
+.think-ring {
+  animation: spin 1.6s linear infinite;
+}
+
+@keyframes dots {
+  0%, 20% { opacity: 0; }
+  50% { opacity: 1; }
+  100% { opacity: 0; }
+}
+.think-dot { animation: dots 1.4s ease-in-out infinite; }
+.think-dot:nth-child(2) { animation-delay: .18s; }
+.think-dot:nth-child(3) { animation-delay: .36s; }
+
+/* ===================== Buttons ===================== */
+@keyframes btn-shine {
+  0% { transform: translateX(-120%) skewX(-15deg); }
+  100% { transform: translateX(220%) skewX(-15deg); }
+}
+.btn-shine::after {
+  content: ''; position: absolute; top: 0; left: 0; width: 40%; height: 100%;
+  background: linear-gradient(120deg, transparent, rgba(255,255,255,.35), transparent);
+  transform: translateX(-120%) skewX(-15deg);
+}
+.btn-shine:hover::after { animation: btn-shine 900ms ease; }
+
+/* ===================== Score ring reveal ===================== */
+@keyframes ring-draw {
+  from { stroke-dashoffset: var(--ring-full); }
+  to { stroke-dashoffset: var(--ring-offset); }
+}
+.score-ring-fg { animation: ring-draw 1.4s var(--ease-out) forwards; }
+
+@keyframes pop-in {
+  0% { opacity: 0; transform: scale(.7); }
+  70% { transform: scale(1.05); }
+  100% { opacity: 1; transform: scale(1); }
+}
+.pop-in { animation: pop-in .5s var(--ease-spring); }
+
+@keyframes shimmer {
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, var(--surface) 25%, var(--surface-strong) 50%, var(--surface) 75%);
+  background-size: 800px 100%;
+  animation: shimmer 1.6s linear infinite;
+}
+
+/* ===================== Wave-filling bars ===================== */
+.wave-bar {
+  position: relative; overflow: hidden;
+  background: var(--surface-strong);
+  border-radius: var(--radius-pill);
+  --wave-a: var(--neon-cyan);
+  --wave-b: var(--neon-blue);
+}
+.wave-bar canvas.wave-surface {
+  position: absolute; inset: 0; width: 100%; height: 100%; display: block;
+}
+/* Reduced motion: no canvas ripple, just a static fill proportional to
+   --fill so the value is still fully visible. */
+.force-reduce-motion .wave-bar canvas.wave-surface { display: none; }
+.force-reduce-motion .wave-bar.is-filled::after {
+  content: ''; position: absolute; top: 0; bottom: 0; inset-inline-start: 0;
+  width: calc(var(--fill, 0) * 100%);
+  background: linear-gradient(90deg, var(--wave-a), var(--wave-b));
+  border-radius: inherit;
+}
+
+/* ===================== Staggered entrance ===================== */
+.stagger-item {
+  opacity: 0; transform: translateY(14px);
+  transition: opacity .5s var(--ease-out), transform .5s var(--ease-out);
+  transition-delay: var(--stagger-delay, 0ms);
+}
+.stagger-item.is-in { opacity: 1; transform: translateY(0); }
+.force-reduce-motion .stagger-item { opacity: 1; transform: none; transition: none; }
+
+/* ===================== Page enter/exit ===================== */
+@keyframes page-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.page-enter { animation: page-in .42s var(--ease-out) both; }
+.force-reduce-motion .page-enter { animation: none; }
+
+/* ===================== Icon hover motion ===================== */
+.ico-motion { transition: transform var(--dur-med) var(--ease-spring); }
+:where(a, button, .card, .app-nav-link):hover .ico-motion { transform: translateY(-2px) scale(1.08); }
+.force-reduce-motion .ico-motion { transition: none; transform: none !important; }
+
+/* ===================== Fade for step transitions ===================== */
+@keyframes step-in {
+  from { opacity: 0; transform: translateX(18px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+html[dir="rtl"] .step-in { animation-name: step-in-rtl; }
+@keyframes step-in-rtl {
+  from { opacity: 0; transform: translateX(-18px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+.step-in { animation: step-in .38s var(--ease-out); }

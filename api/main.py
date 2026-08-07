@@ -30,13 +30,15 @@ load_dotenv()
 import logging
 import time
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from fastapi.staticfiles import StaticFiles
 
-from api.core.config import get_settings
+from api.core.config import PROJECT_ROOT, get_settings
 from api.core.logging_config import configure_logging
 from api.dependencies.services import (
     get_account_service,
@@ -60,8 +62,10 @@ from api.routers import (
     future_path,
     health,
     history,
+    model_performance,
     parallel_twin,
     persona,
+    plan,
     prediction,
     reports,
     schema,
@@ -169,6 +173,18 @@ def create_app() -> FastAPI:
     app.include_router(history.router, prefix=settings.api_prefix)
     app.include_router(analytics.router, prefix=settings.api_prefix)
     app.include_router(reports.router, prefix=settings.api_prefix)
+    app.include_router(plan.router, prefix=settings.api_prefix)
+    app.include_router(model_performance.router, prefix=settings.api_prefix)
+
+    # --- Static frontend (frontend/) ---
+    # Mounted LAST and at "/" so it only ever catches requests that none
+    # of the API routes above matched (Starlette checks routes in
+    # registration order) - the vanilla HTML/CSS/JS frontend is served
+    # from the same origin as the API, which sidesteps CORS entirely for
+    # the normal case of opening this app straight from the backend.
+    frontend_dir = PROJECT_ROOT / "frontend"
+    if frontend_dir.is_dir():
+        app.mount("/", StaticFiles(directory=frontend_dir, html=True), name="frontend")
 
     return app
 

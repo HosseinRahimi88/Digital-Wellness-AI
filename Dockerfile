@@ -1,11 +1,12 @@
-# Digital Wellness AI - FastAPI backend production image.
+# Digital Wellness AI - FastAPI backend + static frontend production image.
 #
-# This image serves api/main.py ONLY (the FastAPI backend). The
-# Streamlit app (app/Home.py) is a separate deployable and deliberately
-# NOT started by this image - the two interfaces share the services/
-# and artifacts/ layers but have different runtime characteristics
-# (Streamlit's own dev server vs. a multi-worker ASGI server here) and
-# should be deployed/scaled independently.
+# This image serves api/main.py, which now also mounts frontend/ (plain
+# HTML/CSS/JS) as static files at "/" - see that file's create_app().
+# The Streamlit app (app/Home.py) is a separate deployable and
+# deliberately NOT started by this image - the two interfaces share the
+# services/ and artifacts/ layers but have different runtime
+# characteristics (Streamlit's own dev server vs. a multi-worker ASGI
+# server here) and should be deployed/scaled independently.
 #
 # Build:  docker build -t digital-wellness-api .
 # Run:    docker run -p 8000:8000 --env-file .env digital-wellness-api
@@ -41,6 +42,7 @@ COPY core/ ./core/
 COPY config/ ./config/
 COPY utils/ ./utils/
 COPY artifacts/ ./artifacts/
+COPY frontend/ ./frontend/
 
 # storage/ holds runtime data (accounts.json, prediction_history.json)
 # that must persist across container restarts - mount a volume over it
