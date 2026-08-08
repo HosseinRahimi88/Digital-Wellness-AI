@@ -22,6 +22,7 @@ from api.dependencies.services import (
 )
 from api.exceptions.errors import DomainValidationError
 from api.schemas.prediction import (
+    DimensionBreakdownResponse,
     PredictRequest,
     PredictResponse,
     RecommendationResponse,
@@ -33,6 +34,7 @@ from services.prediction_service import PredictionService
 from services.recommendation_service import RecommendationService
 from services.storage.base import StorageBackend
 from services.validation_service import ValidationService
+from utils.dimension_scores import compute_dimension_scores
 
 router = APIRouter(prefix="/predict", tags=["Prediction"])
 
@@ -54,7 +56,11 @@ def predict(
         raise DomainValidationError(validation.errors)
 
     result = predictor.predict(validation.cleaned_data)
-    recommendations = recommender.generate(result.shap_features)
+    recommendations = recommender.generate(
+        result.shap_features,
+        excluded_categories=set(payload.excluded_recommendation_categories),
+    )
+    dimension_breakdown = compute_dimension_scores(validation.cleaned_data)
 
     persisted = False
     if payload.persist:
@@ -74,5 +80,6 @@ def predict(
         uncertainty=UncertaintyResponse.from_uncertainty_result(result.uncertainty),
         shap_features=[SHAPFeatureResponse.from_shap_feature(f) for f in result.shap_features],
         recommendations=[RecommendationResponse.from_recommendation(r) for r in recommendations],
+        dimension_breakdown=DimensionBreakdownResponse(**dimension_breakdown),
         persisted=persisted,
     )

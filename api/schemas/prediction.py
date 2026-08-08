@@ -38,6 +38,16 @@ class PredictRequest(BaseModel):
         default=True,
         description="If true (default), record this prediction to the authenticated user's history, exactly like a real Prediction-page submission. Set false for a throwaway/exploratory prediction that should not appear in history or analytics.",
     )
+    excluded_recommendation_categories: list[str] = Field(
+        default_factory=list,
+        description=(
+            "Recommendation categories (e.g. 'Sleep', 'Notifications') the user has asked not to be "
+            "coached on. This does NOT change the prediction itself - every model input is still used "
+            "exactly as submitted, because the trained model requires its full feature set and silently "
+            "dropping or substituting a value would produce a misleading score. It only filters which "
+            "categories RecommendationService is allowed to surface."
+        ),
+    )
 
 
 class SHAPFeatureResponse(BaseModel):
@@ -92,6 +102,18 @@ class RecommendationResponse(BaseModel):
         return RecommendationResponse(**r.to_dict())
 
 
+class DimensionScoreResponse(BaseModel):
+    key: str
+    label: str
+    score: float
+    indicator_count: int
+
+
+class DimensionBreakdownResponse(BaseModel):
+    dimensions: list[DimensionScoreResponse]
+    overall: float | None
+
+
 class PredictResponse(BaseModel):
     prediction: str
     confidence: float | None
@@ -104,4 +126,5 @@ class PredictResponse(BaseModel):
     uncertainty: UncertaintyResponse | None
     shap_features: list[SHAPFeatureResponse]
     recommendations: list[RecommendationResponse]
+    dimension_breakdown: DimensionBreakdownResponse
     persisted: bool

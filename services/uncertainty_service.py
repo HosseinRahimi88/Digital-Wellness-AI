@@ -290,7 +290,7 @@ class UncertaintyService:
                 label_names = [class_mapping.get(c, str(c)) for c in model_classes]
 
                 nonconformity = []
-                for row_proba, true_label in zip(proba, y_clf_norm):
+                for row_proba, true_label in zip(proba, y_clf_norm, strict=True):
                     if true_label in label_names:
                         idx = label_names.index(true_label)
                         nonconformity.append(1.0 - row_proba[idx])

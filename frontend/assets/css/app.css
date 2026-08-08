@@ -85,6 +85,21 @@
 
 .uncertainty-note { font-size: .82rem; color: var(--text-muted); background: var(--surface); border: 1px dashed var(--surface-border); border-radius: var(--radius-md); padding: var(--space-3); margin-top: var(--space-4); }
 
+.dimension-block { margin-top: var(--space-6); }
+.dimension-hint { font-size: .78rem; margin: 2px 0 var(--space-3); }
+.dimension-grid { display: grid; gap: 10px; }
+.dimension-row { display: flex; align-items: center; gap: 10px; }
+.dimension-row .name { width: 42%; font-size: .8rem; color: var(--text-secondary); font-family: var(--font-label); }
+.dimension-track { flex: 1; height: 14px; border-radius: var(--radius-pill); position: relative; background: var(--surface-strong); }
+.dim-wave { position: absolute; inset: 0; --wave-a: var(--neon-purple, #9b6bff); --wave-b: var(--neon-cyan); }
+
+.rec-exclude-btn {
+  margin-top: 8px; font-size: .72rem; background: none; border: 1px solid var(--surface-border);
+  color: var(--text-muted); border-radius: var(--radius-pill); padding: 3px 10px; cursor: pointer;
+  transition: color var(--dur-fast), border-color var(--dur-fast);
+}
+.rec-exclude-btn:hover, .rec-exclude-btn:focus-visible { color: var(--accent-danger); border-color: var(--accent-danger); }
+
 .result-actions { display: flex; gap: 10px; justify-content: center; margin-top: var(--space-6); flex-wrap: wrap; }
 
 .empty-state { text-align: center; padding: var(--space-8) var(--space-4); }

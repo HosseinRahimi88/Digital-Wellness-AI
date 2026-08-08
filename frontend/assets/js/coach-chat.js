@@ -111,6 +111,8 @@
       greeting: (name) => `Hi${name ? ' ' + name : ''} — I read your real check-in, not a template. Type **/fit** and I'll load your data.`,
       ready: 'Loaded. Ask me about your score, a specific signal, or what to do first.',
       unknown: "I'm not sure I follow. Try asking about your score, sleep, focus, notifications, or what to change first.",
+      clarify: "Can you say a bit more? For example: your overall score, a specific area like sleep or focus, or what to work on first.",
+      trendUnavailable: "I only have your most recent check-in loaded here, not your history, so I can't honestly tell you whether you're trending up or down — that would be a guess. Check the Dashboard or Analytics page for your real trend over time.",
     },
     fa: {
       crisis: 'من نمی‌توانم در این مورد کمک کنم و نمی‌خواهم وانمود کنم که می‌توانم. لطفاً با یک متخصص واجد شرایط یا خط کمک بحران تماس بگیر — صحبت با یک انسان واقعی از هر چیزی که من اینجا ارائه می‌دهم مهم‌تر است. اگر در خطر فوری هستی، با شماره‌ی اورژانس محلی تماس بگیر.',
@@ -120,6 +122,8 @@
       greeting: (name) => `سلام${name ? ' ' + name : ''} — من بررسی واقعی تو را می‌خوانم، نه یک قالب آماده. دستور **/fit** را بزن تا داده‌ات را بارگذاری کنم.`,
       ready: 'بارگذاری شد. درباره‌ی امتیازت، یک سیگنال خاص، یا اینکه اول چه کاری بکنی بپرس.',
       unknown: 'دقیقاً متوجه نشدم. درباره‌ی امتیازت، خواب، تمرکز، اعلان‌ها، یا اینکه اول چه چیزی را تغییر بدهی بپرس.',
+      clarify: 'می‌شه کمی بیشتر توضیح بدی؟ مثلاً: امتیاز کلی‌ات، یک حوزه‌ی خاص مثل خواب یا تمرکز، یا اینکه اول روی چی کار کنی.',
+      trendUnavailable: 'من فقط آخرین بررسی‌ات را اینجا بارگذاری کرده‌ام، نه کل تاریخچه‌ات — پس نمی‌توانم صادقانه بگویم روند تو رو به بهبود است یا نه؛ این فقط حدس می‌شد. برای روند واقعی در طول زمان، صفحه‌ی داشبورد یا تحلیل‌ها را ببین.',
     },
   };
   function copy() {

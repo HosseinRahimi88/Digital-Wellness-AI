@@ -15,6 +15,12 @@
 .app-nav-link:hover { background: var(--surface); color: var(--text-primary); }
 .app-nav-link.active { background: linear-gradient(90deg, var(--neon-cyan), var(--neon-blue)); color: #04140f; }
 
+.nav-icon {
+  width: 16px; height: 16px; flex-shrink: 0;
+  fill: none; stroke: currentColor; stroke-width: 1.7;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+
 .page-wrap { max-width: 1040px; margin: 0 auto; }
 .page-head { margin-bottom: var(--space-6); }
 .page-head h1 { font-size: 1.8rem; }

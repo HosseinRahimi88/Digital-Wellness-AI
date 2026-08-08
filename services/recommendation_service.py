@@ -36,6 +36,7 @@ class RecommendationService:
         shap_features: List[SHAPFeature],
         top_k: int = 3,
         category_track_record: dict | None = None,
+        excluded_categories: set[str] | None = None,
     ) -> List[Recommendation]:
         """
         Generate personalized recommendations.
@@ -91,6 +92,8 @@ class RecommendationService:
         # being the user's strongest asset, not a problem.
         harmful_features = [f for f in shap_features if f.direction == "decrease"]
 
+        excluded = excluded_categories or set()
+
         for feature in harmful_features:
 
             template = self.registry.get(
@@ -101,6 +104,9 @@ class RecommendationService:
                 continue
 
             if template.category in used_categories:
+                continue
+
+            if template.category in excluded:
                 continue
 
             recommendation = Recommendation(

@@ -111,7 +111,7 @@ class SHAPService:
         categories = getattr(encoder, "categories_", None)
         if categories is not None:
             expanded: list[str] = []
-            for col, cats in zip(columns, categories):
+            for col, cats in zip(columns, categories, strict=True):
                 expanded.extend([col] * len(cats))
             return expanded
 

@@ -183,7 +183,7 @@ class PredictionService:
         confidence = self._compute_confidence(probabilities)
 
         probability_dict = {}
-        for cls, prob in zip(raw_classes, probabilities):
+        for cls, prob in zip(raw_classes, probabilities, strict=True):
             label_name = self.CLASS_MAPPING.get(cls, str(cls))
             probability_dict[label_name] = float(prob)
 

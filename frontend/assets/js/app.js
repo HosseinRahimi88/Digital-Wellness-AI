@@ -443,6 +443,13 @@
     return ((T[lang] || T.en)[band] || '').trim();
   }
 
+  function excludeRecommendationCategory(category) {
+    let list = [];
+    try { list = JSON.parse(localStorage.getItem('dwai_excluded_rec_categories') || '[]'); } catch (e) {}
+    if (!list.includes(category)) list.push(category);
+    localStorage.setItem('dwai_excluded_rec_categories', JSON.stringify(list));
+  }
+
   function renderResult(result) {
     const score = Math.max(0, Math.min(100, result.regression_score ?? 0));
 
@@ -504,6 +511,26 @@
     });
     window.DWMotion.waveFillOnView(shapWrap, '.shap-wave', { gap: 130 });
 
+    // ---- Wellness dimension breakdown (transparent, non-ML rollup) ----
+    const dimWrap = $('#dimensionBars');
+    if (dimWrap) {
+      dimWrap.innerHTML = '';
+      const dims = (result.dimension_breakdown && result.dimension_breakdown.dimensions) || [];
+      dims.forEach((d) => {
+        const row = document.createElement('div');
+        row.className = 'dimension-row';
+        row.innerHTML = `
+          <div class="name">${window.DWI18n.t('dim_' + d.key) || d.label}</div>
+          <div class="dimension-track">
+            <div class="wave-bar dim-wave" data-fill="${d.score / 100}"></div>
+          </div>
+          <div class="mono">${Math.round(d.score)}</div>
+        `;
+        dimWrap.appendChild(row);
+      });
+      window.DWMotion.waveFillOnView(dimWrap, '.dim-wave', { gap: 110 });
+    }
+
     // ---- Recommendation cards (staggered entrance) ----
     const recWrap = $('#recCards');
     recWrap.innerHTML = '';
@@ -525,7 +552,13 @@
         <p class="rec-desc">${r.description}</p>
         <p class="rec-action">➜ ${r.action}</p>
         <div class="rec-meta"><strong>${window.DWI18n.t('rec_success_label')}:</strong> ${r.success_metric || '—'}<br/><span class="rec-safety">${r.safety_note || ''}</span></div>
+        <button type="button" class="rec-exclude-btn" data-category="${r.category}">🚫 ${window.DWI18n.t('rec_exclude_btn')}</button>
       `;
+      card.querySelector('.rec-exclude-btn').addEventListener('click', (e) => {
+        excludeRecommendationCategory(r.category);
+        e.target.closest('.rec-card').remove();
+        window.DWToast.info(window.DWI18n.t('rec_exclude_confirm').replace('{category}', r.category));
+      });
       recWrap.appendChild(card);
     });
     window.DWMotion.stagger(recWrap.children, { gap: 110 });
@@ -557,10 +590,18 @@
     $('#settingsBtn').addEventListener('click', () => {
       $('#settingsThemeSwitch').checked = window.DWTheme.get() === 'dark';
       $('#settingsMotionSwitch').checked = window.DWMotion.prefersReduced();
+      let excluded = [];
+      try { excluded = JSON.parse(localStorage.getItem('dwai_excluded_rec_categories') || '[]'); } catch (e) {}
+      $('#settingsExcludedRow').style.display = excluded.length ? 'flex' : 'none';
       modal.classList.add('show');
     });
     $('#settingsCloseBtn').addEventListener('click', () => modal.classList.remove('show'));
     modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList.remove('show'); });
+    $('#settingsResetExcludedBtn').addEventListener('click', () => {
+      localStorage.removeItem('dwai_excluded_rec_categories');
+      $('#settingsExcludedRow').style.display = 'none';
+      window.DWToast.success(window.DWI18n.t('settings_reset_done'));
+    });
 
     $('#settingsThemeSwitch').addEventListener('change', (e) => {
       window.DWTheme.apply(e.target.checked ? 'dark' : 'light');

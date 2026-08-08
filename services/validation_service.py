@@ -151,8 +151,8 @@ class ValidationService:
                 parsed_val = int(value)
             else:
                 parsed_val = float(value)
-        except Exception:
-            raise ValueError("Must be a valid numeric value.")
+        except Exception as exc:
+            raise ValueError("Must be a valid numeric value.") from exc
 
         # `float("nan")` / `float("inf")` both succeed above, but every
         # comparison against a NaN is False - so without this check a

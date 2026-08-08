@@ -55,7 +55,12 @@
     if (isBlob) return res.blob();
     if (res.status === 204) return null;
     const text = await res.text();
-    return text ? JSON.parse(text) : null;
+    if (!text) return null;
+    try {
+      return JSON.parse(text);
+    } catch (parseErr) {
+      throw new ApiError('Received an invalid response from the server.', res.status, null);
+    }
   }
 
   const Api = {
@@ -71,8 +76,11 @@
     featureSchema: () => request('/schema/features', { auth: false }),
     demoProfiles: () => request('/schema/demo-profiles', { auth: false }),
 
-    predict: (user_data, persist = true) =>
-      request('/predict', { method: 'POST', body: { user_data, persist } }),
+    predict: (user_data, persist = true) => {
+      let excluded_recommendation_categories = [];
+      try { excluded_recommendation_categories = JSON.parse(localStorage.getItem('dwai_excluded_rec_categories') || '[]'); } catch (e) {}
+      return request('/predict', { method: 'POST', body: { user_data, persist, excluded_recommendation_categories } });
+    },
 
     history: (page = 1, page_size = 20) => request(`/history?page=${page}&page_size=${page_size}`),
     currentWeek: () => request('/history/weeks/current'),

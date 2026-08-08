@@ -82,10 +82,11 @@ class ReportService:
 
         story.append(Paragraph("<b>User Input Highlights</b>", styles["Heading2"]))
 
-        rows = []
-        for feature in REPORT_HIGHLIGHT_FEATURES:
-            if feature in user_data:
-                rows.append([feature.replace("_", " ").title(), str(user_data[feature])])
+        rows = [
+            [feature.replace("_", " ").title(), str(user_data[feature])]
+            for feature in REPORT_HIGHLIGHT_FEATURES
+            if feature in user_data
+        ]
 
         if rows:
             table_stats = Table(rows)
