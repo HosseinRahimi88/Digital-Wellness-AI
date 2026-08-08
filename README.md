@@ -25,6 +25,15 @@ Digital Wellness AI is a full-stack machine learning application that predicts a
 - **Bulk CSV import** — download a filled template, log several days at once, and every valid row runs a real prediction into your history.
 - **Privacy controls** — export everything stored about you as a file, or delete your account and history permanently.
 - **Privacy-first** — predictions are computed from the user's own data only; nothing is sold or shared; any optional AI Coach API key lives in memory for the browser tab only and is never persisted or transmitted.
+- **Four-arc score ring** — the real regression score stays the primary number; four surrounding arcs (life/emotional, sleep, digital, focus) show the dimension breakdown with a genuine water-wave fill animation, a gradient per arc, and a completion "ding".
+- **Sound engine** — synthesized (Web Audio API, no audio files) processing hum, water-fill cues, arc-completion dings, and a happy/sad result stinger — independently toggleable from the ambient music, in Settings or next to the music widget.
+- **Personalized result page** — the Digital Guide's comment on your result is built from your own top SHAP factor and weakest dimension (never a canned line), recommendations show the exact number that earned them, and the result page itself carries an inline 7-day roadmap and a "talk to your future self" block using real re-runs of the trained model on named future patterns.
+- **Our own AI: 50+ command menu** — a rule-based "AI" (openly, not claimed to be an LLM) answers 50+ ready-made questions plus free-text chat, entirely from your current real data; answers never repeat stale text once your data changes, and are tagged "updated" the first time they reflect a change.
+- **Optional external connector** — OFF by default, outside this project's no-external-API competition scope: an opt-in bring-your-own-key mode that calls a provider directly from the browser (never through this app's backend) once explicitly enabled.
+- **Friends League** — two-sided, per-category consent: a friend sees nothing until they enter your invite code *and* you explicitly approve, and you each independently choose exactly which categories (persona/score/rank/top factor) to share — revocable at any time. Framed as you-vs-your-own-past first, friends shown alongside.
+- **Demo Mode** — one click builds 23 days of real-model-scored history (synthetic inputs, genuine predictions) plus a connected demo League friend, for exploring or recording a walkthrough without logging real days first.
+- **Weekly shareable card** — a downloadable PNG summary of your real week (score, streak, persona, top factor), rendered entirely client-side.
+- **Guided intro tour** — a skippable, auto-advancing first-run slideshow covering every major section including Settings and a detailed walkthrough of the Friends League consent model, replayable any time from Settings.
 
 ---
 
@@ -97,7 +106,7 @@ Once the server is running, open your browser to:
 | `http://localhost:8000/health` | Liveness check |
 | `http://localhost:8000/health/ready` | Readiness check (confirms models are loaded) |
 
-**Typical flow:** register → optional onboarding → daily check-in (manual entry or a demo profile) → real-time prediction with an explained score → dashboard, weekly plan, AI Coach, analytics, and what-if simulation, all driven by that same real prediction.
+**Typical flow:** register → optional onboarding (or Demo Mode, from Settings, to populate 23 realistic days instantly) → daily check-in (manual entry, a demo profile, or CSV import) → real-time prediction with an explained score, a 4-arc dimension ring, an inline 7-day roadmap and a "talk to your future self" projection → dashboard, weekly plan (with a downloadable card), AI Coach (50+ command menu + free chat), analytics, Friends League, and what-if simulation, all driven by that same real prediction.
 
 ---
 
@@ -171,6 +180,13 @@ Full interactive documentation (with live request/response trying) is always ava
 | `PUT` | `/auth/me/profile-extras` | Save avatar and recommendation tone |
 | `GET` | `/privacy/export` · `/privacy/export.json` | Export everything stored about you |
 | `DELETE` | `/privacy/me` | Permanently delete account and all history |
+| `GET`/`POST` | `/league/me` · `/league/rules/accept` | Your invite code, League status, rules acceptance |
+| `POST` | `/league/invite/redeem` | Send a connection request via a friend's invite code |
+| `GET` | `/league/requests/pending` | Requests waiting for your approval (the in-app notification inbox) |
+| `POST` | `/league/requests/{id}/respond` | Approve/decline a request, choosing what you share back |
+| `GET`/`PUT`/`DELETE` | `/league/connections[/{id}/sharing]` | List, adjust, or revoke a League connection |
+| `GET` | `/league/leaderboard` | You-vs-your-past plus friends' explicitly shared categories |
+| `POST` | `/demo/populate` | Populate 23 days of real-model-scored demo history plus a demo League friend |
 
 All endpoints except `/health*`, `/auth/register`, and `/auth/login` require a `Authorization: Bearer <token>` header.
 
@@ -181,7 +197,7 @@ All endpoints except `/health*`, `/auth/register`, and `/auth/login` require a `
 ```bash
 python3 -m pytest tests/ -v
 ```
-The suite covers the ML pipeline, validation, recommendations, auth/JWT (including attack vectors), concurrency, and API integration — 408 tests in total. A handful of tests that require the raw training CSVs (not committed, see `.gitignore`) will report `FileNotFoundError` unless you place your own `data/{train,validation,test}.csv`; every other test runs standalone against the committed model artifacts.
+The suite covers the ML pipeline, validation, recommendations, auth/JWT (including attack vectors), concurrency, the Friends League consent model, and API integration — 424 tests in total. A handful of tests that require the raw training CSVs (not committed, see `.gitignore`) will report `FileNotFoundError` unless you place your own `data/{train,validation,test}.csv`; every other test runs standalone against the committed model artifacts.
 
 ---
 

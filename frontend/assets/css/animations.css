@@ -191,9 +191,33 @@ html[dir="rtl"] .wave-bar.is-vertical .glass-fill { transform-origin: center bot
     linear-gradient(90deg, rgba(255,255,255,.28) 0%, rgba(255,255,255,.05) 50%, rgba(255,255,255,0) 65%),
     linear-gradient(0deg, var(--wave-a), var(--wave-b));
 }
+/* Real water motion inside the glass tube, layered on top of the solid
+   gradient above: two tiled wave-crest layers scrolling at different
+   speeds/opacity so it reads as depth rather than one flat stripe. The
+   glass frame/track itself is untouched - only the liquid inside moves. */
+.wave-bar .glass-fill::before,
+.wave-bar .glass-fill::after {
+  content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='40' viewBox='0 0 120 40'><path d='M0 22 Q15 8 30 22 T60 22 T90 22 T120 22 V40 H0 Z' fill='white' fill-opacity='0.4'/></svg>");
+  background-repeat: repeat-x; background-size: 120px 100%;
+  mix-blend-mode: overlay; animation: wave-scroll 2.6s linear infinite;
+}
+.wave-bar .glass-fill::after {
+  background-size: 84px 100%; opacity: .55; animation-duration: 4s; animation-direction: reverse;
+}
+.wave-bar.is-vertical .glass-fill::before,
+.wave-bar.is-vertical .glass-fill::after {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='40' height='120' viewBox='0 0 40 120'><path d='M22 0 Q8 15 22 30 T22 60 T22 90 T22 120 H40 V0 Z' fill='white' fill-opacity='0.4'/></svg>");
+  background-repeat: repeat-y; background-size: 100% 120px;
+  animation-name: wave-scroll-v;
+}
+@keyframes wave-scroll { from { background-position-x: 0; } to { background-position-x: -120px; } }
+@keyframes wave-scroll-v { from { background-position-y: 0; } to { background-position-y: -120px; } }
 /* Reduced motion still shows the full value - only the travel is cut,
    handled in motion.js by setting the final transform immediately. */
 .force-reduce-motion .wave-bar .glass-fill { transition: none !important; }
+.force-reduce-motion .wave-bar .glass-fill::before,
+.force-reduce-motion .wave-bar .glass-fill::after { animation: none; }
 
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .wave-bar { background: var(--surface-strong); }

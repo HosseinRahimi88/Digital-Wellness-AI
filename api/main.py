@@ -58,9 +58,11 @@ from api.routers import (
     analytics,
     auth,
     cohort,
+    demo,
     future_path,
     health,
     history,
+    league,
     model_performance,
     parallel_twin,
     persona,
@@ -176,6 +178,8 @@ def create_app() -> FastAPI:
     app.include_router(plan.router, prefix=settings.api_prefix)
     app.include_router(model_performance.router, prefix=settings.api_prefix)
     app.include_router(progress.router, prefix=settings.api_prefix)
+    app.include_router(league.router, prefix=settings.api_prefix)
+    app.include_router(demo.router, prefix=settings.api_prefix)
 
     # --- Static frontend (frontend/) ---
     # Mounted LAST and at "/" so it only ever catches requests that none

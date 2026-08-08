@@ -129,6 +129,8 @@ class RecommendationService:
 
                 safety_note=template.safety_note,
 
+                source_field=feature.feature,
+
             )
 
             recommendations.append(

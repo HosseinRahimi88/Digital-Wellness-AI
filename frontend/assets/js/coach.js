@@ -94,30 +94,40 @@ document.addEventListener('DOMContentLoaded', () => {
   const keySave = document.getElementById('coachKeySave');
   const keyClear = document.getElementById('coachKeyClear');
   const keyStatus = document.getElementById('coachKeyStatus');
+  const connectorSwitch = document.getElementById('connectorEnableSwitch');
+  const connectorLabel = document.getElementById('connectorEnableLabel');
 
   const lang = () => (window.DWI18n && window.DWI18n.get()) || 'en';
 
   const T = {
     en: {
       title: 'Talk to your coach', send: 'Send', keyToggle: 'Bring your own key',
-      keyNote: 'Optional and entirely for the future. This build makes no external calls at all — replies come from your own check-in data on this device. If you paste a key it is kept in memory for this tab only: never stored, never logged, never sent anywhere, and gone when you close the tab.',
+      keyNoteOff: 'Optional. While the connector below is OFF (the default), this build makes no external calls at all — replies come from your own check-in data on this device. If you paste a key it is kept in memory for this tab only: never stored, never logged, never sent anywhere, and gone when you close the tab.',
+      keyNoteOn: 'Connector is ON: /fit and your messages now go directly from this browser tab to your chosen provider, using your key — never through our backend. This is an experimental extra outside the competition\'s no-external-API scope, off by default for a reason.',
+      connectorLabel: 'Enable experimental connector (outside competition scope)',
       keySave: 'Save for this session', keyClear: 'Forget', keyLabel: 'API key',
       statusNone: 'No key set — the coach works without one.',
       statusSet: (m) => `Key held in memory for this tab only: ${m}`,
       disclaimer: 'General digital-wellbeing guidance only — never medical advice.',
       placeholder: 'Type /fit to begin',
       fitDone: 'Loaded. Ask me about your score, a specific signal, or what to do first.',
+      fitConnectorIntro: 'Reading your real data and summarizing it…',
+      connectorError: (m) => `Connector error: ${m}`,
       you: 'You', coach: 'Coach',
     },
     fa: {
       title: 'با مربی‌ات صحبت کن', send: 'ارسال', keyToggle: 'کلید اختصاصی خودت',
-      keyNote: 'اختیاری و کاملاً برای آینده. این نسخه هیچ ارتباط خارجی برقرار نمی‌کند — پاسخ‌ها از داده‌ی بررسی خودت روی همین دستگاه ساخته می‌شوند. اگر کلیدی وارد کنی فقط در حافظه‌ی همین تب می‌ماند: هرگز ذخیره نمی‌شود، هرگز لاگ نمی‌شود، هیچ‌جا ارسال نمی‌شود، و با بستن تب پاک می‌شود.',
+      keyNoteOff: 'اختیاری. تا وقتی کانکتور پایین خاموش است (پیش‌فرض)، این نسخه هیچ ارتباط خارجی برقرار نمی‌کند — پاسخ‌ها از داده‌ی بررسی خودت روی همین دستگاه ساخته می‌شوند. اگر کلیدی وارد کنی فقط در حافظه‌ی همین تب می‌ماند: هرگز ذخیره نمی‌شود، هرگز لاگ نمی‌شود، هیچ‌جا ارسال نمی‌شود، و با بستن تب پاک می‌شود.',
+      keyNoteOn: 'کانکتور روشن است: از این پس /fit و پیام‌هایت مستقیماً از همین مرورگر به سرویس‌دهنده‌ی انتخابی‌ات می‌رود، با کلید خودت — هرگز از سرور ما عبور نمی‌کند. این یک قابلیت آزمایشی و اضافه، خارج از محدوده‌ی «بدون API خارجی» مسابقه است؛ به همین دلیل پیش‌فرض خاموش است.',
+      connectorLabel: 'کانکتور آزمایشی را فعال کن (خارج از محدوده‌ی مسابقه)',
       keySave: 'ذخیره برای این نشست', keyClear: 'حذف کن', keyLabel: 'کلید API',
       statusNone: 'کلیدی تنظیم نشده — مربی بدون آن هم کار می‌کند.',
       statusSet: (m) => `کلید فقط در حافظه‌ی همین تب نگه داشته می‌شود: ${m}`,
       disclaimer: 'فقط راهنمایی عمومی سلامت دیجیتال — هرگز توصیه‌ی پزشکی نیست.',
       placeholder: 'برای شروع /fit را بزن',
       fitDone: 'بارگذاری شد. درباره‌ی امتیازت، یک سیگنال خاص، یا اینکه اول چه کاری بکنی بپرس.',
+      fitConnectorIntro: 'دارم داده‌ی واقعی‌ات را می‌خوانم و خلاصه می‌کنم…',
+      connectorError: (m) => `خطای کانکتور: ${m}`,
       you: 'تو', coach: 'مربی',
     },
   };
@@ -125,12 +135,72 @@ document.addEventListener('DOMContentLoaded', () => {
 
   let ctx = null;
   let fitted = false;
+  let menuCtxPromise = null;
+
+  function ensureMenuContext() {
+    if (!menuCtxPromise) menuCtxPromise = window.DWAIMenu.buildContext();
+    return menuCtxPromise;
+  }
+
+  /* ===================== 50+ command menu ===================== */
+  function renderMenu() {
+    const wrap = document.getElementById('aiMenuGroups');
+    if (!wrap || !window.DWAIMenu) return;
+    const l = lang();
+    document.getElementById('aiMenuTitle').textContent = l === 'fa' ? '۵۰+ چیز برای پرسیدن' : '50+ things to ask';
+    document.getElementById('aiMenuHint').textContent = l === 'fa'
+      ? 'یکی را انتخاب کن — هر پاسخ از داده‌ی واقعی و فعلی خودت می‌آید، نه یک متن آماده.'
+      : 'Pick one — every answer comes from your own real, current data, never a script.';
+    wrap.innerHTML = '';
+    const byCat = {};
+    window.DWAIMenu.ITEMS.forEach((item) => { (byCat[item.cat] = byCat[item.cat] || []).push(item); });
+    Object.keys(byCat).forEach((cat) => {
+      const catLabel = (window.DWAIMenu.CATEGORY_LABELS[cat] || {})[l] || cat;
+      const details = document.createElement('details');
+      details.className = 'ai-menu-group';
+      const summary = document.createElement('summary');
+      summary.textContent = `${catLabel} (${byCat[cat].length})`;
+      details.appendChild(summary);
+      const grid = document.createElement('div');
+      grid.className = 'ai-menu-grid';
+      byCat[cat].forEach((item) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'ai-menu-item';
+        btn.innerHTML = `<span class="ai-menu-icon">${item.icon}</span><span>${l === 'fa' ? item.fa : item.en}</span>`;
+        btn.addEventListener('click', () => runMenuItem(item));
+        grid.appendChild(btn);
+      });
+      details.appendChild(grid);
+      wrap.appendChild(details);
+    });
+  }
+
+  async function runMenuItem(item) {
+    const l = lang();
+    bubble('user', l === 'fa' ? item.fa : item.en);
+    const thinking = bubble('coach', l === 'fa' ? 'در حال بررسی داده‌ی واقعی‌ات…' : 'Checking your real data…');
+    try {
+      const fullCtx = await ensureMenuContext();
+      if (connectorActive()) {
+        const envelope = window.DWCoachChat.buildPromptEnvelope(l === 'fa' ? item.fa : item.en, { extended: fullCtx });
+        const reply = await window.DWConnector.chatCompletion(window.DWCoachChat.getKeyForRequest(), envelope.messages);
+        thinking.querySelector('.chat-body').textContent = reply || '';
+        return;
+      }
+      const text = window.DWAIMenu.getAnswer(item.id, fullCtx);
+      thinking.querySelector('.chat-body').textContent = text;
+    } catch (e) {
+      thinking.querySelector('.chat-body').textContent = connectorActive() ? t().connectorError(e.message) : (l === 'fa' ? 'الان نتوانستم داده‌ات را بخوانم.' : "Couldn't read your data right now.");
+    }
+  }
 
   function applyCopy() {
     const c = t();
     document.getElementById('coachChatTitle').textContent = c.title;
     document.getElementById('coachKeyToggleLabel').textContent = c.keyToggle;
-    document.getElementById('coachKeyNote').textContent = c.keyNote;
+    document.getElementById('coachKeyNote').textContent = window.DWConnector && window.DWConnector.isEnabled() ? c.keyNoteOn : c.keyNoteOff;
+    if (connectorLabel) connectorLabel.textContent = c.connectorLabel;
     document.getElementById('coachKeyLabel').textContent = c.keyLabel;
     keySave.textContent = c.keySave;
     keyClear.textContent = c.keyClear;
@@ -168,7 +238,12 @@ document.addEventListener('DOMContentLoaded', () => {
     bubble('coach', raw.replace(/\*\*/g, ''));
   }
 
+  function connectorActive() {
+    return !!(window.DWConnector && window.DWConnector.isEnabled() && window.DWCoachChat.hasKey());
+  }
+
   async function runFit() {
+    if (connectorActive()) { await runFitConnector(); return; }
     // Same narrative preparation screen as the prediction flow, over the
     // real work of assembling context from the stored prediction.
     const work = new Promise((resolve) => {
@@ -187,11 +262,52 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  /* Connector /fit: a REAL request to the external provider, from this
+     browser tab only. Sends the same context object the local coach
+     uses (plus the full 50-item menu context) so the provider genuinely
+     reads the user's real data, then asks it to summarize what it saw -
+     matching the "type a command, see processing, get a real summary"
+     flow the rest of this app already uses for predictions. */
+  async function runFitConnector() {
+    const l = lang();
+    const work = (async () => {
+      ctx = window.DWCoachChat.loadContext();
+      const menuCtx = await ensureMenuContext();
+      const envelope = window.DWCoachChat.buildPromptEnvelope(
+        'The user just typed /fit. Read the CONTEXT and reply with a short, honest summary of what you can see about their current digital wellness data - real numbers only, nothing invented.',
+        { personal: ctx, extended: menuCtx },
+      );
+      return window.DWConnector.chatCompletion(window.DWCoachChat.getKeyForRequest(), envelope.messages);
+    })();
+    let reply;
+    try {
+      reply = await window.DWProcessing.run(work, { flow: 'coach' });
+    } catch (e) {
+      bubble('coach', t().connectorError(e.message));
+      return;
+    }
+    fitted = true;
+    bubble('coach', reply || t().fitDone);
+  }
+
   async function send(text) {
     if (!text) return;
     bubble('user', text);
 
     if (/^\/fit\b/i.test(text)) { await runFit(); return; }
+
+    if (connectorActive()) {
+      const thinking = bubble('coach', lang() === 'fa' ? 'در حال پرسیدن از سرویس‌دهنده…' : 'Asking the provider…');
+      try {
+        const menuCtx = await ensureMenuContext();
+        const envelope = window.DWCoachChat.buildPromptEnvelope(text, { personal: ctx, extended: menuCtx });
+        const reply = await window.DWConnector.chatCompletion(window.DWCoachChat.getKeyForRequest(), envelope.messages);
+        thinking.querySelector('.chat-body').textContent = reply || '';
+      } catch (e) {
+        thinking.querySelector('.chat-body').textContent = t().connectorError(e.message);
+      }
+      return;
+    }
 
     if (!fitted) { ctx = window.DWCoachChat.loadContext(); fitted = true; }
     const reply = window.DWCoachChat.respond(text, ctx);
@@ -224,7 +340,9 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
   renderSuggestions();
+  renderMenu();
   document.addEventListener('dwai:langchange', renderSuggestions);
+  document.addEventListener('dwai:langchange', renderMenu);
 
   keyToggle.addEventListener('click', () => {
     const open = keyPanel.hasAttribute('hidden');
@@ -248,6 +366,14 @@ document.addEventListener('DOMContentLoaded', () => {
     keyInput.value = '';
     refreshKeyStatus();
   });
+
+  if (connectorSwitch) {
+    connectorSwitch.checked = window.DWConnector ? window.DWConnector.isEnabled() : false;
+    connectorSwitch.addEventListener('change', (e) => {
+      if (window.DWConnector) window.DWConnector.setEnabled(e.target.checked);
+      applyCopy();
+    });
+  }
 
   // Key must not outlive the tab or a logout.
   window.addEventListener('beforeunload', () => window.DWCoachChat.clearKey());

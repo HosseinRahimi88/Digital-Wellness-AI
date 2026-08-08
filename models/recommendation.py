@@ -36,6 +36,12 @@ class Recommendation:
 
     safety_note: str = ""
 
+    # The real SHAP feature name this recommendation was generated from
+    # (see services/recommendation_service.py) - lets the frontend show
+    # the user's own actual submitted value next to the advice, instead
+    # of leaving the connection between "why" and "what to do" implicit.
+    source_field: str = ""
+
     # -------------------------------------------------
 
     @property
@@ -78,5 +84,7 @@ class Recommendation:
             "success_metric": self.success_metric,
 
             "safety_note": self.safety_note,
+
+            "source_field": self.source_field,
 
         }

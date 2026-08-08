@@ -54,6 +54,8 @@
     }
     $('#logoutBtn').classList.remove('hidden');
     $('#appNavRow').classList.remove('hidden');
+    const bell = $('#notifBell');
+    if (bell) { bell.classList.remove('hidden'); if (window.DWChrome) window.DWChrome.wireNotifBell(); }
     if (!state.account.onboarding_complete) {
       renderOnboarding();
       showView('view-onboarding');
@@ -519,13 +521,19 @@
     // tone preference); fall back to the local narrative when absent.
     if (summaryEl) summaryEl.textContent = result.result_framing || narrativeSummary(result);
 
-    // Ring is drawn like a pen stroke; the number counts up to the exact
-    // same value the API returned (no rounding change vs. before).
-    const ring = $('#scoreRing');
-    const scoreColor = score >= 66 ? 'var(--accent-success)' : score >= 40 ? 'var(--accent-amber)' : 'var(--accent-danger)';
-    ring.style.stroke = scoreColor;
-    window.DWMotion.drawRing(ring, score / 100);
-    window.DWMotion.countUp($('#scoreNum'), score, { decimals: 0, duration: 1400 });
+    // Four-arc ring: centre keeps the real regression score (drawn/counted
+    // by DWScoreRing itself); the arcs are the transparent dimension
+    // breakdown, each with a genuine water-wave fill and a "ding" per
+    // arc completion. A final happy/sad chime plays once every arc with
+    // data has finished, matching whether the result itself is good.
+    const ringWrap = $('#scoreRingWrap');
+    const dims = (result.dimension_breakdown && result.dimension_breakdown.dimensions) || [];
+    if (ringWrap && window.DWScoreRing) {
+      window.DWScoreRing.render(ringWrap, {
+        score, dimensions: dims,
+        onAllArcsComplete: () => { if (window.DWSound) window.DWSound.resultChime(score >= 50); },
+      });
+    }
 
     const badge = $('#classBadge');
     badge.textContent = result.prediction;
@@ -625,12 +633,25 @@
       const card = document.createElement('div');
       card.className = 'rec-card';
       const prio = (r.priority || 'low').toLowerCase();
+      // Tie the advice back to the exact number that earned it - the
+      // real value the user just submitted for this recommendation's
+      // source SHAP feature, never a fabricated or averaged one.
+      let yourNumberLine = '';
+      if (r.source_field && state.lastPayload && state.lastPayload[r.source_field] !== undefined) {
+        const rawVal = state.lastPayload[r.source_field];
+        const def = state.featureSchemaMap[r.source_field];
+        const label = (def && def.label) || r.source_field.replace(/_/g, ' ');
+        if (rawVal !== null && typeof rawVal !== 'object') {
+          yourNumberLine = `<p class="rec-your-number">📌 ${window.DWI18n.t('rec_your_value') || 'Your number'}: <strong>${label} = ${rawVal}</strong></p>`;
+        }
+      }
       card.innerHTML = `
         <div class="rec-head">
           <span class="rec-title">${r.icon || '💡'} ${r.title}</span>
           <span class="badge badge--priority-${prio}">${r.priority}</span>
         </div>
         <p class="rec-desc">${r.description}</p>
+        ${yourNumberLine}
         <p class="rec-action">➜ ${r.action}</p>
         <div class="rec-meta"><strong>${window.DWI18n.t('rec_success_label')}:</strong> ${r.success_metric || '—'}<br/><span class="rec-safety">${r.safety_note || ''}</span></div>
         <button type="button" class="rec-exclude-btn" data-category="${r.category}">🚫 ${window.DWI18n.t('rec_exclude_btn')}</button>
@@ -645,8 +666,113 @@
     window.DWMotion.stagger(recWrap.children, { gap: 110 });
 
     // Expression + tone come from the real score, using the same bands
-    // the colour ring uses.
+    // the colour ring uses. A moment later the generic line is replaced
+    // by one built from this specific result's own numbers.
     window.DWMascot.reactToScore(score);
+    const personalLine = personalizedGuideLine(result);
+    if (personalLine) {
+      setTimeout(() => window.DWMascot.say(personalLine, { attention: true, duration: 12000 }), 1500);
+    }
+
+    renderRoadmap(result);
+    renderFutureSelf(result);
+  }
+
+  /* A sentence built only from this result's own real numbers - the top
+     SHAP factor and the value the user actually typed for it, plus the
+     single weakest dimension when it's genuinely low. Never a canned
+     line: if the numbers aren't there, this returns ''. */
+  function personalizedGuideLine(result) {
+    const lang = window.DWI18n.get();
+    const top = (result.shap_features || [])[0];
+    if (!top) return '';
+    const def = state.featureSchemaMap[top.feature];
+    const topLabel = (def && def.label) || top.feature.replace(/_/g, ' ');
+    const rawVal = state.lastPayload ? state.lastPayload[top.feature] : null;
+    const hasRaw = rawVal !== null && rawVal !== undefined && typeof rawVal !== 'object';
+    const dims = (result.dimension_breakdown && result.dimension_breakdown.dimensions) || [];
+    const weakest = dims.length ? dims.reduce((a, b) => (a.score < b.score ? a : b)) : null;
+    const weakLabel = weakest ? (window.DWI18n.t('dim_' + weakest.key) || weakest.label) : '';
+    const cl = result.confidence_label;
+
+    if (lang === 'fa') {
+      let s = `با نگاهی به اعداد واقعی خودت: «${topLabel}»${hasRaw ? ` (که ${rawVal} ثبت کردی)` : ''} بیشترین اثر را روی این نتیجه گذاشته.`;
+      if (weakest && weakest.score < 55) s += ` امتیاز «${weakLabel}» تو الان ضعیف‌ترین بخش است: ${Math.round(weakest.score)} از ۱۰۰.`;
+      if (cl && cl.level === 'low') s += ' این نتیجه را خیلی قطعی نگیر — مدل هنوز کاملاً به آن مطمئن نیست.';
+      return s;
+    }
+    let s = `Looking at your actual numbers: ${topLabel}${hasRaw ? ` (you logged ${rawVal})` : ''} moved this result the most.`;
+    if (weakest && weakest.score < 55) s += ` Your ${weakLabel.toLowerCase()} score is your softest area right now, at ${Math.round(weakest.score)}/100.`;
+    if (cl && cl.level === 'low') s += " I'd hold this result loosely — the model isn't fully confident yet.";
+    return s;
+  }
+
+  /* Inline 7-day roadmap on the result page itself, reusing the exact
+     same rule-based plan generator as the Weekly Plan page - never a
+     second, divergent implementation. Shown as a condensed day-by-day
+     list (theme + first task) since the full checklist UI belongs on
+     the Weekly page. */
+  async function renderRoadmap(result) {
+    const list = $('#roadmapList');
+    if (!list) return;
+    list.innerHTML = `<li class="muted">${window.DWI18n.t('loading') || 'Loading…'}</li>`;
+    try {
+      const plan = await window.DWApi.generatePlan({
+        health_class: result.prediction,
+        wellness_score: result.regression_score,
+        persona: result.persona || null,
+        user_data: state.lastPayload || {},
+      });
+      list.innerHTML = '';
+      (plan.days || []).forEach((day) => {
+        const li = document.createElement('li');
+        li.className = 'roadmap-item';
+        const firstTask = (day.tasks || [])[0];
+        li.innerHTML = `
+          <span class="roadmap-day">${day.icon || '📅'} ${day.day_label}</span>
+          <span class="roadmap-theme">${day.theme}</span>
+          ${firstTask ? `<span class="roadmap-task">${firstTask.text}</span>` : ''}
+        `;
+        list.appendChild(li);
+      });
+      window.DWMotion.stagger(list.children, { gap: 70 });
+    } catch (e) {
+      list.innerHTML = `<li class="muted">${window.DWI18n.t('roadmap_unavailable') || 'Your roadmap will appear here.'}</li>`;
+    }
+  }
+
+  /* "Talk to your future self": real re-runs of the same trained model
+     on named future behavior patterns (services/future_path_service.py)
+     - never a scripted motivational line. Only the two forward-looking,
+     non-drift paths are shown here (status quo is the baseline, drift
+     is covered elsewhere) to keep this block encouraging rather than a
+     full scenario table. */
+  async function renderFutureSelf(result) {
+    const wrap = $('#futureSelfCards');
+    if (!wrap || !state.lastPayload) return;
+    wrap.innerHTML = `<p class="muted">${window.DWI18n.t('loading') || 'Loading…'}</p>`;
+    try {
+      const comparison = await window.DWApi.futurePathCompare(state.lastPayload, ['gradual_improvement', 'committed_change']);
+      const lang = window.DWI18n.get();
+      wrap.innerHTML = '';
+      (comparison.paths || []).forEach((p) => {
+        if (p.regression_score == null) return;
+        const meaningful = p.score_delta_vs_status_quo != null && Math.abs(p.score_delta_vs_status_quo) >= 1.5;
+        const delta = p.score_delta_vs_status_quo;
+        const card = document.createElement('div');
+        card.className = 'future-self-card';
+        const name = { gradual_improvement: lang === 'fa' ? 'بهبود تدریجی' : 'Gradual improvement', committed_change: lang === 'fa' ? 'تلاش جدی' : 'Committed change' }[p.key] || p.name;
+        const line = lang === 'fa'
+          ? `اگر این الگو را ادامه بدهی، مدل می‌گوید امتیازت به ${Math.round(p.regression_score)} می‌رسد${meaningful ? ` (${delta > 0 ? '+' : ''}${delta.toFixed(1)} نسبت به الان)` : ' (تفاوت محسوسی از وضعیت فعلی ندارد)'}.`
+          : `If you keep this pattern up, the model says your score becomes ${Math.round(p.regression_score)}${meaningful ? ` (${delta > 0 ? '+' : ''}${delta.toFixed(1)} vs. today)` : ' (not a meaningful change from today)'}.`;
+        card.innerHTML = `<div class="future-self-name">${name}</div><p class="future-self-line">${line}</p>`;
+        wrap.appendChild(card);
+      });
+      if (!wrap.children.length) wrap.innerHTML = `<p class="muted">${window.DWI18n.t('roadmap_unavailable') || ''}</p>`;
+      window.DWMotion.stagger(wrap.children, { gap: 100 });
+    } catch (e) {
+      wrap.innerHTML = '';
+    }
   }
 
   function wireResultActions() {
@@ -684,17 +810,11 @@
       window.DWToast.success(window.DWI18n.t('settings_reset_done'));
     });
 
-    $('#settingsThemeSwitch').addEventListener('change', (e) => {
-      window.DWTheme.apply(e.target.checked ? 'dark' : 'light');
-      localStorage.setItem('dwai_theme', e.target.checked ? 'dark' : 'light');
-    });
-    $('#settingsMusicSwitch').addEventListener('change', (e) => {
-      e.target.checked ? window.DWMusic.play() : window.DWMusic.pause();
-    });
-    $('#settingsMotionSwitch').checked = window.DWMotion.prefersReduced();
-    $('#settingsMotionSwitch').addEventListener('change', (e) => {
-      window.DWMotion.setReduced(e.target.checked);
-    });
+    if (window.DWChrome) {
+      window.DWChrome.wireCommonToggles(modal);
+      window.DWChrome.ensureSoundFxWidgetButton();
+      window.DWChrome.wireNotifBell();
+    }
     $('#settingsLogoutBtn').addEventListener('click', doLogout);
     $('#logoutBtn').addEventListener('click', doLogout);
   }

@@ -40,7 +40,8 @@
         </select>
       </div>
       <button class="icon-btn" data-theme-toggle aria-label="Toggle theme"><span data-theme-icon>☀️</span></button>
-      <button class="icon-btn" id="settingsBtn" aria-label="Settings">⚙️</button>
+      <button class="icon-btn hidden" id="notifBell" aria-label="Notifications"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9a6 6 0 1 1 12 0c0 4 1.4 5.4 2 6H4c.6-.6 2-2 2-6Z"/><path d="M9.5 19a2.6 2.6 0 0 0 5 0"/></svg><span class="notif-badge hidden" id="notifBadge">0</span></button>
+      <button class="icon-btn" id="settingsBtn" data-guide="settings_panel" aria-label="Settings"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"/><path d="M19.4 13.5a7.6 7.6 0 0 0 0-3l2-1.5-2-3.4-2.3.9a7.7 7.7 0 0 0-2.6-1.5L14 2h-4l-.5 2.4a7.7 7.7 0 0 0-2.6 1.5l-2.3-.9-2 3.4 2 1.5a7.6 7.6 0 0 0 0 3l-2 1.6 2 3.4 2.3-1a7.7 7.7 0 0 0 2.6 1.5L10 22h4l.5-2.4a7.7 7.7 0 0 0 2.6-1.5l2.3 1 2-3.4-2-1.6Z"/></svg></button>
       <button class="btn btn-ghost btn-sm hidden" id="logoutBtn" data-i18n="nav_logout">Log out</button>
     </div>
   </header>
@@ -53,6 +54,7 @@
     <a class="app-nav-link" data-page="whatif" href="whatif.html"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 3h4"/><path d="M10.5 3v5.2L6 17a2 2 0 0 0 1.8 3h8.4A2 2 0 0 0 18 17l-4.5-8.8V3"/><path d="M8.5 14h7"/></svg> <span data-i18n="nav_whatif">What-if</span></a>
     <a class="app-nav-link" data-page="model" href="model-performance.html"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 4 5.5v5c0 5 3.4 8.7 8 10 4.6-1.3 8-5 8-10v-5L12 2Z"/><path d="m9.2 12 1.9 1.9 3.7-3.9"/></svg> <span data-i18n="nav_model">Model</span></a>
     <a class="app-nav-link" data-page="profile" href="profile.html"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.3" r="3.3"/><path d="M5.5 20c1.2-3.6 3.9-5.5 6.5-5.5s5.3 1.9 6.5 5.5"/></svg> <span data-i18n="nav_profile">Profile</span></a>
+    <a class="app-nav-link" data-page="league" href="league.html"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/><path d="M16.5 11.2a2.6 2.6 0 1 0 0-5.2"/><path d="M2 19.5c.7-3.4 2.9-5.3 6-5.3s5.3 1.9 6 5.3"/><path d="M15 14.6c2.3.4 3.9 2.1 4.5 4.9"/></svg> <span data-i18n="nav_league">Friends League</span></a>
     <a class="app-nav-link" data-page="about" href="about.html"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 11v5.3"/><circle cx="12" cy="8.1" r="0.15" fill="currentColor" stroke-width="1.6"/></svg> <span data-i18n="nav_about">About</span></a>
   </nav>
 
@@ -183,16 +185,7 @@
           <p class="result-narrative" id="resultNarrative"></p>
           <div class="card pop-in">
             <div class="result-hero">
-              <div class="score-ring-wrap" data-guide="result_ring">
-                <svg viewBox="0 0 160 160">
-                  <circle class="score-ring-bg" cx="80" cy="80" r="70"/>
-                  <circle class="score-ring-fg" id="scoreRing" cx="80" cy="80" r="70" style="stroke:var(--neon-cyan)"/>
-                </svg>
-                <div class="score-center">
-                  <div class="num" id="scoreNum">--</div>
-                  <div class="lbl" data-i18n="result_score_label">Wellness score</div>
-                </div>
-              </div>
+              <div class="score-ring-wrap" id="scoreRingWrap" data-guide="result_ring"></div>
               <div class="result-info">
                 <span class="badge" id="classBadge"></span>
                 <h2 id="resultTitle" data-i18n="result_title">Your wellness result</h2>
@@ -227,6 +220,18 @@
               </div>
             </div>
 
+            <div class="roadmap-block" id="roadmapBlock" data-guide="result_roadmap">
+              <h3 data-i18n="result_roadmap_title">Your 7-day roadmap</h3>
+              <p class="muted dimension-hint" data-i18n="result_roadmap_hint">Built from today's own weakest signals — see it change over time on the Weekly Plan page.</p>
+              <ol id="roadmapList" class="roadmap-list"></ol>
+            </div>
+
+            <div class="future-self-block" id="futureSelfBlock" data-guide="future_self">
+              <h3 data-i18n="result_future_title">Talk to your future self</h3>
+              <p class="muted dimension-hint" data-i18n="result_future_hint">Real numbers from re-running the same trained model on a hypothetical future pattern — not a guess.</p>
+              <div id="futureSelfCards" class="future-self-grid"></div>
+            </div>
+
             <div class="result-actions">
               <button class="btn btn-ghost" id="downloadPdfBtn" data-i18n="result_download">Download PDF report</button>
               <a class="btn btn-ghost" href="dashboard.html" data-i18n="result_dashboard">Go to Dashboard</a>
@@ -253,12 +258,28 @@
       <label class="switch"><input type="checkbox" id="settingsMusicSwitch"><span class="track"><span class="thumb"></span></span></label>
     </div>
     <div class="settings-row">
+      <span data-i18n="settings_soundfx">Sound effects</span>
+      <label class="switch"><input type="checkbox" id="settingsSoundFxSwitch"><span class="track"><span class="thumb"></span></span></label>
+    </div>
+    <div class="settings-row">
       <span data-i18n="settings_reduce_motion">Reduce motion</span>
       <label class="switch"><input type="checkbox" id="settingsMotionSwitch"><span class="track"><span class="thumb"></span></span></label>
     </div>
     <div class="settings-row" id="settingsExcludedRow" style="display:none;">
       <span data-i18n="settings_excluded_topics">Muted coaching topics</span>
       <button class="btn btn-ghost btn-sm" id="settingsResetExcludedBtn" data-i18n="settings_reset">Reset</button>
+    </div>
+    <div class="settings-row">
+      <span data-i18n="settings_tour">Site tour</span>
+      <button type="button" class="btn btn-ghost btn-sm" id="settingsTourBtn" data-i18n="settings_tour_btn">Take the tour</button>
+    </div>
+    <div class="settings-row">
+      <span data-i18n="settings_demo_mode">Demo Mode</span>
+      <button type="button" class="btn btn-ghost btn-sm" id="settingsDemoBtn" data-i18n="settings_demo_btn">Populate demo data</button>
+    </div>
+    <div class="settings-row">
+      <span data-i18n="settings_league">Friends League sharing</span>
+      <a class="btn btn-ghost btn-sm" href="league.html" data-i18n="settings_league_btn">Open League settings</a>
     </div>
     <div class="settings-row">
       <span data-i18n="nav_logout">Log out</span>
@@ -288,6 +309,8 @@
 
 <script src="assets/js/theme.js"></script>
 <script src="assets/js/motion.js"></script>
+<script src="assets/js/sound-engine.js"></script>
+<script src="assets/js/score-ring.js"></script>
 <script src="assets/js/i18n.js"></script>
 <script src="assets/js/loading-messages.js"></script>
 <script src="assets/js/processing-screen.js"></script>
@@ -296,6 +319,9 @@
 <script src="assets/js/mascot.js"></script>
 <script src="assets/js/guide-tips.js"></script>
 <script src="assets/js/music-player.js"></script>
+<script src="assets/js/intro-slides.js"></script>
+<script src="assets/js/demo.js"></script>
+<script src="assets/js/app-chrome.js"></script>
 <script src="assets/js/api.js"></script>
 <script src="assets/js/schema.js"></script>
 <script src="assets/js/onboarding-options.js"></script>

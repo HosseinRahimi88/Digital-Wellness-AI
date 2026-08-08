@@ -135,6 +135,21 @@
     cohortAvailability: () => request('/cohorts/availability', { auth: false }),
     cohortComparison: () => request('/cohorts/me/comparison'),
 
+    // Friends League
+    leagueMe: () => request('/league/me'),
+    leagueAcceptRules: () => request('/league/rules/accept', { method: 'POST' }),
+    leagueRedeemInvite: (invite_code) => request('/league/invite/redeem', { method: 'POST', body: { invite_code } }),
+    leaguePendingRequests: () => request('/league/requests/pending'),
+    leagueRespondRequest: (connection_id, approve, shared_categories) =>
+      request(`/league/requests/${connection_id}/respond`, { method: 'POST', body: { approve, shared_categories } }),
+    leagueSharingUpdate: (connection_id, shared_categories) =>
+      request(`/league/connections/${connection_id}/sharing`, { method: 'PUT', body: { shared_categories } }),
+    leagueConnections: () => request('/league/connections'),
+    leagueLeaderboard: () => request('/league/leaderboard'),
+    leagueRevoke: (connection_id) => request(`/league/connections/${connection_id}`, { method: 'DELETE' }),
+
+    demoPopulate: () => request('/demo/populate', { method: 'POST' }),
+
     health: async () => {
       const root = getBase().replace(/\/api\/v1$/, '');
       const res = await fetch(root + '/health');

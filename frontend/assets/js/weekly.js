@@ -8,6 +8,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   const canvas = document.getElementById('bgCanvas');
   if (canvas) window.DWParticles.initNetwork(canvas, { density: 0.00005, linkDist: 125, speed: 0.14 });
 
+  if (window.DWWeeklyCard) window.DWWeeklyCard.init('weeklyCardCanvas', 'weeklyCardDownloadBtn');
+
   function renderWeekRows(container, week) {
     container.innerHTML = '';
     if (!week) {

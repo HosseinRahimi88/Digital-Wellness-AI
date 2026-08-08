@@ -49,6 +49,7 @@
     if (window.DWMusic && window.DWMusic.init) window.DWMusic.init();
     if (!requireAuth()) return null;
     highlightNav(pageKey);
+    if (window.DWChrome && window.DWChrome.init) window.DWChrome.init();
     wireLogout();
 
     if (window.DWGuide) {

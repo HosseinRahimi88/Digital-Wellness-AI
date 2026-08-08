@@ -35,6 +35,11 @@
   function setKey(k) { apiKey = k || null; }
   function hasKey() { return !!apiKey; }
   function clearKey() { apiKey = null; }
+  // The ONE legitimate place the raw key is read: immediately before a
+  // connector.js fetch call the user explicitly triggered. Never store
+  // this return value, log it, or pass it anywhere but straight into
+  // that one fetch.
+  function getKeyForRequest() { return apiKey; }
   function maskedKey() {
     if (!apiKey) return '';
     const tail = apiKey.slice(-4);
@@ -276,7 +281,7 @@
   }
 
   window.DWCoachChat = {
-    setKey, hasKey, clearKey, maskedKey,
+    setKey, hasKey, clearKey, maskedKey, getKeyForRequest,
     loadContext, respond, buildPromptEnvelope, copy,
   };
 })();

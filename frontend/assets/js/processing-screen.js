@@ -64,6 +64,24 @@
       ar: ['تحميل آخر فحص لك…', 'قراءة الإشارات وراء درجتك…', 'جمع توصياتك الحالية…', 'تهيئة سياق التدريب…'],
       zh: ['正在加载你最近的检测…', '正在读取分数背后的信号…', '正在收集你当前的建议…', '正在准备教练上下文…'],
     },
+    demo: {
+      en: [
+        'Building 23 days of realistic check-ins…',
+        'Running each day through the real model…',
+        'Assigning a persona from the pattern…',
+        'Connecting a demo friend in the League…',
+        'Wiring up your Coach, plans, and analytics…',
+      ],
+      fa: [
+        'در حال ساخت ۲۳ روز بررسی واقع‌گرایانه…',
+        'اجرای هر روز روی مدل واقعی…',
+        'تعیین پرسونا از روی الگو…',
+        'وصل‌کردن یک دوست نمایشی در لیگ…',
+        'آماده‌سازی مربی، برنامه‌ها و تحلیل‌ها…',
+      ],
+      ar: ['بناء 23 يوماً من الفحوصات الواقعية…', 'تشغيل كل يوم عبر النموذج الحقيقي…', 'تعيين شخصية من النمط…', 'ربط صديق تجريبي في الدوري…'],
+      zh: ['正在构建23天的真实检测…', '正在对每一天运行真实模型…', '正在根据模式分配人格…', '正在联赛中连接一位演示好友…'],
+    },
   };
 
   function stepsFor(flow) {
@@ -138,6 +156,7 @@
   function run(work, opts) {
     opts = opts || {};
     const flow = opts.flow || 'predict';
+    const minMs = opts.minMs || MIN_SHOW_MS;
     const lang = (window.DWI18n && window.DWI18n.get()) || 'en';
     const reduced = window.DWMotion && window.DWMotion.prefersReduced();
     const steps = stepsFor(flow);
@@ -198,7 +217,7 @@
     // Pace the narrated steps across the minimum window. If the real
     // work is still running when we reach the last step, we simply hold
     // there - honest "still working", not a fake extra step.
-    const perStep = MIN_SHOW_MS / steps.length;
+    const perStep = minMs / steps.length;
     let stepTimer = setInterval(() => {
       if (stepIdx < steps.length - 1) advance(stepIdx + 1);
     }, perStep);
@@ -226,22 +245,24 @@
     document.addEventListener('keydown', onKey, true);
 
     if (window.DWMascot) window.DWMascot.react('thinking', { sticky: true });
+    if (window.DWSound) window.DWSound.processingStart();
 
     return new Promise((resolve, reject) => {
       work.then(
         async (value) => {
           const elapsed = performance.now() - started;
-          const remaining = Math.max(0, MIN_SHOW_MS - elapsed);
+          const remaining = Math.max(0, minMs - elapsed);
           // Race the remaining presentation time against an explicit
           // skip - whichever comes first.
           if (remaining > 0 && !settled) {
             await Promise.race([new Promise((r) => setTimeout(r, remaining)), skipped]);
           }
           advance(steps.length - 1);
+          if (window.DWSound) window.DWSound.stopProcessing();
           cleanup();
           resolve(value);
         },
-        (err) => { cleanup(); reject(err); }
+        (err) => { if (window.DWSound) window.DWSound.stopProcessing(); cleanup(); reject(err); }
       );
     });
   }

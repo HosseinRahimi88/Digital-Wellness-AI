@@ -96,6 +96,7 @@ class RecommendationResponse(BaseModel):
     action: str
     success_metric: str
     safety_note: str
+    source_field: str = ""
 
     @staticmethod
     def from_recommendation(r) -> "RecommendationResponse":

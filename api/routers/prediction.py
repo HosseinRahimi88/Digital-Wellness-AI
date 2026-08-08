@@ -43,36 +43,23 @@ from utils.dimension_scores import compute_dimension_scores
 router = APIRouter(prefix="/predict", tags=["Prediction"])
 
 
-@router.post(
-    "", response_model=PredictResponse,
-    summary="Run a real prediction (classification + regression + SHAP + uncertainty + recommendations)",
-)
-def predict(
-    payload: PredictRequest,
-    account: Account = Depends(get_current_account),
-    validator: ValidationService = Depends(get_validation_service),
-    predictor: PredictionService = Depends(get_prediction_service),
-    recommender: RecommendationService = Depends(get_recommendation_service),
-    storage: StorageBackend | None = Depends(get_history_storage_backend),
+def build_predict_response(
+    validation, result, recommender: RecommendationService, account: Account,
+    excluded_categories: set[str] | None = None, persisted: bool = False,
 ) -> PredictResponse:
-    validation = validator.validate(payload.user_data)
-    if not validation.is_valid:
-        raise DomainValidationError(validation.errors)
-
-    result = predictor.predict(validation.cleaned_data)
+    """Assembles the full `PredictResponse` (recommendations, dimension
+    breakdown, confidence label, OOD check, tone-aware framing) from a
+    real `ValidationResult` + `PredictionResult` pair. Pulled out of
+    `predict()` so any other caller that runs the real pipeline on real
+    or synthetic-but-real-model-scored inputs (e.g. services/demo_service.py
+    via api/routers/demo.py) gets the exact same response shape instead
+    of a second, drifting reimplementation."""
     recommendations = recommender.generate(
-        result.shap_features,
-        excluded_categories=set(payload.excluded_recommendation_categories),
+        result.shap_features, excluded_categories=excluded_categories or set(),
     )
     dimension_breakdown = compute_dimension_scores(validation.cleaned_data)
     confidence_label = InsightService.confidence_label(result.confidence_percent, result.uncertainty)
     ood = InsightService.check_out_of_distribution(validation.cleaned_data)
-
-    persisted = False
-    if payload.persist:
-        history_service = get_history_service(account, storage=storage)
-        history_service.record(validation.cleaned_data, result)
-        persisted = True
 
     return PredictResponse(
         prediction=result.prediction,
@@ -91,4 +78,34 @@ def predict(
         ood=OODReportResponse.model_validate(ood, from_attributes=True),
         result_framing=frame_result(result.regression_score, account.recommendation_tone),
         persisted=persisted,
+    )
+
+
+@router.post(
+    "", response_model=PredictResponse,
+    summary="Run a real prediction (classification + regression + SHAP + uncertainty + recommendations)",
+)
+def predict(
+    payload: PredictRequest,
+    account: Account = Depends(get_current_account),
+    validator: ValidationService = Depends(get_validation_service),
+    predictor: PredictionService = Depends(get_prediction_service),
+    recommender: RecommendationService = Depends(get_recommendation_service),
+    storage: StorageBackend | None = Depends(get_history_storage_backend),
+) -> PredictResponse:
+    validation = validator.validate(payload.user_data)
+    if not validation.is_valid:
+        raise DomainValidationError(validation.errors)
+
+    result = predictor.predict(validation.cleaned_data)
+
+    persisted = False
+    if payload.persist:
+        history_service = get_history_service(account, storage=storage)
+        history_service.record(validation.cleaned_data, result)
+        persisted = True
+
+    return build_predict_response(
+        validation, result, recommender, account,
+        excluded_categories=set(payload.excluded_recommendation_categories), persisted=persisted,
     )
