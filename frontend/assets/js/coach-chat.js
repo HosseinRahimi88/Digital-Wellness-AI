@@ -94,12 +94,26 @@
     /(خودکشی|به خودم آسیب|نمی‌خواهم زنده|به زندگی‌ام پایان)/,
   ];
   const OFF_TOPIC_HINTS = [
-    /\b(stock|crypto|bitcoin|football|recipe|weather|homework|essay|translate|movie|election|politic)\b/i,
-    /(بورس|ارز دیجیتال|فوتبال|دستور پخت|آب و هوا|سیاست|ترجمه کن)/,
+    // Common non-wellness domains and general-trivia question shapes -
+    // checked BEFORE any topic-specific matcher below, specifically so a
+    // question like "why is the sky blue" can never accidentally land in
+    // the loose "why"/"good" wellness matchers just because it shares a
+    // common word with them.
+    /\b(stock|crypto|bitcoin|football|soccer|basketball|recipe|cook(ing)?|weather|forecast|homework|essay|translate|translation|movie|film|song lyrics|celebrity|election|politic|capital of|president of|currency|exchange rate|programming|(write|tell) (me )?a (poem|code|story|joke)|joke about|math problem|calculate|equation|history of|who (invented|discovered|wrote|painted)|what year|population of|distance (from|to|between))\b/i,
+    /(بورس|ارز دیجیتال|فوتبال|بسکتبال|دستور پخت|آشپزی|آب و هوا|پیش‌بینی هوا|تکلیف مدرسه|انشا|ترجمه کن|فیلم سینمایی|متن آهنگ|سلبریتی|انتخابات|سیاست|پایتخت|رئیس‌جمهور|نرخ ارز|برنامه‌نویسی|شعر بگو|جوک بگو|لطیفه|مسئله ریاضی|حل کن|تاریخ اختراع|چه کسی اختراع کرد|چند سالشه|جمعیت|فاصله بین)/,
   ];
+  // A loose single-word match (e.g. bare "why"/"good") is only trusted
+  // as a question about the user's OWN data if the message also refers
+  // to themselves - otherwise "why is the sky blue" would wrongly read
+  // as "why is my score low".
+  const SELF_REFERENCE = /\b(my|i'm|i am|do i|am i|for me|about me)\b|من|امتیازم|وضعیتم|خودم/i;
   const MEDICAL_HINTS = [
     /\b(diagnos|adhd|depression|anxiety disorder|medication|prescrib|therapy dose|disorder|illness)\b/i,
     /(تشخیص بده|بیماری|افسردگی|اختلال|دارو|قرص)/,
+  ];
+  const TREND_HINTS = [
+    /\b(trend|improving|getting better|getting worse|compared to (last|before)|over time|progress|my history)\b/i,
+    /(روند|بهتر شدم|بدتر شدم|پیشرفت|تاریخچه‌ام|نسبت به قبل|در طول زمان)/,
   ];
 
   const COPY = {
@@ -141,9 +155,13 @@
     const c = copy();
     const q = String(text || '').trim();
 
-    // Crisis check always runs first.
+    // Crisis check always runs first, then medical, then scope - all
+    // three run BEFORE any topic-specific matcher below, so a clearly
+    // off-topic question can never accidentally match a loose wellness
+    // keyword (see SELF_REFERENCE above) and get a wellness non-answer.
     if (CRISIS_PATTERNS.some((re) => re.test(q))) return { text: c.crisis, kind: 'crisis' };
     if (MEDICAL_HINTS.some((re) => re.test(q))) return { text: c.medical, kind: 'refusal' };
+    if (OFF_TOPIC_HINTS.some((re) => re.test(q))) return { text: c.offtopic, kind: 'refusal' };
     if (!ctx) return { text: c.noData, kind: 'info' };
 
     const lang = (window.DWI18n && window.DWI18n.get()) || 'en';
@@ -154,6 +172,13 @@
     const firstRec = (ctx.recommendations || [])[0];
 
     const asks = (...res) => res.some((re) => re.test(q));
+
+    // Trend/history questions come before the plain score-snapshot
+    // handler below, since a question like "is my score improving?"
+    // contains "score" too - answering with just the snapshot would
+    // silently ignore that they actually asked about change over time,
+    // which this session-only context has no honest way to answer.
+    if (TREND_HINTS.some((re) => re.test(q))) return { text: c.trendUnavailable, kind: 'info' };
 
     if (asks(/score|رتبه|امتیاز|نتیجه|how did i|چطور شد/i)) {
       return {
@@ -186,22 +211,28 @@
         kind: 'answer',
       };
     }
-    if (asks(/good|strength|well|خوب|قوت/i) && best) {
+    if (asks(/strength|doing well|good at|what.{0,15}good|قوت|چی.{0,10}خوبه|خوب.{0,10}چیه/i) && (SELF_REFERENCE.test(q) || asks(/strength|قوت/i)) && best) {
       return {
         text: fa ? `نقطه‌ی قوتت «${labelFor(best.feature)}» است — این یکی به نفع امتیازت کار می‌کند.`
                  : `Your strongest factor is ${labelFor(best.feature)} — that one is working in your favour.`,
         kind: 'answer',
       };
     }
-    if (asks(/why|چرا/i) && worst) {
+    if (asks(/why/i, /چرا/) && SELF_REFERENCE.test(q) && worst) {
       return {
         text: fa ? `بیشترین اثر منفی از «${labelFor(worst.feature)}» می‌آید. این از خروجی SHAP همان پیش‌بینی می‌آید، نه حدس من.`
                  : `The largest negative contribution comes from ${labelFor(worst.feature)}. That is straight from the SHAP output of your prediction, not my guess.`,
         kind: 'answer',
       };
     }
-    if (OFF_TOPIC_HINTS.some((re) => re.test(q))) return { text: c.offtopic, kind: 'refusal' };
-
+    // A bare "why" with no self-reference (e.g. "why is the sky blue")
+    // isn't a wellness question - falls through here instead of
+    // guessing what they meant. A very short message (e.g. just "help"
+    // or "hmm") gets a gentler nudge to say more; a longer one that
+    // still matched nothing gets pointed at the concrete topics this
+    // coach can actually answer.
+    const wordCount = q.split(/\s+/).filter(Boolean).length;
+    if (wordCount > 0 && wordCount <= 2) return { text: c.clarify, kind: 'info' };
     return { text: c.unknown, kind: 'info' };
   }
 

@@ -24,9 +24,11 @@
     }
   }
 
-  async function request(path, { method = 'GET', body, auth = true, isBlob = false } = {}) {
+  async function request(path, { method = 'GET', body, auth = true, isBlob = false, isFormData = false } = {}) {
     const headers = {};
-    if (body !== undefined) headers['Content-Type'] = 'application/json';
+    // FormData bodies (file uploads) must NOT get a manual Content-Type -
+    // the browser sets its own with the correct multipart boundary.
+    if (body !== undefined && !isFormData) headers['Content-Type'] = 'application/json';
     if (auth && getToken()) headers['Authorization'] = `Bearer ${getToken()}`;
 
     let res;
@@ -34,7 +36,7 @@
       res = await fetch(getBase() + path, {
         method,
         headers,
-        body: body !== undefined ? JSON.stringify(body) : undefined,
+        body: isFormData ? body : (body !== undefined ? JSON.stringify(body) : undefined),
       });
     } catch (networkErr) {
       throw new ApiError('Network error — is the API reachable at ' + getBase() + '?', 0);
@@ -89,6 +91,14 @@
     history: (page = 1, page_size = 20) => request(`/history?page=${page}&page_size=${page_size}`),
     currentWeek: () => request('/history/weeks/current'),
     previousWeek: () => request('/history/weeks/previous'),
+    setHistoryExcluded: (entryDate, excluded) =>
+      request(`/history/${entryDate}/exclude`, { method: 'PUT', body: { excluded } }),
+    importHistoryCsv: (file) => {
+      const form = new FormData();
+      form.append('file', file);
+      return request('/history/import-csv', { method: 'POST', body: form, isFormData: true });
+    },
+    csvTemplateUrl: () => getBase() + '/schema/csv-template',
     analyticsSummary: () => request('/analytics/summary'),
 
     personaAssign: (user_data) => request('/personas/assign', { method: 'POST', body: { user_data } }),

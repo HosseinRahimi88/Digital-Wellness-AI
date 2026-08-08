@@ -67,6 +67,7 @@
     await ensureSchemaLoaded();
     renderStep();
     showView('view-predict');
+    if (window.DWGuide) setTimeout(() => window.DWGuide.explain('checkin'), 900);
   }
 
   function wireAuthForms() {
@@ -400,6 +401,52 @@
     $('#runAgainBtn').addEventListener('click', () => startWizard());
   }
 
+  // ===================== CSV BULK IMPORT =====================
+  function wireCsvImport() {
+    const templateBtn = $('#csvTemplateBtn');
+    if (templateBtn) templateBtn.href = window.DWApi.csvTemplateUrl();
+
+    const uploadBtn = $('#csvUploadBtn');
+    const uploadInput = $('#csvUploadInput');
+    const resultEl = $('#csvImportResult');
+    if (!uploadBtn || !uploadInput) return;
+
+    uploadBtn.addEventListener('click', () => uploadInput.click());
+    uploadInput.addEventListener('change', async (e) => {
+      const file = e.target.files && e.target.files[0];
+      uploadInput.value = '';
+      if (!file) return;
+
+      try {
+        const result = await window.DWApi.importHistoryCsv(file);
+        const parts = [];
+        if (result.imported_count > 0) {
+          parts.push(window.DWI18n.t('csv_import_success').replace('{count}', result.imported_count));
+        }
+        if (result.failed_rows && result.failed_rows.length) {
+          const lines = result.failed_rows.map((f) => {
+            const firstError = Object.entries(f.errors)[0];
+            const detail = firstError ? `${firstError[0]}: ${firstError[1]}` : '';
+            return `${window.DWI18n.t('csv_import_row_label')} ${f.row_number}${f.date ? ' (' + f.date + ')' : ''} — ${detail}`;
+          });
+          parts.push(window.DWI18n.t('csv_import_failed_count').replace('{count}', result.failed_rows.length) + '\n' + lines.join('\n'));
+        }
+        if (resultEl) {
+          resultEl.textContent = parts.join(' ');
+          resultEl.classList.remove('hidden');
+        }
+        if (result.imported_count > 0) {
+          window.DWToast.success(window.DWI18n.t('csv_import_success').replace('{count}', result.imported_count));
+          if (window.DWMascot) window.DWMascot.react('neutral');
+        } else {
+          window.DWToast.error(window.DWI18n.t('csv_import_none_imported'));
+        }
+      } catch (err) {
+        window.DWToast.error(err.message);
+      }
+    });
+  }
+
   // ===================== RESULT =====================
   function classBadgeClass(pred) {
     const p = (pred || '').toLowerCase();
@@ -636,7 +683,9 @@
   // ===================== INIT =====================
   document.addEventListener('DOMContentLoaded', () => {
     window.DWI18n.init();
-    window.DWMascot.init();
+    window.DWMascot.init({
+      onClick: () => { if (window.DWGuide) window.DWGuide.explain('checkin', { force: true }); },
+    });
     window.DWMusic.init();
 
     if ('serviceWorker' in navigator) {
@@ -649,6 +698,7 @@
     wireAuthForms();
     wireOnboarding();
     wireWizard();
+    wireCsvImport();
     wireResultActions();
     wireSettings();
 

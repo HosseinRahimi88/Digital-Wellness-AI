@@ -278,16 +278,19 @@
     }
   }
 
-  function init() {
+  function init(opts) {
     if (!ensure()) return;
     renderFace('neutral');
     svgEl.setAttribute('tabindex', '0');
     svgEl.setAttribute('role', 'button');
 
-    const speak = () => react('neutral');
-    svgEl.addEventListener('click', speak);
+    // A page can pass onClick (e.g. the Digital Guide re-explaining the
+    // current page) to replace the default "say something" tap - falls
+    // back to the generic idle line when no page-specific behavior is given.
+    const onClick = (opts && opts.onClick) || (() => react('neutral'));
+    svgEl.addEventListener('click', onClick);
     svgEl.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); speak(); }
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick(); }
     });
     svgEl.addEventListener('mouseenter', () => pulse());
 

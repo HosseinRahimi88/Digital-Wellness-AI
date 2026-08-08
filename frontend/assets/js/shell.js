@@ -37,11 +37,18 @@
       if (main && !window.DWMotion.prefersReduced()) main.classList.add('page-enter');
       window.DWMotion.observeReveals();
     }
-    if (window.DWMascot.init) window.DWMascot.init();
+    if (window.DWMascot.init) {
+      window.DWMascot.init({
+        onClick: () => {
+          if (window.DWGuide) window.DWGuide.explain(pageKey, { force: true });
+        },
+      });
+    }
     if (window.DWMusic && window.DWMusic.init) window.DWMusic.init();
     if (!requireAuth()) return null;
     highlightNav(pageKey);
     wireLogout();
+    if (window.DWGuide) setTimeout(() => window.DWGuide.explain(pageKey), 1600);
 
     document.addEventListener('dwai:unauthorized', () => { location.href = 'app.html'; });
 

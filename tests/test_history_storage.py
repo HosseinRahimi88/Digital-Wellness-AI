@@ -195,6 +195,55 @@ class TestHistoryStorage(unittest.TestCase):
         expected_dates = {(base_day + timedelta(days=i)).isoformat() for i in range(n_days)}
         self.assertEqual(dates_seen, expected_dates)
 
+    # ------------------------------------------------------
+    # Exclude-from-aggregates (never from the entry itself)
+    # ------------------------------------------------------
+
+    def test_set_excluded_marks_entry_without_deleting_it(self):
+        svc = self._service("dana")
+        today = date.today()
+        svc.record(
+            user_data={"total_screen_min": 100},
+            prediction_result=_FakePredictionResult("Healthy", 0.9, 80.0),
+            on_date=today,
+        )
+        updated = svc.set_excluded(today.isoformat(), True)
+        self.assertIsNotNone(updated)
+        self.assertTrue(updated["excluded"])
+
+        # Still present in the default, unfiltered view.
+        all_entries = svc.get_all()
+        self.assertEqual(len(all_entries), 1)
+        self.assertTrue(all_entries[0]["excluded"])
+
+    def test_get_all_include_excluded_false_filters_it_out(self):
+        svc = self._service("erin")
+        d1, d2 = date(2026, 3, 1), date(2026, 3, 2)
+        svc.record(user_data={}, prediction_result=_FakePredictionResult("Healthy", 0.9, 80.0), on_date=d1)
+        svc.record(user_data={}, prediction_result=_FakePredictionResult("Healthy", 0.9, 70.0), on_date=d2)
+        svc.set_excluded(d1.isoformat(), True)
+
+        self.assertEqual(len(svc.get_all()), 2)
+        remaining = svc.get_all(include_excluded=False)
+        self.assertEqual(len(remaining), 1)
+        self.assertEqual(remaining[0]["date"], d2.isoformat())
+
+    def test_set_excluded_unknown_date_returns_none(self):
+        svc = self._service("frank")
+        self.assertIsNone(svc.set_excluded("2026-01-01", True))
+
+    def test_set_excluded_only_affects_that_users_entry(self):
+        alice = self._service("alice")
+        bob = self._service("bob")
+        today = date.today()
+        alice.record(user_data={}, prediction_result=_FakePredictionResult("Healthy", 0.9, 80.0), on_date=today)
+        bob.record(user_data={}, prediction_result=_FakePredictionResult("Healthy", 0.9, 60.0), on_date=today)
+
+        alice.set_excluded(today.isoformat(), True)
+
+        self.assertTrue(alice.get_all()[0]["excluded"])
+        self.assertFalse(bool(bob.get_all()[0].get("excluded")))
+
 
 if __name__ == "__main__":
     unittest.main()

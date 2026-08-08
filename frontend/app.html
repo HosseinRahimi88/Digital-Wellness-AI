@@ -152,6 +152,14 @@
             <button class="btn btn-ghost btn-sm" data-demo="baseline">⚪ Baseline</button>
           </div>
 
+          <div class="demo-bar" id="csvImportBar">
+            <span class="muted" data-i18n="csv_import_label" style="align-self:center;">Got several days already logged elsewhere?</span>
+            <a class="btn btn-ghost btn-sm" id="csvTemplateBtn" href="#" data-i18n="csv_download_template">⬇️ Download CSV template</a>
+            <button type="button" class="btn btn-ghost btn-sm" id="csvUploadBtn" data-i18n="csv_upload_btn">⬆️ Upload CSV</button>
+            <input type="file" id="csvUploadInput" accept=".csv,text/csv" class="hidden" />
+          </div>
+          <p class="muted csv-import-result hidden" id="csvImportResult"></p>
+
           <div class="card">
             <div class="wizard-progress" id="wizardProgress"></div>
             <p class="wizard-step-title" id="wizardStepTitle"></p>
@@ -284,6 +292,7 @@
 <script src="assets/js/toast.js"></script>
 <script src="assets/js/particles.js"></script>
 <script src="assets/js/mascot.js"></script>
+<script src="assets/js/guide-tips.js"></script>
 <script src="assets/js/music-player.js"></script>
 <script src="assets/js/api.js"></script>
 <script src="assets/js/schema.js"></script>

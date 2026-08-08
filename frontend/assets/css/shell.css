@@ -37,7 +37,9 @@
 .stat-tile .delta.down { color: var(--accent-danger); }
 
 .heatmap-row { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-top: var(--space-4); }
-.heatmap-cell { aspect-ratio: 1; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-size: .7rem; font-family: var(--font-mono); color: var(--text-primary); }
+.heatmap-cell { aspect-ratio: 1; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-size: .7rem; font-family: var(--font-mono); color: var(--text-primary); cursor: pointer; transition: opacity var(--dur-fast), outline-color var(--dur-fast); }
+.heatmap-cell[role="button"]:hover, .heatmap-cell[role="button"]:focus-visible { outline: 2px solid var(--neon-cyan); outline-offset: 1px; }
+.heatmap-cell.excluded { opacity: .35; text-decoration: line-through; }
 .heatmap-day-label { text-align: center; font-size: .68rem; color: var(--text-muted); margin-bottom: 4px; }
 
 .day-card { border: 1px solid var(--surface-border); border-radius: var(--radius-md); background: var(--surface); padding: var(--space-4); margin-bottom: var(--space-4); }

@@ -70,7 +70,7 @@ def compare_me_to_cohort(
     storage: StorageBackend | None = Depends(get_history_storage_backend),
 ) -> CohortComparisonResponse:
     history_service = get_history_service(account, storage=storage)
-    entries = history_service.get_all()
+    entries = history_service.get_all(include_excluded=False)
     user_averages = AnalyticsService.compute_field_averages(entries)
     rows = cohort_cls.compare_user_to_cohort(user_averages)
     return CohortComparisonResponse(rows=[CohortComparisonRow(**row) for row in rows])

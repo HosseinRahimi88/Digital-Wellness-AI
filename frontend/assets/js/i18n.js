@@ -92,6 +92,19 @@
       dim_sleep: 'Sleep', dim_focus: 'Focus & Productivity', dim_emotional: 'Emotional Wellbeing',
       dim_screen_habits: 'Screen Habits', dim_physical: 'Physical & Lifestyle',
 
+      csv_import_label: 'Got several days already logged elsewhere?',
+      csv_download_template: '⬇️ Download CSV template',
+      csv_upload_btn: '⬆️ Upload CSV',
+      csv_import_success: '{count} day(s) imported and added to your history.',
+      csv_import_failed_count: '{count} row(s) could not be imported:',
+      csv_import_row_label: 'Row',
+      csv_import_none_imported: 'Nothing could be imported — check the file against the template and try again.',
+
+      heatmap_include_tip: 'Click to exclude {date} from your trend averages',
+      heatmap_excluded_tip: '{date} is excluded from your trend averages — click to include it again',
+      heatmap_excluded_toast: 'That day is now excluded from trend/average calculations. Its own prediction is unchanged.',
+      heatmap_included_toast: 'That day is included in trend/average calculations again.',
+
       nav_dashboard: 'Dashboard', nav_checkin: 'Check-in', nav_weekly: 'Weekly Plan', nav_coach: 'AI Coach',
       nav_analytics: 'Analytics', nav_whatif: 'What-if', nav_model: 'Model', nav_profile: 'Profile', nav_about: 'About',
       result_dashboard: 'Go to Dashboard',
@@ -214,6 +227,19 @@
       settings_reset_done: 'موضوعات بی‌صداشده پاک شدند.',
       dim_sleep: 'خواب', dim_focus: 'تمرکز و بهره‌وری', dim_emotional: 'بهزیستی احساسی',
       dim_screen_habits: 'عادت‌های صفحه‌نمایش', dim_physical: 'فعالیت بدنی و سبک زندگی',
+
+      csv_import_label: 'چند روز رو از قبل جای دیگه ثبت کردی؟',
+      csv_download_template: '⬇️ دانلود قالب CSV',
+      csv_upload_btn: '⬆️ آپلود CSV',
+      csv_import_success: '{count} روز وارد و به تاریخچه‌ات اضافه شد.',
+      csv_import_failed_count: '{count} ردیف وارد نشد:',
+      csv_import_row_label: 'ردیف',
+      csv_import_none_imported: 'هیچ‌چیز وارد نشد — فایل رو با قالب مقایسه کن و دوباره امتحان کن.',
+
+      heatmap_include_tip: 'برای حذف {date} از میانگین‌های روندت کلیک کن',
+      heatmap_excluded_tip: '{date} از میانگین‌های روندت حذف شده — برای برگرداندنش کلیک کن',
+      heatmap_excluded_toast: 'اون روز الان از محاسبات روند/میانگین حذف شد. پیش‌بینی خود اون روز تغییری نکرده.',
+      heatmap_included_toast: 'اون روز دوباره توی محاسبات روند/میانگین لحاظ می‌شه.',
 
       nav_dashboard: 'داشبورد', nav_checkin: 'بررسی', nav_weekly: 'برنامه‌ی هفتگی', nav_coach: 'مربی هوشمند',
       nav_analytics: 'تحلیل‌ها', nav_whatif: 'شبیه‌ساز', nav_model: 'مدل', nav_profile: 'پروفایل', nav_about: 'درباره',

@@ -33,6 +33,10 @@
   .demo-bar { gap: 8px; }
   .demo-bar .btn { padding: 8px 14px; font-size: .8rem; }
 }
+.csv-import-result {
+  white-space: pre-wrap; font-size: .8rem; text-align: center;
+  max-width: 640px; margin: -10px auto var(--space-6); line-height: 1.6;
+}
 
 /* ---- Results ---- */
 .result-wrap { max-width: 920px; margin: 0 auto; }

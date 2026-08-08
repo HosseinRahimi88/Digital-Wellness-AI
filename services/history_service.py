@@ -194,9 +194,43 @@ class HistoryService:
     # Reading
     # ======================================================
 
-    def get_all(self) -> list[dict[str, Any]]:
-        """All of this user's entries, sorted by date ascending."""
-        return sorted(self._load_own_entries(), key=lambda e: e.get("date", ""))
+    def get_all(self, include_excluded: bool = True) -> list[dict[str, Any]]:
+        """
+        All of this user's entries, sorted by date ascending.
+
+        `include_excluded=False` drops entries the user has explicitly
+        marked with `set_excluded(date, True)` - e.g. an outlier day
+        they don't want counted in trend/average calculations. This
+        never touches the live single-day prediction pipeline (which
+        always uses the full, real input for that one request); it only
+        controls which *past* days feed into aggregate views like
+        analytics trends and weekly summaries. Defaults to True so
+        every existing caller keeps seeing every entry unless it opts in.
+        """
+        entries = self._load_own_entries()
+        if not include_excluded:
+            entries = [e for e in entries if not e.get("excluded")]
+        return sorted(entries, key=lambda e: e.get("date", ""))
+
+    def set_excluded(self, entry_date: str, excluded: bool) -> Optional[dict[str, Any]]:
+        """
+        Mark (or unmark) one of this user's own entries as excluded from
+        aggregate trend/average calculations. Returns the updated entry,
+        or None if no entry exists for that date. The excluded entry
+        itself is never deleted - it still appears in `get_all()` (the
+        default) and stays visible in raw history, only aggregate views
+        that explicitly ask for `include_excluded=False` skip it.
+        """
+        with self.storage.transaction() as all_entries:
+            updated = None
+            for e in all_entries:
+                if self._entry_user_id(e) == self.user_id and e.get("date") == entry_date:
+                    e["excluded"] = excluded
+                    updated = e
+                    break
+            if updated is not None:
+                self.storage.commit(all_entries)
+        return updated
 
     def get_last_n_days(self, n: int = 7, end_date: Optional[date] = None) -> list[dict[str, Any]]:
         """
@@ -247,9 +281,9 @@ class HistoryService:
         iso = d.isocalendar()
         return (iso[0], iso[1])  # (iso_year, iso_week)
 
-    def group_by_week(self) -> "dict[tuple[int, int], list[dict[str, Any]]]":
+    def group_by_week(self, include_excluded: bool = True) -> "dict[tuple[int, int], list[dict[str, Any]]]":
         grouped: dict[tuple[int, int], list[dict[str, Any]]] = {}
-        for entry in self.get_all():
+        for entry in self.get_all(include_excluded=include_excluded):
             key = self._week_key(entry["date"])
             grouped.setdefault(key, []).append(entry)
         return grouped
@@ -261,8 +295,8 @@ class HistoryService:
         first_key = min(grouped.keys())
         return grouped[first_key]
 
-    def current_week_entries(self) -> list[dict[str, Any]]:
-        grouped = self.group_by_week()
+    def current_week_entries(self, include_excluded: bool = True) -> list[dict[str, Any]]:
+        grouped = self.group_by_week(include_excluded=include_excluded)
         if not grouped:
             return []
         today_key = self._week_key(datetime.now().date().isoformat())
@@ -273,13 +307,13 @@ class HistoryService:
         latest_key = max(grouped.keys())
         return grouped[latest_key]
 
-    def previous_week_entries(self) -> list[dict[str, Any]]:
+    def previous_week_entries(self, include_excluded: bool = True) -> list[dict[str, Any]]:
         """The calendar week immediately before the current week's, if any."""
-        grouped = self.group_by_week()
+        grouped = self.group_by_week(include_excluded=include_excluded)
         if not grouped:
             return []
         keys = sorted(grouped.keys())
-        current = self.current_week_entries()
+        current = self.current_week_entries(include_excluded=include_excluded)
         if not current:
             return []
         current_key = self._week_key(current[0]["date"])

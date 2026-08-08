@@ -31,7 +31,7 @@ def analytics_summary(
     storage: StorageBackend | None = Depends(get_history_storage_backend),
 ) -> AnalyticsSummaryResponse:
     history_service = get_history_service(account, storage=storage)
-    entries = history_service.get_all()
+    entries = history_service.get_all(include_excluded=False)
 
     history_df = AnalyticsService.build_score_history_frame(entries)
     weekday_series = AnalyticsService.build_weekday_pattern(history_df)

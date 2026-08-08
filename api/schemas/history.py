@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class HistoryEntryResponse(BaseModel):
@@ -23,6 +23,39 @@ class HistoryEntryResponse(BaseModel):
     persona: str | None = None
     recorded_at: str | None = None
     top_shap_feature: str | None = None
+    excluded: bool = False
+
+
+class CSVImportRowError(BaseModel):
+    row_number: int
+    date: str | None
+    errors: dict[str, str]
+
+
+class CSVImportResponse(BaseModel):
+    imported_count: int
+    imported_dates: list[str]
+    failed_rows: list[CSVImportRowError]
+
+    @staticmethod
+    def from_result(r) -> "CSVImportResponse":
+        return CSVImportResponse(
+            imported_count=r.imported_count,
+            imported_dates=r.imported_dates,
+            failed_rows=[CSVImportRowError(row_number=f.row_number, date=f.date, errors=f.errors) for f in r.failed_rows],
+        )
+
+
+class HistoryExcludeRequest(BaseModel):
+    excluded: bool = Field(
+        ...,
+        description=(
+            "If true, this day is left out of aggregate trend/average views (analytics summary, "
+            "weekly summaries) - e.g. a day the user knows was a data-entry mistake or an outlier "
+            "they don't want skewing their trend. Never affects the day's own already-computed "
+            "prediction, and never changes any other day's data."
+        ),
+    )
 
 
 class WeekSummaryResponse(BaseModel):

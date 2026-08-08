@@ -61,7 +61,28 @@ document.addEventListener('DOMContentLoaded', async () => {
       const hue = Math.max(0, Math.min(140, (score / 100) * 140));
       cell.style.background = `hsla(${hue}, 70%, 45%, .55)`;
       cell.textContent = Math.round(score);
-      cell.title = iso;
+      cell.classList.toggle('excluded', !!entry.excluded);
+      cell.title = entry.excluded
+        ? window.DWI18n.t('heatmap_excluded_tip').replace('{date}', iso)
+        : window.DWI18n.t('heatmap_include_tip').replace('{date}', iso);
+      cell.setAttribute('role', 'button');
+      cell.setAttribute('tabindex', '0');
+      const toggle = async () => {
+        const next = !entry.excluded;
+        try {
+          await window.DWApi.setHistoryExcluded(iso, next);
+          entry.excluded = next;
+          cell.classList.toggle('excluded', next);
+          cell.title = next
+            ? window.DWI18n.t('heatmap_excluded_tip').replace('{date}', iso)
+            : window.DWI18n.t('heatmap_include_tip').replace('{date}', iso);
+          window.DWToast.info(window.DWI18n.t(next ? 'heatmap_excluded_toast' : 'heatmap_included_toast'));
+        } catch (err) {
+          window.DWToast.error(err.message);
+        }
+      };
+      cell.addEventListener('click', toggle);
+      cell.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } });
     } else {
       cell.style.background = 'var(--surface-strong)';
       cell.textContent = '·';
