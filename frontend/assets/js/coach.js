@@ -187,11 +187,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const text = input.value.trim();
+  async function send(text) {
     if (!text) return;
-    input.value = '';
     bubble('user', text);
 
     if (/^\/fit\b/i.test(text)) { await runFit(); return; }
@@ -201,7 +198,33 @@ document.addEventListener('DOMContentLoaded', () => {
     const el = bubble('coach', reply.text);
     if (reply.kind === 'crisis') el.classList.add('chat-crisis');
     if (window.DWMascot && reply.kind === 'crisis') window.DWMascot.renderFace('borderline');
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const text = input.value.trim();
+    input.value = '';
+    await send(text);
   });
+
+  /* Starter prompts. A blank chat box is the hardest thing to answer,
+     so the coach offers concrete openers in the active language. */
+  function renderSuggestions() {
+    const wrap = document.getElementById('coachSuggestions');
+    if (!wrap || !window.DWCoachKnowledge) return;
+    const lang = (window.DWI18n && window.DWI18n.get()) || 'en';
+    wrap.innerHTML = '';
+    window.DWCoachKnowledge.suggestionsFor(lang).forEach((prompt) => {
+      const chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'coach-suggestion';
+      chip.textContent = prompt;
+      chip.addEventListener('click', () => send(prompt));
+      wrap.appendChild(chip);
+    });
+  }
+  renderSuggestions();
+  document.addEventListener('dwai:langchange', renderSuggestions);
 
   keyToggle.addEventListener('click', () => {
     const open = keyPanel.hasAttribute('hidden');

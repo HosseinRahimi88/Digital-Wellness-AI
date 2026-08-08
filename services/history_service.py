@@ -73,6 +73,24 @@ TRACKED_FIELDS = [
     "focus_0_100",
     "productivity_0_100",
     "physical_activity_min_per_day",
+    # Added for utils/persona_titles.py: its archetype rules read the
+    # night/fragmentation/social-share signals, and without these stored
+    # per entry the profile page's persona was being resolved from an
+    # entry that simply lacked them - which silently scored every user
+    # against a partial input rather than their real day. Purely
+    # additive: entries written before this existed just don't carry the
+    # keys, and every reader here already treats a missing field as
+    # absent rather than zero.
+    "night_ratio",
+    "night_screen_min",
+    "pre_sleep_screen_min",
+    "social_ratio",
+    "work_study_ratio",
+    "gaming_ratio",
+    "fragmentation_index_0_100",
+    "pickups_per_day",
+    "notification_density",
+    "social_comparison_1_10",
 ]
 _TRACKED_FIELDS = TRACKED_FIELDS
 
@@ -211,6 +229,25 @@ class HistoryService:
         if not include_excluded:
             entries = [e for e in entries if not e.get("excluded")]
         return sorted(entries, key=lambda e: e.get("date", ""))
+
+    def delete_all(self) -> int:
+        """
+        Permanently remove every entry belonging to this instance's user
+        (P1 item 35, "delete my data"). Returns how many were removed.
+
+        Scoped to this user by the same `_entry_user_id` rule every read
+        path uses, so one user's deletion can never touch another's
+        rows - the whole read-modify-write runs inside the storage
+        transaction for the same reason `record()` does.
+        """
+        removed = 0
+        with self.storage.transaction() as all_entries:
+            remaining = [e for e in all_entries if self._entry_user_id(e) != self.user_id]
+            removed = len(all_entries) - len(remaining)
+            if removed:
+                self.storage.commit(remaining)
+        logger.info("Deleted %d history entries for user=%s", removed, self.user_id)
+        return removed
 
     def set_excluded(self, entry_date: str, excluded: bool) -> Optional[dict[str, Any]]:
         """

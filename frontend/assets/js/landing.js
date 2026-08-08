@@ -3,7 +3,13 @@
    brings you here" intake chips that personalize the CTA copy. */
 document.addEventListener('DOMContentLoaded', () => {
   window.DWI18n.init();
-  window.DWMascot.init();
+  window.DWMascot.init({
+    onClick: () => { if (window.DWGuide) window.DWGuide.explain('landing', { force: true }); },
+  });
+  if (window.DWGuide) {
+    window.DWGuide.autoAttach();
+    setTimeout(() => window.DWGuide.explain('landing'), 1800);
+  }
 
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js').catch(() => {});

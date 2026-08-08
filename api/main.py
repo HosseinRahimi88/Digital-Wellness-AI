@@ -65,6 +65,7 @@ from api.routers import (
     parallel_twin,
     persona,
     plan,
+    progress,
     prediction,
     reports,
     schema,
@@ -174,6 +175,7 @@ def create_app() -> FastAPI:
     app.include_router(reports.router, prefix=settings.api_prefix)
     app.include_router(plan.router, prefix=settings.api_prefix)
     app.include_router(model_performance.router, prefix=settings.api_prefix)
+    app.include_router(progress.router, prefix=settings.api_prefix)
 
     # --- Static frontend (frontend/) ---
     # Mounted LAST and at "/" so it only ever catches requests that none

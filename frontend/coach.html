@@ -81,7 +81,7 @@
       </div>
 
       <!-- ===== Conversational coach ===== -->
-      <section class="card coach-chat-card" id="coachChatCard" style="margin-top:var(--space-6);">
+      <section class="card coach-chat-card" id="coachChatCard" data-guide="coach_chat" style="margin-top:var(--space-6);">
         <div class="coach-chat-head">
           <h3 id="coachChatTitle">Talk to your coach</h3>
           <button class="btn btn-ghost btn-sm" id="coachKeyToggle" aria-expanded="false" aria-controls="coachKeyPanel">
@@ -103,6 +103,8 @@
         </div>
 
         <div class="coach-chat-log" id="coachChatLog" role="log" aria-live="polite"></div>
+
+        <div class="coach-suggestions" id="coachSuggestions"></div>
 
         <form class="coach-chat-form" id="coachChatForm">
           <label class="sr-only" for="coachChatInput" id="coachInputLabel">Message</label>
@@ -145,6 +147,7 @@
 <script src="assets/js/music-player.js"></script>
 <script src="assets/js/api.js"></script>
 <script src="assets/js/shell.js"></script>
+<script src="assets/js/coach-knowledge.js"></script>
 <script src="assets/js/coach-chat.js"></script>
 <script src="assets/js/coach.js"></script>
 </body>

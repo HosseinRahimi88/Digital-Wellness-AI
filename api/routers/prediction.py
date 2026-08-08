@@ -22,13 +22,17 @@ from api.dependencies.services import (
 )
 from api.exceptions.errors import DomainValidationError
 from api.schemas.prediction import (
+    ConfidenceLabelResponse,
     DimensionBreakdownResponse,
+    OODReportResponse,
     PredictRequest,
     PredictResponse,
     RecommendationResponse,
     SHAPFeatureResponse,
     UncertaintyResponse,
 )
+from services.insight_service import InsightService
+from services.tone_service import frame_result
 from services.account_service import Account
 from services.prediction_service import PredictionService
 from services.recommendation_service import RecommendationService
@@ -61,6 +65,8 @@ def predict(
         excluded_categories=set(payload.excluded_recommendation_categories),
     )
     dimension_breakdown = compute_dimension_scores(validation.cleaned_data)
+    confidence_label = InsightService.confidence_label(result.confidence_percent, result.uncertainty)
+    ood = InsightService.check_out_of_distribution(validation.cleaned_data)
 
     persisted = False
     if payload.persist:
@@ -81,5 +87,8 @@ def predict(
         shap_features=[SHAPFeatureResponse.from_shap_feature(f) for f in result.shap_features],
         recommendations=[RecommendationResponse.from_recommendation(r) for r in recommendations],
         dimension_breakdown=DimensionBreakdownResponse(**dimension_breakdown),
+        confidence_label=ConfidenceLabelResponse.model_validate(confidence_label, from_attributes=True),
+        ood=OODReportResponse.model_validate(ood, from_attributes=True),
+        result_framing=frame_result(result.regression_score, account.recommendation_tone),
         persisted=persisted,
     )

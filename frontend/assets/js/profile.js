@@ -51,4 +51,198 @@ document.addEventListener('DOMContentLoaded', async () => {
       window.DWToast.error(e.message);
     }
   });
+
+  // ===================== AVATAR =====================
+  // Resized in the browser BEFORE upload: the account record stores the
+  // image inline, so sending a full-size camera photo would bloat the
+  // store. 256px square is plenty for every place it's displayed.
+  const AVATAR_PX = 256;
+
+  function renderAvatar(dataUrl) {
+    const circle = document.getElementById('avatarCircle');
+    if (dataUrl) {
+      circle.style.backgroundImage = `url("${dataUrl}")`;
+      circle.classList.add('has-image');
+      circle.textContent = '';
+    } else {
+      circle.style.backgroundImage = '';
+      circle.classList.remove('has-image');
+      circle.textContent = initials;
+    }
+  }
+  renderAvatar(account.avatar_data_url);
+
+  function downscaleToDataUrl(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onerror = () => reject(new Error('Could not read that file.'));
+      reader.onload = () => {
+        const img = new Image();
+        img.onerror = () => reject(new Error('That file is not a readable image.'));
+        img.onload = () => {
+          // Centre-crop to a square, then draw at AVATAR_PX.
+          const side = Math.min(img.width, img.height);
+          const sx = (img.width - side) / 2;
+          const sy = (img.height - side) / 2;
+          const canvasEl = document.createElement('canvas');
+          canvasEl.width = canvasEl.height = AVATAR_PX;
+          const ctx = canvasEl.getContext('2d');
+          ctx.drawImage(img, sx, sy, side, side, 0, 0, AVATAR_PX, AVATAR_PX);
+          resolve(canvasEl.toDataURL('image/jpeg', 0.85));
+        };
+        img.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  const avatarInput = document.getElementById('avatarInput');
+  document.getElementById('avatarEditBtn').addEventListener('click', () => avatarInput.click());
+  avatarInput.addEventListener('change', async (e) => {
+    const file = e.target.files && e.target.files[0];
+    avatarInput.value = '';
+    if (!file) return;
+    try {
+      const dataUrl = await downscaleToDataUrl(file);
+      await window.DWApi.saveProfileExtras({ avatar_data_url: dataUrl });
+      account.avatar_data_url = dataUrl;
+      renderAvatar(dataUrl);
+      window.DWToast.success(window.DWI18n.t('toast_saved'));
+      window.DWMascot.react('saved');
+    } catch (err) {
+      window.DWToast.error(err.message);
+    }
+  });
+
+  // ===================== TONE =====================
+  const TONE_KEYS = ['gentle', 'direct', 'clinical'];
+  let selectedTone = account.recommendation_tone || 'gentle';
+
+  function renderTones() {
+    const wrap = document.getElementById('toneOptions');
+    wrap.innerHTML = '';
+    TONE_KEYS.forEach((key) => {
+      const chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'chip-option' + (selectedTone === key ? ' selected' : '');
+      chip.textContent = window.DWI18n.t('tone_' + key);
+      chip.addEventListener('click', async () => {
+        selectedTone = key;
+        renderTones();
+        try {
+          await window.DWApi.saveProfileExtras({ recommendation_tone: key });
+          window.DWToast.success(window.DWI18n.t('toast_saved'));
+        } catch (err) { window.DWToast.error(err.message); }
+      });
+      wrap.appendChild(chip);
+    });
+  }
+  renderTones();
+  document.addEventListener('dwai:langchange', renderTones);
+
+  // ===================== PERSONA + BADGES =====================
+  try {
+    const identity = await window.DWApi.personaIdentity();
+    const body = document.getElementById('personaBody');
+    if (identity.primary) {
+      body.innerHTML = `
+        <div class="persona-primary">
+          <span class="persona-icon">${identity.primary.icon}</span>
+          <div>
+            <div class="persona-title">${identity.primary.title}</div>
+            <div class="persona-tagline">${identity.primary.tagline}</div>
+            <div class="persona-reason muted">${identity.primary.reason}</div>
+          </div>
+        </div>`;
+      const chipRow = document.getElementById('personaChipRow');
+      chipRow.innerHTML = `<span class="persona-mini-chip">${identity.primary.icon} ${identity.primary.title}</span>` +
+        identity.alternates.map((a) => `<span class="persona-mini-chip alt">${a.icon} ${a.title}</span>`).join('');
+      if (identity.alternates.length) {
+        const alts = document.createElement('p');
+        alts.className = 'muted dimension-hint';
+        alts.textContent = window.DWI18n.t('profile_persona_alts') + ' ' +
+          identity.alternates.map((a) => a.title).join(' · ');
+        body.appendChild(alts);
+      }
+    } else {
+      body.innerHTML = `<p class="muted">${window.DWI18n.t('profile_persona_empty')}</p>`;
+    }
+
+    const grid = document.getElementById('badgeGrid');
+    if (identity.badges.length) {
+      grid.innerHTML = identity.badges.map((b) =>
+        `<div class="badge-tile" title="${b.description}"><span class="badge-icon">${b.icon}</span><span class="badge-label">${b.label}</span></div>`
+      ).join('');
+    } else {
+      grid.innerHTML = `<p class="muted">${window.DWI18n.t('profile_badges_empty')}</p>`;
+    }
+  } catch (e) {
+    document.getElementById('personaCard').classList.add('hidden');
+    document.getElementById('badgeCard').classList.add('hidden');
+  }
+
+  // ===================== PROGRESS =====================
+  try {
+    const progress = await window.DWApi.progressSummary();
+    const stats = document.getElementById('progressStats');
+    stats.innerHTML = `
+      <div class="progress-stat"><span class="val">${progress.current_streak}</span><span class="lbl">${window.DWI18n.t('progress_streak')}</span></div>
+      <div class="progress-stat"><span class="val">${progress.longest_streak}</span><span class="lbl">${window.DWI18n.t('progress_longest')}</span></div>
+      <div class="progress-stat"><span class="val">${progress.entry_count}</span><span class="lbl">${window.DWI18n.t('progress_entries')}</span></div>`;
+
+    const winsWrap = document.getElementById('smallWinsWrap');
+    if (progress.small_wins.length) {
+      winsWrap.innerHTML = `<h4 class="progress-sub">${window.DWI18n.t('progress_wins')}</h4>` +
+        progress.small_wins.map((w) => {
+          const dir = w.higher_is_better ? '▲' : '▼';
+          return `<div class="small-win"><span class="win-dir">${dir}</span> ${w.label}: ${w.previous_value} → <strong>${w.current_value}</strong></div>`;
+        }).join('');
+    }
+
+    const baWrap = document.getElementById('beforeAfterWrap');
+    const ba = progress.before_after;
+    if (ba && ba.available) {
+      const arrow = ba.delta >= 0 ? '▲ +' : '▼ ';
+      const note = ba.is_meaningful ? '' : ` <span class="muted">(${window.DWI18n.t('progress_within_noise')})</span>`;
+      baWrap.innerHTML = `<h4 class="progress-sub">${window.DWI18n.t('progress_before_after')}</h4>
+        <p class="muted">${ba.before_avg_score} → <strong>${ba.after_avg_score}</strong> &nbsp; ${arrow}${Math.abs(ba.delta).toFixed(1)}${note}</p>`;
+    }
+  } catch (e) {
+    document.getElementById('progressCard').classList.add('hidden');
+  }
+
+  // ===================== PRIVACY =====================
+  document.getElementById('exportDataBtn').addEventListener('click', async (e) => {
+    e.preventDefault();
+    try {
+      const blob = await window.DWApi.exportMyData();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'digital_wellness_my_data.json';
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      window.DWToast.error(err.message);
+    }
+  });
+  document.getElementById('deleteDataBtn').addEventListener('click', async () => {
+    // Destructive and irreversible - require an explicit typed
+    // confirmation rather than a single click.
+    const expected = (account.email || '').trim();
+    const typed = window.prompt(window.DWI18n.t('profile_delete_confirm').replace('{email}', expected));
+    if (typed === null) return;
+    if (typed.trim().toLowerCase() !== expected.toLowerCase()) {
+      window.DWToast.error(window.DWI18n.t('profile_delete_mismatch'));
+      return;
+    }
+    try {
+      await window.DWApi.deleteMyData();
+      window.DWApi.clearToken();
+      window.DWToast.success(window.DWI18n.t('profile_delete_done'));
+      setTimeout(() => { location.href = 'index.html'; }, 1200);
+    } catch (err) {
+      window.DWToast.error(err.message);
+    }
+  });
 });

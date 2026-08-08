@@ -114,6 +114,29 @@ class DimensionBreakdownResponse(BaseModel):
     overall: float | None
 
 
+class ConfidenceLabelResponse(BaseModel):
+    level: str
+    percent: float
+    headline: str
+    detail: str
+    interval_width: float | None = None
+
+
+class OODFlagResponse(BaseModel):
+    field_name: str
+    label: str
+    value: float
+    minimum: float
+    maximum: float
+    position: str
+
+
+class OODReportResponse(BaseModel):
+    is_out_of_distribution: bool
+    flags: list[OODFlagResponse]
+    message: str
+
+
 class PredictResponse(BaseModel):
     prediction: str
     confidence: float | None
@@ -127,4 +150,7 @@ class PredictResponse(BaseModel):
     shap_features: list[SHAPFeatureResponse]
     recommendations: list[RecommendationResponse]
     dimension_breakdown: DimensionBreakdownResponse
+    confidence_label: ConfidenceLabelResponse
+    ood: OODReportResponse
+    result_framing: str
     persisted: bool

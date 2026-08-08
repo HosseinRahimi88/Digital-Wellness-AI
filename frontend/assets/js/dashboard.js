@@ -41,6 +41,18 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   document.getElementById('statEntries').textContent = entries.length;
 
+  // Cold-start honesty: say which of this page's history-dependent
+  // views are actually meaningful yet, instead of rendering a thin
+  // trend line with no caveat.
+  try {
+    const ins = await window.DWApi.insights();
+    const note = document.getElementById('coldStartNote');
+    if (note && ins.cold_start && ins.cold_start.stage !== 'established') {
+      note.textContent = ins.cold_start.message;
+      note.classList.remove('hidden');
+    }
+  } catch (e) { /* insights are additive - never block the dashboard */ }
+
   // ---- Weekly heatmap (Mon..Sun of the current ISO week) ----
   const heatmap = document.getElementById('heatmapRow');
   const byDate = {};

@@ -127,6 +127,7 @@
       unknown: "I'm not sure I follow. Try asking about your score, sleep, focus, notifications, or what to change first.",
       clarify: "Can you say a bit more? For example: your overall score, a specific area like sleep or focus, or what to work on first.",
       trendUnavailable: "I only have your most recent check-in loaded here, not your history, so I can't honestly tell you whether you're trending up or down — that would be a guess. Check the Dashboard or Analytics page for your real trend over time.",
+      noDataSuffix: "That's the general picture. Run a check-in and I can make it specific to your actual numbers instead.",
     },
     fa: {
       crisis: 'من نمی‌توانم در این مورد کمک کنم و نمی‌خواهم وانمود کنم که می‌توانم. لطفاً با یک متخصص واجد شرایط یا خط کمک بحران تماس بگیر — صحبت با یک انسان واقعی از هر چیزی که من اینجا ارائه می‌دهم مهم‌تر است. اگر در خطر فوری هستی، با شماره‌ی اورژانس محلی تماس بگیر.',
@@ -138,6 +139,7 @@
       unknown: 'دقیقاً متوجه نشدم. درباره‌ی امتیازت، خواب، تمرکز، اعلان‌ها، یا اینکه اول چه چیزی را تغییر بدهی بپرس.',
       clarify: 'می‌شه کمی بیشتر توضیح بدی؟ مثلاً: امتیاز کلی‌ات، یک حوزه‌ی خاص مثل خواب یا تمرکز، یا اینکه اول روی چی کار کنی.',
       trendUnavailable: 'من فقط آخرین بررسی‌ات را اینجا بارگذاری کرده‌ام، نه کل تاریخچه‌ات — پس نمی‌توانم صادقانه بگویم روند تو رو به بهبود است یا نه؛ این فقط حدس می‌شد. برای روند واقعی در طول زمان، صفحه‌ی داشبورد یا تحلیل‌ها را ببین.',
+      noDataSuffix: 'این تصویر کلی است. یک بررسی انجام بده تا بتوانم آن را مخصوص اعداد واقعی خودت کنم.',
     },
   };
   function copy() {
@@ -148,6 +150,16 @@
   function labelFor(feature) {
     const map = (window.DWCoachLabels || {});
     return map[feature] || String(feature).replace(/_/g, ' ');
+  }
+
+  /* General digital-wellbeing knowledge, independent of the user's own
+     numbers. Returns null when nothing matches, so the caller can fall
+     through to a data-driven answer or a clarifying question. */
+  function knowledgeAnswer(text) {
+    const kb = window.DWCoachKnowledge;
+    if (!kb) return null;
+    const lang = (window.DWI18n && window.DWI18n.get()) || 'en';
+    return kb.textFor(kb.findTopic(text), lang);
   }
 
   /* ---- Local rule-based responder over the user's real data ---- */
@@ -162,7 +174,16 @@
     if (CRISIS_PATTERNS.some((re) => re.test(q))) return { text: c.crisis, kind: 'crisis' };
     if (MEDICAL_HINTS.some((re) => re.test(q))) return { text: c.medical, kind: 'refusal' };
     if (OFF_TOPIC_HINTS.some((re) => re.test(q))) return { text: c.offtopic, kind: 'refusal' };
-    if (!ctx) return { text: c.noData, kind: 'info' };
+
+    // Without a loaded check-in the coach can still be genuinely useful:
+    // it answers general digital-wellbeing questions from the knowledge
+    // base, and only says "I have no data" for questions that are
+    // specifically about the user's own numbers.
+    if (!ctx) {
+      const general = knowledgeAnswer(q);
+      if (general) return { text: general + '\n\n' + c.noDataSuffix, kind: 'answer' };
+      return { text: c.noData, kind: 'info' };
+    }
 
     const lang = (window.DWI18n && window.DWI18n.get()) || 'en';
     const fa = lang === 'fa';
@@ -179,6 +200,15 @@
     // silently ignore that they actually asked about change over time,
     // which this session-only context has no honest way to answer.
     if (TREND_HINTS.some((re) => re.test(q))) return { text: c.trendUnavailable, kind: 'info' };
+
+    // "How is my score calculated?" is a question about the METHOD, not
+    // a request for the number - it just happens to contain the word
+    // "score". Route those to the explainer before the snapshot branch,
+    // otherwise the user asks how it works and gets told what it is.
+    if (/\b(how|what|why).{0,30}(calculat|comput|work|derive|mean|made|based on)|چطور.{0,20}(محاسبه|حساب|کار)|یعنی چ/i.test(q)) {
+      const explainer = knowledgeAnswer(q);
+      if (explainer) return { text: explainer, kind: 'answer' };
+    }
 
     if (asks(/score|رتبه|امتیاز|نتیجه|how did i|چطور شد/i)) {
       return {
@@ -202,14 +232,16 @@
       const rec = (ctx.recommendations || []).find((r) =>
         new RegExp(q.split(/\s+/).filter((w) => w.length > 3).join('|') || 'zzz', 'i').test(r.title + ' ' + r.category));
       const target = rec || firstRec;
-      return {
-        text: target
-          ? (fa ? `درباره‌ی این موضوع، توصیه‌ی فعلی‌ات این است: «${target.title}» — ${target.action}`
-                : `On that, your current recommendation is: ${target.title} — ${target.action}`)
-          : (fa ? 'در این حوزه توصیه‌ی فعالی برایت ثبت نشده. می‌توانی درباره‌ی امتیاز کلی‌ات بپرسی.'
-                : "You have no active recommendation in that area. You can ask about your overall score instead."),
-        kind: 'answer',
-      };
+      // Answer with BOTH: what this user's own data says, then the
+      // general knowledge for that topic. Personal first, because that
+      // is the part only this app can give them.
+      const personal = target
+        ? (fa ? `درباره‌ی این موضوع، توصیه‌ی فعلی‌ات این است: «${target.title}» — ${target.action}`
+              : `On that, your current recommendation is: ${target.title} — ${target.action}`)
+        : (fa ? 'در این حوزه توصیه‌ی فعالی برایت ثبت نشده — یعنی مدل اینجا مشکلی پیدا نکرده.'
+              : "You have no active recommendation in that area, which means the model didn't flag a problem there.");
+      const general = knowledgeAnswer(q);
+      return { text: general ? `${personal}\n\n${general}` : personal, kind: 'answer' };
     }
     if (asks(/strength|doing well|good at|what.{0,15}good|قوت|چی.{0,10}خوبه|خوب.{0,10}چیه/i) && (SELF_REFERENCE.test(q) || asks(/strength|قوت/i)) && best) {
       return {
@@ -225,6 +257,13 @@
         kind: 'answer',
       };
     }
+    // Nothing above matched the user's OWN data. Before giving up, try
+    // the general knowledge base - a question like "how do I build a
+    // habit?" is squarely in scope even though it isn't about their
+    // numbers, and refusing it would make the coach feel useless.
+    const general = knowledgeAnswer(q);
+    if (general) return { text: general, kind: 'answer' };
+
     // A bare "why" with no self-reference (e.g. "why is the sky blue")
     // isn't a wellness question - falls through here instead of
     // guessing what they meant. A very short message (e.g. just "help"

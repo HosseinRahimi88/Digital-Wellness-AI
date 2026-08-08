@@ -15,6 +15,21 @@
 .app-nav-link:hover { background: var(--surface); color: var(--text-primary); }
 .app-nav-link.active { background: linear-gradient(90deg, var(--neon-cyan), var(--neon-blue)); color: #04140f; }
 
+/* ---- AI Coach starter prompts ---- */
+.coach-suggestions { display: flex; flex-wrap: wrap; gap: 8px; margin: var(--space-3) 0; }
+.coach-suggestion {
+  font-family: var(--font-label); font-size: .76rem; cursor: pointer;
+  padding: 6px 12px; border-radius: var(--radius-pill);
+  background: var(--glass-bg); border: 1px solid var(--glass-border);
+  color: var(--text-secondary);
+  transition: color var(--dur-fast), border-color var(--dur-fast), transform var(--dur-fast);
+}
+.coach-suggestion:hover, .coach-suggestion:focus-visible {
+  color: var(--text-primary); border-color: var(--neon-cyan); transform: translateY(-1px);
+}
+.force-reduce-motion .coach-suggestion { transition: none; }
+.force-reduce-motion .coach-suggestion:hover { transform: none; }
+
 .nav-icon {
   width: 16px; height: 16px; flex-shrink: 0;
   fill: none; stroke: currentColor; stroke-width: 1.7;
@@ -64,6 +79,61 @@
   font-family: var(--font-display); font-size: 1.4rem; font-weight: 700; flex-shrink: 0;
 }
 .profile-head { display: flex; align-items: center; gap: var(--space-4); margin-bottom: var(--space-6); }
+
+/* ---- Avatar with in-place edit ---- */
+.avatar-wrap { position: relative; flex-shrink: 0; }
+.avatar-circle.has-image { background-size: cover; background-position: center; color: transparent; }
+.avatar-edit-btn {
+  position: absolute; bottom: -2px; inset-inline-end: -2px;
+  width: 26px; height: 26px; border-radius: 50%; cursor: pointer;
+  display: grid; place-items: center; font-size: .72rem; line-height: 1;
+  background: var(--chrome-bg); border: 1px solid var(--surface-border);
+  color: var(--text-secondary);
+  transition: color var(--dur-fast), border-color var(--dur-fast);
+}
+.avatar-edit-btn:hover, .avatar-edit-btn:focus-visible { color: var(--neon-cyan); border-color: var(--neon-cyan); }
+
+/* ---- Persona ---- */
+.persona-chip-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.persona-mini-chip {
+  font-size: .7rem; font-family: var(--font-label); padding: 3px 10px;
+  border-radius: var(--radius-pill); background: var(--glass-bg);
+  border: 1px solid var(--glass-border); color: var(--text-secondary);
+}
+.persona-mini-chip.alt { opacity: .7; }
+.persona-card { margin-bottom: var(--space-5); }
+.persona-primary { display: flex; gap: var(--space-4); align-items: flex-start; margin-top: 12px; }
+.persona-icon { font-size: 2.4rem; line-height: 1; flex-shrink: 0; }
+.persona-title { font-family: var(--font-display); font-size: 1.15rem; font-weight: 700; }
+.persona-tagline { font-size: .88rem; color: var(--text-secondary); margin-top: 2px; }
+.persona-reason { font-size: .76rem; margin-top: 6px; font-family: var(--font-mono); }
+
+/* ---- Badges ---- */
+.badge-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+.badge-tile {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  min-width: 84px; padding: 12px 10px; border-radius: var(--radius-md);
+  background: var(--glass-bg); border: 1px solid var(--glass-border); cursor: help;
+}
+.badge-icon { font-size: 1.5rem; line-height: 1; }
+.badge-label { font-size: .68rem; font-family: var(--font-label); color: var(--text-secondary); text-align: center; }
+
+/* ---- Progress ---- */
+.progress-stat-row { display: flex; flex-wrap: wrap; gap: var(--space-5); margin: 12px 0 var(--space-4); }
+.progress-stat { display: flex; flex-direction: column; }
+.progress-stat .val { font-family: var(--font-display); font-size: 1.6rem; font-weight: 700; color: var(--neon-cyan); }
+.progress-stat .lbl { font-size: .7rem; font-family: var(--font-label); color: var(--text-muted); text-transform: uppercase; letter-spacing: .06em; }
+.progress-sub { font-size: .82rem; font-family: var(--font-label); margin: var(--space-4) 0 6px; color: var(--text-secondary); }
+.small-win { font-size: .82rem; padding: 4px 0; }
+.small-win .win-dir { color: var(--accent-success); font-weight: 700; }
+
+.privacy-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+
+.cold-start-note {
+  font-size: .8rem; line-height: 1.55; margin: 0 0 var(--space-3);
+  padding: var(--space-3) var(--space-4); border-radius: var(--radius-md);
+  background: var(--glass-bg); border: 1px dashed var(--glass-border);
+}
 
 .about-hero { text-align: center; padding: var(--space-6) 0; }
 .tech-chip-row { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: var(--space-4); }

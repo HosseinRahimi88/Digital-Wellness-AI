@@ -99,6 +99,18 @@
       return request('/history/import-csv', { method: 'POST', body: form, isFormData: true });
     },
     csvTemplateUrl: () => getBase() + '/schema/csv-template',
+
+    // Progress / identity / privacy
+    progressSummary: () => request('/progress/summary'),
+    insights: () => request('/insights'),
+    personaIdentity: () => request('/personas/identity'),
+    dataDictionary: () => request('/schema/data-dictionary', { auth: false }),
+    saveProfileExtras: (payload) => request('/auth/me/profile-extras', { method: 'PUT', body: payload }),
+    // Fetched rather than linked: the export endpoint is authenticated,
+    // and a plain <a href> cannot carry the Authorization header, so a
+    // direct link would just 401. Returns a Blob the caller saves.
+    exportMyData: () => request('/privacy/export.json', { isBlob: true }),
+    deleteMyData: () => request('/privacy/me', { method: 'DELETE' }),
     analyticsSummary: () => request('/analytics/summary'),
 
     personaAssign: (user_data) => request('/personas/assign', { method: 'POST', body: { user_data } }),

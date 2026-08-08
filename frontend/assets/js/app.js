@@ -312,6 +312,14 @@
     $('#wizardBack').disabled = state.stepIndex === 0;
     const isLast = state.stepIndex === window.DWSchema.STEPS.length - 1;
     $('#wizardNext').textContent = isLast ? window.DWI18n.t('predict_submit') : window.DWI18n.t('predict_next');
+
+    // The guide explains each wizard step the first time it's reached,
+    // so a first-time user is told what a screen is asking for and why
+    // it matters rather than facing a bare form.
+    if (window.DWGuide) {
+      window.DWGuide.autoAttach(fieldsWrap);
+      setTimeout(() => window.DWGuide.explain('wizard_' + step.key), 450);
+    }
   }
 
   function resetWizard() {
@@ -507,7 +515,9 @@
 
     state.lastResult = result;
     const summaryEl = $('#resultNarrative');
-    if (summaryEl) summaryEl.textContent = narrativeSummary(result);
+    // Prefer the server's tone-aware framing (it knows the user's saved
+    // tone preference); fall back to the local narrative when absent.
+    if (summaryEl) summaryEl.textContent = result.result_framing || narrativeSummary(result);
 
     // Ring is drawn like a pen stroke; the number counts up to the exact
     // same value the API returned (no rounding change vs. before).
@@ -529,6 +539,25 @@
       decimals: 0, duration: 1200, format: (v) => `${Math.round(v)}%`,
     });
     $('#personaLine').textContent = '';
+
+    // Plain-language confidence reading, and an honest warning when the
+    // inputs sit at the edge of what the model has actually seen.
+    const cl = result.confidence_label;
+    const clEl = $('#confidenceLabel');
+    if (clEl && cl) {
+      clEl.className = `confidence-label level-${cl.level}`;
+      clEl.innerHTML = `<strong>${cl.headline}</strong> ${cl.detail}`;
+    }
+    const oodEl = $('#oodWarning');
+    if (oodEl) {
+      const ood = result.ood;
+      if (ood && ood.is_out_of_distribution) {
+        oodEl.textContent = '⚠️ ' + ood.message;
+        oodEl.classList.remove('hidden');
+      } else {
+        oodEl.classList.add('hidden');
+      }
+    }
 
     const u = result.uncertainty;
     const uNote = $('#uncertaintyNote');
@@ -684,9 +713,17 @@
   document.addEventListener('DOMContentLoaded', () => {
     window.DWI18n.init();
     window.DWMascot.init({
-      onClick: () => { if (window.DWGuide) window.DWGuide.explain('checkin', { force: true }); },
+      // Tapping the mascot re-explains whichever view is on screen, so
+      // the guide is reachable at every point in the flow.
+      onClick: () => {
+        if (!window.DWGuide) return;
+        const view = document.querySelector('.view.active');
+        const topic = view && view.id === 'view-result' ? 'result_ring' : 'checkin';
+        window.DWGuide.explain(topic, { force: true });
+      },
     });
     window.DWMusic.init();
+    if (window.DWGuide) window.DWGuide.autoAttach();
 
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('sw.js').catch(() => {});

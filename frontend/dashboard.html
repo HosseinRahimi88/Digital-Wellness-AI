@@ -65,16 +65,17 @@
 
       <div id="dashContent" class="hidden">
         <div class="grid-3" style="margin-bottom:var(--space-5);">
-          <div class="card stat-tile reveal is-visible">
+          <p class="muted cold-start-note hidden" id="coldStartNote" style="grid-column:1/-1;"></p>
+          <div class="card stat-tile reveal is-visible" data-guide="dash_score">
             <div class="val" id="statLastScore">--</div>
             <div class="lbl" data-i18n="dash_last_score">Last Score</div>
             <div class="delta" id="statDelta"></div>
           </div>
-          <div class="card stat-tile reveal is-visible">
+          <div class="card stat-tile reveal is-visible" data-guide="dash_week_avg">
             <div class="val" id="statWeekAvg">--</div>
             <div class="lbl" data-i18n="dash_week_avg">This Week's Avg</div>
           </div>
-          <div class="card stat-tile reveal is-visible">
+          <div class="card stat-tile reveal is-visible" data-guide="dash_entries">
             <div class="val" id="statEntries">--</div>
             <div class="lbl" data-i18n="dash_entries">Check-ins Logged</div>
           </div>
@@ -87,18 +88,18 @@
               <div class="heatmap-day-label">Mon</div><div class="heatmap-day-label">Tue</div><div class="heatmap-day-label">Wed</div>
               <div class="heatmap-day-label">Thu</div><div class="heatmap-day-label">Fri</div><div class="heatmap-day-label">Sat</div><div class="heatmap-day-label">Sun</div>
             </div>
-            <div class="heatmap-row" id="heatmapRow"></div>
+            <div class="heatmap-row" id="heatmapRow" data-guide="dash_heatmap"></div>
             <p class="muted" style="font-size:.78rem;margin-top:10px;" id="topFeatureLine"></p>
           </div>
 
           <div class="card">
             <h3 data-i18n="dash_rec_title">From Your Last Check-in</h3>
-            <div id="dashRecs"></div>
+            <div id="dashRecs" data-guide="dash_recs"></div>
             <a class="btn btn-ghost btn-sm" href="coach.html" style="margin-top:10px;" data-i18n="dash_see_coach">See full AI Coach →</a>
           </div>
         </div>
 
-        <div class="card" style="margin-top:var(--space-5);" id="cohortCard">
+        <div class="card" style="margin-top:var(--space-5);" id="cohortCard" data-guide="dash_cohort">
           <h3 data-i18n="dash_cohort_title">You vs. Everyone Else</h3>
           <div id="cohortRows"></div>
         </div>

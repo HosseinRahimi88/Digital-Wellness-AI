@@ -15,7 +15,19 @@
     jumps straight to the result. Nothing is gated behind the animation.
 */
 (function () {
-  const MIN_SHOW_MS = 2800;
+  /* Minimum time the narrated sequence stays on screen.
+     Raised from 2.8s to 9s on an explicit product decision: the steps
+     are real work descriptions and the rotating cards teach something,
+     so the screen is content rather than a spinner - and in practice a
+     real SHAP-explained prediction often takes longer than this anyway,
+     in which case the floor never applies at all.
+     Two guarantees keep this honest and keep it from being a fake wait:
+       - it is a FLOOR, never a ceiling: if the request finishes sooner
+         the screen still respects the floor, but if it takes longer the
+         screen keeps waiting rather than pretending it finished;
+       - it is always skippable (click / Esc / Enter / Space), so nobody
+         is ever held here against their will. */
+  const MIN_SHOW_MS = 9000;
 
   const STEPS = {
     predict: {
@@ -166,7 +178,10 @@
       setTimeout(apply, 260);
     }
     showTip();
-    const tipTimer = reduced ? null : setInterval(showTip, 3400);
+    // Paced so roughly three different cards are seen across the
+    // minimum window - long enough to actually read one, short enough
+    // that the screen never feels stalled.
+    const tipTimer = reduced ? null : setInterval(showTip, 3000);
 
     let stepIdx = -1;
     function advance(to) {

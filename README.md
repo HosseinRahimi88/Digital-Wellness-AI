@@ -15,9 +15,15 @@ Digital Wellness AI is a full-stack machine learning application that predicts a
 - **Uncertainty-aware** — split-conformal prediction intervals and a plain-language confidence label, not just a raw probability.
 - **AI Coach** — a local, rule-based conversational layer that answers questions using the user's *own* real prediction data, with crisis/medical guardrails and an honest "I don't have enough data for that" fallback. No mandatory external LLM dependency.
 - **Persona detection** — unsupervised clustering surfaces a behavioral persona (e.g. "Fragmented-Attention Night-Owl") independent of the risk prediction.
-- **Progress tracking** — history, weekly rule-based improvement plans, streaks, and a downloadable PDF wellness report.
+- **Weekly plans & reports** — history, rule-based 7-day improvement plans, and a downloadable PDF wellness report.
 - **What-if simulation & Future Paths** — sweep a single habit, goal-seek a target score, or compare named future scenarios (Status Quo vs. Digital Detox, etc.) using the real trained model.
 - **Multilingual & accessible** — English/Arabic/Chinese/Persian (with full RTL support), dark/light themes, and a `prefers-reduced-motion`-aware UI.
+- **Digital Guide** — a contextual help layer that explains every page, every section and every check-in step on demand, in English or Persian.
+- **Persona identity & badges** — a transparent, rule-based archetype ("The Night Owl", "The Deep Worker", …) with the exact numbers that earned it, shown alongside the statistical ML persona.
+- **Progress tracking** — small wins, personal bests, streaks, before/after comparison and a decision replay of how you got here.
+- **Trust signals** — a plain-language confidence label, an out-of-distribution warning when inputs sit at the edge of what the model has seen, and an honest cold-start status.
+- **Bulk CSV import** — download a filled template, log several days at once, and every valid row runs a real prediction into your history.
+- **Privacy controls** — export everything stored about you as a file, or delete your account and history permanently.
 - **Privacy-first** — predictions are computed from the user's own data only; nothing is sold or shared; any optional AI Coach API key lives in memory for the browser tab only and is never persisted or transmitted.
 
 ---
@@ -155,6 +161,16 @@ Full interactive documentation (with live request/response trying) is always ava
 | `POST` | `/plan` · `PUT` `/plan/tasks` | Generate / update the rule-based weekly improvement plan |
 | `GET` | `/model-performance` | Real, current model metrics (accuracy, R², etc.) |
 | `POST` | `/reports/pdf` | Generate a downloadable PDF wellness report |
+| `GET` | `/schema/csv-template` | Download the bulk-import CSV template (with filled examples) |
+| `POST` | `/history/import-csv` | Bulk-import several days from a CSV |
+| `PUT` | `/history/{date}/exclude` | Mute/unmute one day from trend and average calculations |
+| `GET` | `/schema/data-dictionary` | Plain-language docs for every input field |
+| `GET` | `/progress/summary` | Small wins, personal bests, before/after, decision replay |
+| `GET` | `/insights` | Cold-start status and per-weekday reliability |
+| `GET` | `/personas/identity` | Rule-based persona title, alternates and earned badges |
+| `PUT` | `/auth/me/profile-extras` | Save avatar and recommendation tone |
+| `GET` | `/privacy/export` · `/privacy/export.json` | Export everything stored about you |
+| `DELETE` | `/privacy/me` | Permanently delete account and all history |
 
 All endpoints except `/health*`, `/auth/register`, and `/auth/login` require a `Authorization: Bearer <token>` header.
 
@@ -165,7 +181,7 @@ All endpoints except `/health*`, `/auth/register`, and `/auth/login` require a `
 ```bash
 python3 -m pytest tests/ -v
 ```
-The suite covers the ML pipeline, validation, recommendations, auth/JWT (including attack vectors), concurrency, and API integration — 372 tests in total. A handful of tests that require the raw training CSVs (not committed, see `.gitignore`) will report `FileNotFoundError` unless you place your own `data/{train,validation,test}.csv`; every other test runs standalone against the committed model artifacts.
+The suite covers the ML pipeline, validation, recommendations, auth/JWT (including attack vectors), concurrency, and API integration — 408 tests in total. A handful of tests that require the raw training CSVs (not committed, see `.gitignore`) will report `FileNotFoundError` unless you place your own `data/{train,validation,test}.csv`; every other test runs standalone against the committed model artifacts.
 
 ---
 

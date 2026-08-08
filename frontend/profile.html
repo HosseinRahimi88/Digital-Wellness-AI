@@ -47,12 +47,38 @@
 
   <main class="app-main">
     <div class="container page-wrap">
-      <div class="profile-head">
-        <div class="avatar-circle" id="avatarCircle">?</div>
+      <div class="profile-head" data-guide="profile_avatar">
+        <div class="avatar-wrap">
+          <div class="avatar-circle" id="avatarCircle">?</div>
+          <button type="button" class="avatar-edit-btn" id="avatarEditBtn" data-i18n-title="profile_avatar_change" title="Change picture" aria-label="Change picture">📷</button>
+          <input type="file" id="avatarInput" accept="image/*" class="hidden" />
+        </div>
         <div>
           <h1 style="margin-bottom:2px;" data-account-name>—</h1>
           <p class="muted" data-account-email style="margin:0;">—</p>
+          <div class="persona-chip-row" id="personaChipRow"></div>
         </div>
+      </div>
+
+      <!-- Persona identity -->
+      <div class="card persona-card" id="personaCard" data-guide="profile_persona">
+        <h3 data-i18n="profile_persona_title">Your persona</h3>
+        <div id="personaBody" class="persona-body"></div>
+      </div>
+
+      <!-- Badges -->
+      <div class="card" id="badgeCard" data-guide="profile_badges">
+        <h3 data-i18n="profile_badges_title">Badges earned</h3>
+        <p class="muted dimension-hint" data-i18n="profile_badges_hint">Each one comes from a real logged value — hover to see what it required.</p>
+        <div class="badge-grid" id="badgeGrid"></div>
+      </div>
+
+      <!-- Progress: streaks, personal bests, small wins -->
+      <div class="card" id="progressCard">
+        <h3 data-i18n="profile_progress_title">Your progress</h3>
+        <div class="progress-stat-row" id="progressStats"></div>
+        <div id="smallWinsWrap"></div>
+        <div id="beforeAfterWrap"></div>
       </div>
 
       <div class="card" style="margin-bottom:var(--space-5);">
@@ -70,6 +96,23 @@
           <div id="scheduleOptions"></div>
         </div>
         <button class="btn btn-primary btn-shine" id="saveProfileBtn" style="margin-top:var(--space-5);" data-i18n="profile_save">Save changes</button>
+      </div>
+
+      <!-- Tone -->
+      <div class="card" style="margin-bottom:var(--space-5);" data-guide="profile_tone">
+        <h3 data-i18n="profile_tone_title">How should advice sound?</h3>
+        <p class="muted dimension-hint" data-i18n="profile_tone_hint">Wording only — this never changes which recommendations you get or their priority.</p>
+        <div class="intake-chips" id="toneOptions"></div>
+      </div>
+
+      <!-- Privacy -->
+      <div class="card" style="margin-bottom:var(--space-5);" data-guide="privacy_controls">
+        <h3 data-i18n="profile_privacy_title">Your data</h3>
+        <p class="muted dimension-hint" data-i18n="profile_privacy_hint">Everything this app stores about you is yours to take or erase.</p>
+        <div class="privacy-actions">
+          <a class="btn btn-ghost btn-sm" id="exportDataBtn" href="#" data-i18n="profile_export">⬇️ Export my data</a>
+          <button type="button" class="btn btn-danger btn-sm" id="deleteDataBtn" data-i18n="profile_delete">🗑️ Delete my account</button>
+        </div>
       </div>
 
       <div class="card">

@@ -84,11 +84,25 @@
     els.forEach((el) => io.observe(el));
   }
 
-  /* ---- Wave-filling bars ----------------------------------------- *
-     A bar is a <div class="wave-bar"> with a --fill (0..1). The liquid
-     surface is drawn on a tiny canvas so the crest can keep a small
-     residual ripple after settling, which pure CSS cannot do.
-     Fill only starts once the bar scrolls into view.                  */
+  /* ---- Glass progress bars ---------------------------------------- *
+     A bar is a <div class="wave-bar"> whose fill is a single child
+     element animated by a CSS transform.
+
+     This replaced an earlier canvas "liquid wave" renderer. Two reasons
+     the canvas version was retired, both worth keeping written down:
+       1. Product direction - the wave read as dated next to the rest of
+          the glass UI, and the per-frame ripple kept drawing forever on
+          every visible bar even after settling.
+       2. Cost - every bar held its own rAF loop and 2D context for an
+          animation that conveys exactly one number. A GPU-composited
+          transform gives the same information for effectively no
+          per-frame main-thread work.
+
+     The public signature is unchanged (waveFill / waveFillOnView), so
+     every existing call site keeps working untouched. `vertical` bars
+     grow upward; horizontal bars grow from the inline-start edge, which
+     is automatically the right edge in RTL because the fill is anchored
+     with `inset-inline-start`.                                        */
   function waveFill(el, ratio, opts) {
     opts = opts || {};
     const delay = opts.delay || 0;
@@ -96,146 +110,39 @@
     const target = Math.max(0, Math.min(1, ratio || 0));
     const vertical = !!opts.vertical;
 
-    if (el.__waveStop) el.__waveStop();
+    // Retire any canvas left over from the previous renderer so a bar
+    // re-rendered in the same session doesn't stack the two.
+    if (el.__waveStop) { el.__waveStop(); el.__waveStop = null; }
+    const legacyCanvas = el.querySelector('canvas.wave-surface');
+    if (legacyCanvas) legacyCanvas.remove();
+
+    let fill = el.querySelector('.glass-fill');
+    if (!fill) {
+      fill = document.createElement('span');
+      fill.className = 'glass-fill';
+      fill.setAttribute('aria-hidden', 'true');
+      el.appendChild(fill);
+    }
+    el.classList.toggle('is-vertical', vertical);
+    el.classList.add('is-filled');
+    el.style.setProperty('--fill', target);
+
+    const axis = vertical ? 'scaleY' : 'scaleX';
+    // Start collapsed, then grow. Set the start state without a
+    // transition so it can never animate backwards from a stale value.
+    fill.style.transition = 'none';
+    fill.style.transform = `${axis}(0)`;
 
     if (prefersReduced()) {
-      // Show the value immediately, no travel, no ripple.
-      el.style.setProperty('--fill', target);
-      el.classList.add('is-filled');
+      // Final value immediately - the number is never withheld.
+      fill.style.transform = `${axis}(${target})`;
       return;
     }
 
-    let canvas = el.querySelector('canvas.wave-surface');
-    if (!canvas) {
-      canvas = document.createElement('canvas');
-      canvas.className = 'wave-surface';
-      canvas.setAttribute('aria-hidden', 'true');
-      el.appendChild(canvas);
-    }
-    const ctx = canvas.getContext('2d');
-
-    let raf = null, startTs = null, current = 0, stopped = false;
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
-
-    function size() {
-      const r = el.getBoundingClientRect();
-      canvas.width = Math.max(1, Math.round(r.width * dpr));
-      canvas.height = Math.max(1, Math.round(r.height * dpr));
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      return r;
-    }
-    let rect = size();
-
-    // A bar rendered while its container is still display:none measures
-    // 0x0 and would draw nothing forever. Re-measure once it actually
-    // has a box, then carry on.
-    if (rect.width < 2 || rect.height < 1) {
-      const ro = new ResizeObserver(() => {
-        const r = size();
-        if (r.width >= 2 && r.height >= 1) { rect = r; ro.disconnect(); }
-      });
-      ro.observe(el);
-    }
-
-    function palette() {
-      const s = getComputedStyle(el);
-      return {
-        a: (s.getPropertyValue('--wave-a') || '#22f5c6').trim(),
-        b: (s.getPropertyValue('--wave-b') || '#3aa7ff').trim(),
-      };
-    }
-
-    function draw(ts) {
-      if (stopped) return;
-      if (startTs === null) startTs = ts + delay;
-      const elapsed = ts - startTs;
-      const p = elapsed <= 0 ? 0 : Math.min(1, elapsed / duration);
-      current = target * easeOutCubic(p);
-
-      const w = rect.width, h = rect.height;
-      ctx.clearRect(0, 0, w, h);
-
-      // Horizontal bars must fill from the right in RTL so the motion
-      // reads the same way the text does.
-      const rtl = document.documentElement.getAttribute('dir') === 'rtl';
-      const { a, b } = palette();
-      const grad = vertical
-        ? ctx.createLinearGradient(0, h, 0, 0)
-        : (rtl ? ctx.createLinearGradient(w, 0, 0, 0) : ctx.createLinearGradient(0, 0, w, 0));
-      grad.addColorStop(0, a);
-      grad.addColorStop(1, b);
-      ctx.fillStyle = grad;
-
-      // Residual ripple: large while filling, small but never zero once
-      // settled - "settled liquid, not frozen".
-      const settle = p >= 1 ? 0.35 : 1;
-      const amp = (vertical ? w : h) * 0.16 * settle;
-      const time = ts / 1000;
-
-      ctx.beginPath();
-      if (vertical) {
-        const level = h - current * h;
-        ctx.moveTo(0, h);
-        for (let x = 0; x <= w; x += 2) {
-          const y = level + Math.sin(x / 14 + time * 2.1) * amp * 0.5
-                          + Math.sin(x / 7 - time * 1.3) * amp * 0.25;
-          ctx.lineTo(x, y);
-        }
-        ctx.lineTo(w, h);
-      } else if (rtl) {
-        // Anchored to the right edge, crest travelling leftwards.
-        const level = w - current * w;
-        ctx.moveTo(w, 0);
-        ctx.lineTo(w, h);
-        for (let y = h; y >= 0; y -= 2) {
-          const x = level - Math.sin(y / 9 + time * 2.4) * amp * 0.5
-                          - Math.sin(y / 5 - time * 1.6) * amp * 0.25;
-          ctx.lineTo(x, y);
-        }
-      } else {
-        const level = current * w;
-        ctx.moveTo(0, 0);
-        ctx.lineTo(0, h);
-        for (let y = h; y >= 0; y -= 2) {
-          const x = level + Math.sin(y / 9 + time * 2.4) * amp * 0.5
-                          + Math.sin(y / 5 - time * 1.6) * amp * 0.25;
-          ctx.lineTo(x, y);
-        }
-      }
-      ctx.closePath();
-      ctx.fill();
-
-      // Fine droplet texture along the crest so the surface reads as
-      // liquid rather than a flat gradient edge.
-      ctx.globalAlpha = 0.5;
-      const dots = vertical ? Math.round(w / 10) : Math.round(h / 8);
-      for (let i = 0; i < dots; i++) {
-        if (vertical) {
-          const x = (i / dots) * w + (Math.sin(time + i) * 3);
-          const level = h - current * h;
-          const y = level + Math.sin(x / 14 + time * 2.1) * amp * 0.5 - 2 - (i % 3);
-          if (y < h && y > 0) { ctx.beginPath(); ctx.arc(x, y, 0.9, 0, Math.PI * 2); ctx.fill(); }
-        } else {
-          const y = (i / dots) * h + (Math.sin(time + i) * 2);
-          const level = rtl ? (w - current * w) : (current * w);
-          const crest = rtl
-            ? level - Math.sin(y / 9 + time * 2.4) * amp * 0.5 + 2 + (i % 3)
-            : level + Math.sin(y / 9 + time * 2.4) * amp * 0.5 - 2 - (i % 3);
-          if (crest > 0 && crest < w) { ctx.beginPath(); ctx.arc(crest, y, 0.9, 0, Math.PI * 2); ctx.fill(); }
-        }
-      }
-      ctx.globalAlpha = 1;
-
-      raf = requestAnimationFrame(draw);
-    }
-
-    el.__waveStop = () => { stopped = true; if (raf) cancelAnimationFrame(raf); };
-    el.classList.add('is-filled');
-
-    const onResize = () => { rect = size(); };
-    window.addEventListener('resize', onResize, { passive: true });
-
-    raf = requestAnimationFrame(draw);
+    requestAnimationFrame(() => {
+      fill.style.transition = `transform ${duration}ms cubic-bezier(.16,1,.3,1) ${delay}ms`;
+      fill.style.transform = `${axis}(${target})`;
+    });
   }
 
   /* Fill bars only once they enter the viewport, staggered in DOM order. */

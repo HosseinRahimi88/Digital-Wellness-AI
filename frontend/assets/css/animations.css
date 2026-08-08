@@ -156,25 +156,47 @@ html[dir="rtl"] .toast.toast-out { animation-name: toast-out-rtl; }
   animation: shimmer 1.6s linear infinite;
 }
 
-/* ===================== Wave-filling bars ===================== */
+/* ===================== Glass progress bars =====================
+   The track is frosted glass; the fill is a GPU-composited transform
+   with a soft inner highlight and a bright leading edge. The class name
+   `.wave-bar` is kept because it is referenced from several page
+   templates and JS call sites - only the rendering changed, not the
+   contract. `--wave-a`/`--wave-b` remain the per-bar colour hooks
+   (SHAP direction, confidence, dimensions) so every existing override
+   keeps working. */
 .wave-bar {
   position: relative; overflow: hidden;
-  background: var(--surface-strong);
+  background: var(--glass-bg, var(--surface-strong));
+  border: 1px solid var(--glass-border, var(--surface-border));
   border-radius: var(--radius-pill);
+  backdrop-filter: blur(6px) saturate(120%);
   --wave-a: var(--neon-cyan);
   --wave-b: var(--neon-blue);
 }
-.wave-bar canvas.wave-surface {
-  position: absolute; inset: 0; width: 100%; height: 100%; display: block;
-}
-/* Reduced motion: no canvas ripple, just a static fill proportional to
-   --fill so the value is still fully visible. */
-.force-reduce-motion .wave-bar canvas.wave-surface { display: none; }
-.force-reduce-motion .wave-bar.is-filled::after {
-  content: ''; position: absolute; top: 0; bottom: 0; inset-inline-start: 0;
-  width: calc(var(--fill, 0) * 100%);
-  background: linear-gradient(90deg, var(--wave-a), var(--wave-b));
+.wave-bar .glass-fill {
+  position: absolute; inset: 0; display: block;
   border-radius: inherit;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.30) 0%, rgba(255,255,255,.06) 45%, rgba(255,255,255,0) 60%),
+    linear-gradient(90deg, var(--wave-a), var(--wave-b));
+  box-shadow: 0 0 12px -2px var(--wave-a);
+  transform-origin: left center;
+  will-change: transform;
+}
+html[dir="rtl"] .wave-bar .glass-fill { transform-origin: right center; }
+.wave-bar.is-vertical .glass-fill,
+html[dir="rtl"] .wave-bar.is-vertical .glass-fill { transform-origin: center bottom; }
+.wave-bar.is-vertical .glass-fill {
+  background:
+    linear-gradient(90deg, rgba(255,255,255,.28) 0%, rgba(255,255,255,.05) 50%, rgba(255,255,255,0) 65%),
+    linear-gradient(0deg, var(--wave-a), var(--wave-b));
+}
+/* Reduced motion still shows the full value - only the travel is cut,
+   handled in motion.js by setting the final transform immediately. */
+.force-reduce-motion .wave-bar .glass-fill { transition: none !important; }
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .wave-bar { background: var(--surface-strong); }
 }
 
 /* ===================== Staggered entrance ===================== */

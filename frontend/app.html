@@ -144,7 +144,7 @@
             <p data-i18n="predict_sub">Answer honestly — the model only works as well as your data.</p>
           </div>
 
-          <div class="demo-bar">
+          <div class="demo-bar" data-guide="demo_profiles">
             <span class="muted" data-i18n="demo_label" style="align-self:center;">Or try a demo profile:</span>
             <button class="btn btn-ghost btn-sm" data-demo="healthy">🌿 Healthy</button>
             <button class="btn btn-ghost btn-sm" data-demo="borderline">🌗 Borderline</button>
@@ -152,7 +152,7 @@
             <button class="btn btn-ghost btn-sm" data-demo="baseline">⚪ Baseline</button>
           </div>
 
-          <div class="demo-bar" id="csvImportBar">
+          <div class="demo-bar" id="csvImportBar" data-guide="csv_import">
             <span class="muted" data-i18n="csv_import_label" style="align-self:center;">Got several days already logged elsewhere?</span>
             <a class="btn btn-ghost btn-sm" id="csvTemplateBtn" href="#" data-i18n="csv_download_template">⬇️ Download CSV template</a>
             <button type="button" class="btn btn-ghost btn-sm" id="csvUploadBtn" data-i18n="csv_upload_btn">⬆️ Upload CSV</button>
@@ -166,7 +166,7 @@
             <form id="wizardForm">
               <div id="wizardFields" class="field-grid step-in"></div>
             </form>
-            <div class="derived-panel" id="derivedPanel">
+            <div class="derived-panel" id="derivedPanel" data-guide="wizard_derived">
               <p class="muted" style="grid-column:1/-1;font-size:.78rem;" data-i18n="derived_title">Auto-calculated (from what you entered above)</p>
             </div>
             <div class="wizard-nav">
@@ -183,7 +183,7 @@
           <p class="result-narrative" id="resultNarrative"></p>
           <div class="card pop-in">
             <div class="result-hero">
-              <div class="score-ring-wrap">
+              <div class="score-ring-wrap" data-guide="result_ring">
                 <svg viewBox="0 0 160 160">
                   <circle class="score-ring-bg" cx="80" cy="80" r="70"/>
                   <circle class="score-ring-fg" id="scoreRing" cx="80" cy="80" r="70" style="stroke:var(--neon-cyan)"/>
@@ -196,7 +196,7 @@
               <div class="result-info">
                 <span class="badge" id="classBadge"></span>
                 <h2 id="resultTitle" data-i18n="result_title">Your wellness result</h2>
-                <div class="confidence-row">
+                <div class="confidence-row" data-guide="result_confidence">
                   <span class="muted" data-i18n="result_confidence">Confidence</span>
                   <div class="wave-bar conf-wave" id="confidenceBar" style="flex:1;height:10px;" data-fill="0"></div>
                   <span class="mono" id="confidenceNum">--%</span>
@@ -205,9 +205,11 @@
               </div>
             </div>
 
+            <div class="confidence-label" id="confidenceLabel"></div>
+            <div class="ood-warning hidden" id="oodWarning" data-guide="result_ood"></div>
             <div class="uncertainty-note" id="uncertaintyNote"></div>
 
-            <div class="dimension-block">
+            <div class="dimension-block" data-guide="result_dimensions">
               <h3 data-i18n="result_dimension_title">Wellness dimension breakdown</h3>
               <p class="muted dimension-hint" data-i18n="result_dimension_hint">A transparent, rule-based view of the same inputs, grouped by area — separate from the model's own score above.</p>
               <div id="dimensionBars" class="dimension-grid"></div>
@@ -216,12 +218,12 @@
             <div class="result-grid">
               <div>
                 <h3 data-i18n="result_shap_title">What drove this score</h3>
-                <div id="shapBars"></div>
+                <div id="shapBars" data-guide="result_shap"></div>
               </div>
               <div>
                 <h3 data-i18n="result_rec_title">Recommended for you</h3>
                 <p class="muted dimension-hint" data-i18n="result_rec_exclude_hint">Not interested in coaching on a topic? Use "Don't coach me on this" below — it only changes future recommendations, never your score.</p>
-                <div id="recCards"></div>
+                <div id="recCards" data-guide="result_recs"></div>
               </div>
             </div>
 

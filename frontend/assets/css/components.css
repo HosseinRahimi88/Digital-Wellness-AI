@@ -253,6 +253,26 @@ html[dir="rtl"] .music-widget { right: 22px; left: auto; }
 }
 .music-upload-btn:hover, .music-upload-btn:focus-visible { color: var(--neon-cyan); border-color: var(--neon-cyan); }
 
+/* ---- Digital Guide affordance ----
+   Any element the guide can explain gets a subtle, non-intrusive hint
+   that it is askable. Deliberately quiet until hover/focus so it never
+   competes with the real content. */
+.has-guide { position: relative; cursor: help; }
+.has-guide::after {
+  content: "?";
+  position: absolute; top: 6px; inset-inline-end: 6px;
+  width: 16px; height: 16px; border-radius: 50%;
+  display: grid; place-items: center;
+  font-size: .62rem; font-weight: 700; font-family: var(--font-label);
+  color: var(--text-muted); background: var(--surface-strong);
+  border: 1px solid var(--surface-border);
+  opacity: 0; transition: opacity var(--dur-fast), color var(--dur-fast), border-color var(--dur-fast);
+  pointer-events: none;
+}
+.has-guide:hover::after, .has-guide:focus-visible::after { opacity: .9; }
+.has-guide:focus-visible { outline: 2px solid var(--neon-cyan); outline-offset: 2px; }
+.force-reduce-motion .has-guide::after { transition: none; }
+
 /* ===================== Chip options (intake / focus-area tags) ===================== */
 .intake-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: var(--space-3); }
 .chip-option {

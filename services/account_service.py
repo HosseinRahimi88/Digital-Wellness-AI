@@ -93,6 +93,19 @@ class Account:
     preferred_effort: Optional[str] = None  # low | medium | high
     work_screen_required: bool = False
 
+    # --- Presentation-only profile extras -------------------------------
+    # Like the onboarding block above, none of these are ever fed to the
+    # trained models. `avatar_data_url` holds a small, already-resized
+    # data: URL produced client-side (see frontend/assets/js/profile.js) -
+    # no binary upload path, no file storage, and a hard size cap enforced
+    # in AccountService.save_profile_extras() so the accounts JSON can't
+    # be inflated by a large image.
+    avatar_data_url: Optional[str] = None
+    # Tone the recommendation/coach copy is phrased in (P1 item 20).
+    # Consumed by services/tone_service.py; the recommendation CONTENT
+    # (which items, what priority) is unchanged by it.
+    recommendation_tone: Optional[str] = None  # gentle | direct | clinical
+
 
 def _now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
@@ -243,7 +256,78 @@ class AccountService:
                     break
             self._backend.commit(records)
 
-        return Account(**updated) if updated is not None else None
+        return _account_from_record(updated) if updated is not None else None
+
+    # ------------------------------------------------------------
+    # Profile extras + privacy controls (P1 items 20, 34, 35)
+    # ------------------------------------------------------------
+
+    # An avatar is stored inline in the accounts JSON, so it must stay
+    # small. The client already downscales to 256px before encoding;
+    # this is the backstop that makes that non-negotiable rather than
+    # a client-side courtesy.
+    MAX_AVATAR_DATA_URL_CHARS = 400_000  # ~300 KB of base64
+    ALLOWED_TONES = ("gentle", "direct", "clinical")
+
+    def save_profile_extras(
+        self,
+        user_id: str,
+        *,
+        avatar_data_url: Optional[str] = None,
+        recommendation_tone: Optional[str] = None,
+    ) -> Optional[Account]:
+        """
+        Update the presentation-only profile fields. Each argument is
+        optional: `None` leaves that field untouched, so the caller can
+        change the tone without resending the avatar. Pass an empty
+        string to clear a field.
+
+        Raises ValueError for an oversized avatar or an unknown tone -
+        never silently truncates or falls back to a default, since both
+        would leave the user looking at something they didn't choose.
+        """
+        if avatar_data_url:
+            if len(avatar_data_url) > self.MAX_AVATAR_DATA_URL_CHARS:
+                raise ValueError("Avatar image is too large. Please choose a smaller picture.")
+            if not avatar_data_url.startswith("data:image/"):
+                raise ValueError("Avatar must be an inline image data URL.")
+        if recommendation_tone and recommendation_tone not in self.ALLOWED_TONES:
+            raise ValueError(f"Tone must be one of {list(self.ALLOWED_TONES)}.")
+
+        updated: Optional[dict] = None
+        with self._backend.transaction() as records:
+            for record in records:
+                if record.get("user_id") == user_id:
+                    if avatar_data_url is not None:
+                        record["avatar_data_url"] = avatar_data_url or None
+                    if recommendation_tone is not None:
+                        record["recommendation_tone"] = recommendation_tone or None
+                    record["updated_at_utc"] = _now_iso()
+                    updated = record
+                    break
+            self._backend.commit(records)
+
+        return _account_from_record(updated) if updated is not None else None
+
+    def delete_account(self, user_id: str) -> bool:
+        """
+        Permanently remove this account record (P1 item 35). Returns True
+        if a record was actually removed.
+
+        Deliberately only removes the ACCOUNT row - the caller is
+        responsible for deleting that user's history/plan/etc. through
+        their own services, because this service has no knowledge of
+        those stores and silently reaching into them from here would
+        hide a destructive side effect behind an innocuous-looking call.
+        See api/routers/privacy.py for the endpoint that sequences both.
+        """
+        removed = False
+        with self._backend.transaction() as records:
+            remaining = [r for r in records if r.get("user_id") != user_id]
+            removed = len(remaining) != len(records)
+            if removed:
+                self._backend.commit(remaining)
+        return removed
 
     # ------------------------------------------------------------
     # Access tokens - NOT used by the current Streamlit UI (it uses

@@ -38,6 +38,8 @@
       window.DWMotion.observeReveals();
     }
     if (window.DWMascot.init) {
+      // Tapping the mascot re-explains the current page on demand, so
+      // the guide is always reachable and never a one-shot popup.
       window.DWMascot.init({
         onClick: () => {
           if (window.DWGuide) window.DWGuide.explain(pageKey, { force: true });
@@ -48,7 +50,20 @@
     if (!requireAuth()) return null;
     highlightNav(pageKey);
     wireLogout();
-    if (window.DWGuide) setTimeout(() => window.DWGuide.explain(pageKey), 1600);
+
+    if (window.DWGuide) {
+      // Section-level help: any element marked data-guide="..." becomes
+      // its own help trigger.
+      window.DWGuide.autoAttach();
+      // First visit to a page walks its sections; later visits just get
+      // the page overview (startTour/explain both self-suppress).
+      setTimeout(() => {
+        if (!window.DWGuide.startTour(pageKey)) window.DWGuide.explain(pageKey);
+      }, 1600);
+      document.querySelectorAll('[data-guide-tour]').forEach((btn) => {
+        btn.addEventListener('click', () => window.DWGuide.startTour(pageKey, { force: true }));
+      });
+    }
 
     document.addEventListener('dwai:unauthorized', () => { location.href = 'app.html'; });
 

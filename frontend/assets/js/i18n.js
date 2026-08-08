@@ -92,6 +92,28 @@
       dim_sleep: 'Sleep', dim_focus: 'Focus & Productivity', dim_emotional: 'Emotional Wellbeing',
       dim_screen_habits: 'Screen Habits', dim_physical: 'Physical & Lifestyle',
 
+      profile_persona_title: 'Your persona',
+      profile_persona_alts: 'Also matches:',
+      profile_persona_empty: 'Run a check-in and your persona will be derived from your real habits.',
+      profile_badges_title: 'Badges earned',
+      profile_badges_hint: 'Each one comes from a real logged value — hover to see what it required.',
+      profile_badges_empty: 'No badges yet. They unlock from real logged values, not from clicking around.',
+      profile_progress_title: 'Your progress',
+      profile_avatar_change: 'Change picture',
+      profile_tone_title: 'How should advice sound?',
+      profile_tone_hint: 'Wording only — this never changes which recommendations you get or their priority.',
+      tone_gentle: 'Gentle', tone_direct: 'Direct', tone_clinical: 'Clinical',
+      profile_privacy_title: 'Your data',
+      profile_privacy_hint: 'Everything this app stores about you is yours to take or erase.',
+      profile_export: '⬇️ Export my data',
+      profile_delete: '🗑️ Delete my account',
+      profile_delete_confirm: 'This permanently deletes your account and all history. Type your email ({email}) to confirm.',
+      profile_delete_mismatch: 'That did not match your email — nothing was deleted.',
+      profile_delete_done: 'Your account and history have been deleted.',
+      progress_streak: 'Current streak', progress_longest: 'Longest streak', progress_entries: 'Check-ins',
+      progress_wins: 'Since your last check-in', progress_before_after: 'Before vs. after',
+      progress_within_noise: 'within model noise',
+
       csv_import_label: 'Got several days already logged elsewhere?',
       csv_download_template: '⬇️ Download CSV template',
       csv_upload_btn: '⬆️ Upload CSV',
@@ -227,6 +249,28 @@
       settings_reset_done: 'موضوعات بی‌صداشده پاک شدند.',
       dim_sleep: 'خواب', dim_focus: 'تمرکز و بهره‌وری', dim_emotional: 'بهزیستی احساسی',
       dim_screen_habits: 'عادت‌های صفحه‌نمایش', dim_physical: 'فعالیت بدنی و سبک زندگی',
+
+      profile_persona_title: 'پرسونای تو',
+      profile_persona_alts: 'هم‌چنین شبیه:',
+      profile_persona_empty: 'یک بررسی انجام بده تا پرسونایت از عادت‌های واقعی‌ات استخراج شود.',
+      profile_badges_title: 'نشان‌های کسب‌شده',
+      profile_badges_hint: 'هرکدام از یک مقدار واقعی ثبت‌شده می‌آید — نشانگر را ببر رویش تا شرطش را ببینی.',
+      profile_badges_empty: 'هنوز نشانی نیست. این‌ها از مقادیر واقعی ثبت‌شده باز می‌شوند، نه از کلیک‌کردن.',
+      profile_progress_title: 'پیشرفت تو',
+      profile_avatar_change: 'تغییر تصویر',
+      profile_tone_title: 'توصیه‌ها چه لحنی داشته باشند؟',
+      profile_tone_hint: 'فقط نحوه‌ی بیان — این هرگز تغییر نمی‌دهد چه توصیه‌هایی می‌گیری یا اولویتشان چیست.',
+      tone_gentle: 'ملایم', tone_direct: 'صریح', tone_clinical: 'بالینی',
+      profile_privacy_title: 'داده‌ی تو',
+      profile_privacy_hint: 'هرچه این اپ درباره‌ی تو ذخیره کرده مال توست که ببری یا پاک کنی.',
+      profile_export: '⬇️ خروجی گرفتن از داده‌هایم',
+      profile_delete: '🗑️ حذف حساب کاربری',
+      profile_delete_confirm: 'این کار حساب و کل تاریخچه‌ات را برای همیشه حذف می‌کند. برای تأیید ایمیلت ({email}) را بنویس.',
+      profile_delete_mismatch: 'با ایمیلت مطابقت نداشت — چیزی حذف نشد.',
+      profile_delete_done: 'حساب و تاریخچه‌ات حذف شد.',
+      progress_streak: 'رشته‌ی فعلی', progress_longest: 'بلندترین رشته', progress_entries: 'بررسی‌ها',
+      progress_wins: 'از آخرین بررسی‌ات', progress_before_after: 'قبل در برابر بعد',
+      progress_within_noise: 'در محدوده‌ی نویز مدل',
 
       csv_import_label: 'چند روز رو از قبل جای دیگه ثبت کردی؟',
       csv_download_template: '⬇️ دانلود قالب CSV',
@@ -521,6 +565,13 @@
     });
     scope.querySelectorAll('[data-i18n-placeholder]').forEach((el) => {
       el.setAttribute('placeholder', t(el.getAttribute('data-i18n-placeholder')));
+    });
+    // Tooltip/aria text for icon-only controls, which have no visible
+    // label to translate via the textContent path above.
+    scope.querySelectorAll('[data-i18n-title]').forEach((el) => {
+      const label = t(el.getAttribute('data-i18n-title'));
+      el.setAttribute('title', label);
+      el.setAttribute('aria-label', label);
     });
     scope.querySelectorAll('[data-i18n-html]').forEach((el) => {
       el.innerHTML = t(el.getAttribute('data-i18n-html'));

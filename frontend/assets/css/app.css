@@ -89,6 +89,24 @@
 
 .uncertainty-note { font-size: .82rem; color: var(--text-muted); background: var(--surface); border: 1px dashed var(--surface-border); border-radius: var(--radius-md); padding: var(--space-3); margin-top: var(--space-4); }
 
+.confidence-label {
+  font-size: .84rem; line-height: 1.55; margin-top: var(--space-4);
+  padding: var(--space-3) var(--space-4); border-radius: var(--radius-md);
+  background: var(--glass-bg); border: 1px solid var(--glass-border);
+  border-inline-start: 3px solid var(--text-muted);
+}
+.confidence-label.level-high { border-inline-start-color: var(--accent-success); }
+.confidence-label.level-moderate { border-inline-start-color: var(--accent-amber); }
+.confidence-label.level-low { border-inline-start-color: var(--accent-danger); }
+
+.ood-warning {
+  font-size: .82rem; line-height: 1.55; margin-top: var(--space-3);
+  padding: var(--space-3) var(--space-4); border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--accent-amber) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent-amber) 40%, transparent);
+  color: var(--text-primary);
+}
+
 .dimension-block { margin-top: var(--space-6); }
 .dimension-hint { font-size: .78rem; margin: 2px 0 var(--space-3); }
 .dimension-grid { display: grid; gap: 10px; }
