@@ -1,4 +1,12 @@
-"""api/routers/future_path.py"""
+"""
+api/routers/future_path.py
+------------------------------
+Compares a fixed set of named behavior-change scenarios (Status Quo,
+Gradual Improvement, Digital Detox, ...) against the user's real
+current input. Each scenario is scored by the same, unmodified
+PredictionService.predict() the rest of the app uses - this is real
+re-inference on shifted inputs, never a separate fitted forecaster.
+"""
 
 from __future__ import annotations
 

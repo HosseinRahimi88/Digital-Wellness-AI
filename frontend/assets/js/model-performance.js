@@ -1,3 +1,6 @@
+/* Model Performance page controller: renders the real, current model
+   metrics from GET /model-performance (accuracy/F1/R2/etc., read
+   straight from artifacts/metrics*.json) - never a hardcoded number. */
 document.addEventListener('DOMContentLoaded', async () => {
   const account = await window.DWShell.init('model');
   if (!account) return;

@@ -1,4 +1,12 @@
-"""api/routers/history.py"""
+"""
+api/routers/history.py
+--------------------------
+Read-only access to the authenticated user's persisted check-ins
+(one HistoryService record per prediction made with `persist=True`).
+Covers paginated listing, a single day's entry, and pre-aggregated
+current/previous ISO-week summaries - all computed from the same
+underlying entries, never a separate data source.
+"""
 
 from __future__ import annotations
 

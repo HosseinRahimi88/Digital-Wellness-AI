@@ -1,3 +1,8 @@
+/* app.html's controller: the auth gate, onboarding, multi-step daily
+   check-in wizard, and the result page (score, SHAP bars, dimension
+   breakdown, recommendations) all live here since app.html is the one
+   page a first-time visitor lands on before the shared post-login
+   nav shell (shell.js) takes over on every other page. */
 (function () {
   const $ = (sel, root) => (root || document).querySelector(sel);
   const $all = (sel, root) => Array.from((root || document).querySelectorAll(sel));

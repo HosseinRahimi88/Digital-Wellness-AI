@@ -1,3 +1,7 @@
+/* Single point of contact with the FastAPI backend. Wraps `fetch` with
+   auth-header injection, consistent error shaping (ApiError), and
+   401 -> logout handling, so every page-controller script calls a
+   plain `window.DWApi.xxx()` method instead of hand-rolling requests. */
 (function () {
   const TOKEN_KEY = 'dwai_token';
   const BASE_KEY = 'dwai_api_base';

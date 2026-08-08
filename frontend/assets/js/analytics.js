@@ -1,3 +1,6 @@
+/* Analytics page controller: fetches the authenticated user's real
+   history-derived trend data (score-over-time, weekday pattern, field
+   averages) from GET /analytics/summary and renders it with charts.js. */
 document.addEventListener('DOMContentLoaded', async () => {
   const account = await window.DWShell.init('analytics');
   if (!account) return;

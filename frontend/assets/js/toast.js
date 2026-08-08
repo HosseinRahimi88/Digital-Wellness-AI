@@ -1,3 +1,6 @@
+/* Shared toast/notification stack, top-right per the product spec.
+   `window.DWToast.{success,error,info,warning}(message)` is the whole
+   public surface - callers never touch the DOM directly. */
 (function () {
   let stack;
 

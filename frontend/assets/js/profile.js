@@ -1,3 +1,7 @@
+/* Profile page controller: view/edit the account's onboarding
+   preferences (goal, purpose, schedule) via PUT /auth/me/onboarding.
+   Shares its option lists with the initial onboarding flow via
+   onboarding-options.js so the two never drift apart. */
 document.addEventListener('DOMContentLoaded', async () => {
   const account = await window.DWShell.init('profile');
   if (!account) return;

@@ -1,3 +1,6 @@
+/* Weekly Plan page controller: this-week vs. previous-week summaries
+   (GET /history/weeks/*) plus the rule-based 7-day improvement plan
+   (POST /plan) with persisted per-task checkmarks (PUT /plan/tasks). */
 document.addEventListener('DOMContentLoaded', async () => {
   const account = await window.DWShell.init('weekly');
   if (!account) return;

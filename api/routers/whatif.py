@@ -1,4 +1,13 @@
-"""api/routers/whatif.py"""
+"""
+api/routers/whatif.py
+-------------------------
+"What if I changed one thing" endpoints: a sensitivity sweep across a
+single field's schema range, and a goal-seek search for the input
+value that reaches a target score. Both run AdvancedWhatIfService over
+the real trained model with `compute_shap=False` (these calls only
+need the point prediction, not a full explanation, at every swept
+value) - never a cheaper approximation of the model itself.
+"""
 
 from __future__ import annotations
 

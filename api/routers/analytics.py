@@ -1,4 +1,12 @@
-"""api/routers/analytics.py"""
+"""
+api/routers/analytics.py
+----------------------------
+Read-only historical trend view over the authenticated user's own
+prediction history: score-over-time, weekday pattern, and per-field
+averages. All computation is delegated to AnalyticsService - this
+router only fetches the account's HistoryService entries and shapes
+the result into the response schema.
+"""
 
 from __future__ import annotations
 

@@ -1,4 +1,12 @@
-"""api/routers/persona.py"""
+"""
+api/routers/persona.py
+--------------------------
+Assigns a behavioral-persona cluster (from the unsupervised KMeans
+model in PersonaService, independent of the risk classifier) for a
+given day's feature values. Validation runs through the same
+ValidationService every other input-taking endpoint uses, so the
+persona model never sees an out-of-range or malformed value.
+"""
 
 from __future__ import annotations
 

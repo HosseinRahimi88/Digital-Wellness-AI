@@ -1,4 +1,12 @@
-"""api/routers/health.py"""
+"""
+api/routers/health.py
+-------------------------
+Liveness/readiness probes for orchestrators and manual checks. `/health`
+never touches the ML models (fast, always 200 if the process is up);
+`/health/ready` calls into the shared ModelManager singleton so a 200
+here means the same instance every prediction request uses is actually
+loaded and ready.
+"""
 
 from __future__ import annotations
 

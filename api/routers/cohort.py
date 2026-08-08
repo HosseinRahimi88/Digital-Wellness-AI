@@ -1,4 +1,12 @@
-"""api/routers/cohort.py"""
+"""
+api/routers/cohort.py
+-------------------------
+"How do I compare to everyone else" endpoints. `CohortService` (a
+class-level, cached view over the training population) supplies the
+population-side statistics; this router only adds the authenticated
+user's own latest history entry to produce a genuine self-vs-cohort
+percentile/comparison, never a fabricated placement.
+"""
 
 from __future__ import annotations
 

@@ -1,3 +1,7 @@
+/* AI Coach page controller: wires the chat UI (send/receive bubbles,
+   the /fit context-loading command, the session-only API key panel)
+   to the actual response logic in coach-chat.js - this file owns the
+   DOM, coach-chat.js owns the guardrails and reply generation. */
 document.addEventListener('DOMContentLoaded', async () => {
   const account = await window.DWShell.init('coach');
   if (!account) return;

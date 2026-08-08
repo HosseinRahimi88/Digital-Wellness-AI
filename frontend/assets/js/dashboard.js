@@ -1,3 +1,7 @@
+/* Dashboard page controller: the user's landing page after login.
+   Renders the last real check-in's score/trend, this-week heatmap,
+   SHAP-driven strengths/weaknesses, and a cohort comparison - an
+   empty state is shown instead if no check-in has been run yet. */
 document.addEventListener('DOMContentLoaded', async () => {
   const account = await window.DWShell.init('dashboard');
   if (!account) return;

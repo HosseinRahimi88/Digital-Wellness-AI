@@ -1,3 +1,6 @@
+/* What-if page controller: lets the user sweep one input field across
+   its range (POST /whatif/sweep) or goal-seek a target score
+   (POST /whatif/goal-seek), both against the real trained model. */
 document.addEventListener('DOMContentLoaded', async () => {
   const account = await window.DWShell.init('whatif');
   if (!account) return;

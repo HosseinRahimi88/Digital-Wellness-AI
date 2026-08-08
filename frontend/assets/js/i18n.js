@@ -1,3 +1,8 @@
+/* Client-side i18n: a flat key -> string dictionary per language
+   (en/fa/ar/zh) plus RTL handling. `t(key)` always falls back to the
+   English string (then the raw key) so a missing translation degrades
+   visibly instead of throwing. `applyToDom()` fills every
+   `[data-i18n]`/`[data-i18n-placeholder]` element on the page. */
 (function () {
   const KEY = 'dwai_lang';
   const RTL_LANGS = ['ar', 'fa'];

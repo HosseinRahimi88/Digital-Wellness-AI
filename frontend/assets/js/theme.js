@@ -1,3 +1,6 @@
+/* Dark/light theme toggle, persisted to localStorage. Dispatches
+   `dwai:themechange` so canvas-based renderers (particles.js) can
+   re-read theme-dependent colors without a full page reload. */
 (function () {
   const KEY = 'dwai_theme';
   const root = document.documentElement;
