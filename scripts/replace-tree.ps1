@@ -112,14 +112,29 @@ foreach ($relative in @(
     'artifacts\archive_pre_feature_consistency_fix'
 )) {
     $from = Join-Path $backup $relative
-    if (Test-Path $from) {
-        $to = Join-Path $repo $relative
-        New-Item -ItemType Directory -Path (Split-Path $to -Parent) -Force | Out-Null
-        Copy-Item $from $to -Recurse -Force
-        Write-Host "    restored  $relative"
-    } else {
+    if (-not (Test-Path $from)) {
         Write-Host "    MISSING   $relative  (was not in the old copy either)"
+        continue
     }
+
+    $to = Join-Path $repo $relative
+    if ((Get-Item $from) -is [System.IO.DirectoryInfo]) {
+        # Merge CONTENTS into $to - never `Copy-Item $from $to -Recurse`
+        # for a directory. That form nests the whole source folder one
+        # level deeper whenever $to already exists as a directory, which
+        # is exactly the case here: artifacts/archive_*/'s *.json files
+        # are not omitted from the archive (only the *.pkl are), so the
+        # folder already exists with content in it before this loop runs.
+        # The result was e.g.
+        #   artifacts\archive_pre_user_split_fix\archive_pre_user_split_fix\*.pkl
+        # - the restored files landing one directory too deep, silently.
+        New-Item -ItemType Directory -Path $to -Force | Out-Null
+        Copy-Item -Path (Join-Path $from '*') -Destination $to -Recurse -Force
+    } else {
+        New-Item -ItemType Directory -Path (Split-Path $to -Parent) -Force | Out-Null
+        Copy-Item -Path $from -Destination $to -Force
+    }
+    Write-Host "    restored  $relative"
 }
 
 # storage/ holds real accounts and is gitignored - carried across so the
