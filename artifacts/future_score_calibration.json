@@ -1,0 +1,68 @@
+{
+  "method": "E[wellbeing_7d | x] = sum_c P(c|x) * mu_c, where mu_c is the mean wellbeing_subscore_mean among TRAIN rows whose future_health_class_7d is c. Spread from the law of total variance over the same mixture. Recombine with the day's own screen-load subscore - see the recombination block - to get a figure on the same scale as the score the app shows.",
+  "why_not_a_regressor": "The dataset has no seven-day-ahead score column and no user_id, date or stable row order from which one could be reconstructed, so a seven-day-ahead regression target would have to be invented.",
+  "target_column": "future_health_class_7d",
+  "score_column": "wellbeing_subscore_mean",
+  "recombination": {
+    "note": "mu_c and sigma_c are on the WELLBEING axis - the mean of the six composite subscores - because that is the axis future_health_class_7d bands. To put the estimate back on the scale the app shows, recombine with the user's own screen-load subscore for the day: score = (subscore_weight * wellbeing + screen_load_weight * screen_load) / (subscore_weight + screen_load_weight). The screen-load half is carried forward, not forecast: it is a fact about the day the user logged and a lever they hold, and nothing in this dataset predicts it a week out.",
+    "subscore_weight": 6.0,
+    "screen_load_weight": 2.0,
+    "combined_score_column": "health_score_0_100"
+  },
+  "calibrated_on": "train split only",
+  "classes": [
+    "At Risk",
+    "Healthy",
+    "Moderate"
+  ],
+  "class_stats": {
+    "At Risk": {
+      "mean": 55.1375,
+      "std": 4.7894,
+      "count": 25777,
+      "p10": 48.3774,
+      "p90": 60.6317
+    },
+    "Healthy": {
+      "mean": 72.1634,
+      "std": 3.0992,
+      "count": 25090,
+      "p10": 68.2719,
+      "p90": 76.2396
+    },
+    "Moderate": {
+      "mean": 64.4734,
+      "std": 4.1386,
+      "count": 29445,
+      "p10": 58.9719,
+      "p90": 69.8084
+    }
+  },
+  "evidence": {
+    "tertile_boundaries": [
+      60.0705,
+      68.6565
+    ],
+    "tertile_means": {
+      "low": 54.7471,
+      "mid": 64.4369,
+      "high": 72.4541
+    },
+    "tertile_membership_agrees_with_label_pct": 80.17,
+    "class_balance_pct": {
+      "Moderate": 36.66,
+      "At Risk": 32.1,
+      "Healthy": 31.24
+    },
+    "validation_class_means": {
+      "At Risk": 55.389,
+      "Healthy": 72.0753,
+      "Moderate": 64.3048
+    },
+    "train_vs_validation_mean_drift": {
+      "At Risk": 0.2515,
+      "Healthy": 0.0881,
+      "Moderate": 0.1686
+    }
+  }
+}

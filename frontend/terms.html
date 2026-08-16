@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="theme-color" content="#05080f" />
+<title>Terms &amp; Privacy — Digital Wellness AI</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧠</text></svg>" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=Orbitron:wght@600;700&display=swap" media="print" onload="this.media='all';this.onload=null">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=Orbitron:wght@600;700&display=swap"></noscript>
+<link rel="stylesheet" href="assets/css/variables.css" />
+<link rel="stylesheet" href="assets/css/base.css" />
+<link rel="stylesheet" href="assets/css/components.css" />
+<link rel="stylesheet" href="assets/css/processing.css" />
+<link rel="stylesheet" href="assets/css/modern.css" />
+<style>
+  .doc { max-width: 760px; margin: 0 auto; padding: 48px 20px 100px; }
+  .doc h2 { margin-top: 40px; }
+  .doc h3 { margin-top: 26px; font-size: 1rem; color: var(--text-primary); }
+  .doc ul { color: var(--text-secondary); }
+  .doc li { margin-bottom: 9px; line-height: 1.7; }
+  .doc .lede { line-height: 1.75; }
+  .doc-updated { font-size: .82rem; color: var(--text-muted); }
+  /* The one rule that outranks the rest gets to look like it. */
+  .doc-callout {
+    border: 1px solid var(--glass-border); border-inline-start: 3px solid var(--accent-amber, #ffd166);
+    background: var(--glass-bg); border-radius: var(--radius-md);
+    padding: 16px 18px; margin: 22px 0; line-height: 1.75;
+  }
+  .doc-contact {
+    border: 1px solid var(--glass-border); background: var(--glass-bg);
+    border-radius: var(--radius-md); padding: 20px 22px; margin-top: 18px;
+  }
+  .doc-contact a { color: var(--accent, #22f5c6); text-decoration: none; }
+  .doc-contact a:hover { text-decoration: underline; }
+  .doc-contact dt { font-size: .78rem; color: var(--text-muted); margin-top: 12px; }
+  .doc-contact dt:first-child { margin-top: 0; }
+  .doc-contact dd { margin: 3px 0 0; font-size: 1.02rem; }
+  .doc-lang { display: flex; gap: 6px; }
+  .doc-lang button {
+    font: inherit; font-size: .8rem; padding: 5px 11px; cursor: pointer;
+    color: var(--text-secondary); background: var(--glass-bg);
+    border: 1px solid var(--glass-border); border-radius: 999px;
+  }
+  .doc-lang button.active { color: var(--bg-deep, #05080f); background: var(--accent, #22f5c6); border-color: transparent; }
+</style>
+</head>
+<body>
+<header class="navbar">
+  <a class="brand" href="index.html"><span class="brand-dot"></span> Digital Wellness AI</a>
+  <div class="nav-controls">
+    <!-- This page is deliberately standalone - no app scripts, no API,
+         no auth - so it carries its own switcher rather than the shared
+         one. It reads and writes the same `dwai_lang` key the rest of
+         the app uses, so arriving here in Persian keeps you in Persian
+         and going back does too. -->
+    <div class="doc-lang" id="docLang">
+      <button type="button" data-lang="en">EN</button>
+      <button type="button" data-lang="fa">فا</button>
+      <button type="button" data-lang="ar">AR</button>
+      <button type="button" data-lang="zh">中文</button>
+    </div>
+    <a class="btn btn-ghost btn-sm" href="app.html" data-t="back">Back to app</a>
+  </div>
+</header>
+
+<main class="doc" id="doc"></main>
+
+<script src="assets/js/pages/terms-page.js"></script>
+</body>
+</html>

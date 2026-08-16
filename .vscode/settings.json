@@ -1,0 +1,57 @@
+{
+  // The suite is unittest, not pytest. It was configured the other way
+  // round, so the Testing panel found nothing and quietly stayed empty.
+  "python.testing.unittestEnabled": true,
+  "python.testing.pytestEnabled": false,
+  // -s tests with -t . recurses into the group folders (tests/api,
+  // tests/ml, ...) because each one is a package. Without -t the
+  // imports inside every test resolve against tests/ instead of the
+  // project root and the whole panel fills with import errors.
+  "python.testing.unittestArgs": ["-v", "-s", "tests", "-t", ".", "-p", "test_*.py"],
+  "python.testing.cwd": "${workspaceFolder}",
+
+  "python.analysis.extraPaths": ["${workspaceFolder}"],
+  "python.analysis.autoImportCompletions": true,
+  "python.analysis.typeCheckingMode": "off",
+  "python.terminal.activateEnvironment": true,
+
+  // Hidden because they are noise, not because they are secret. storage/
+  // is the one directory that holds real user data - it is gitignored and
+  // never shipped, and it is left VISIBLE on purpose so nobody forgets
+  // it is there.
+  "files.exclude": {
+    "**/__pycache__": true,
+    "**/*.pyc": true,
+    "**/.pytest_cache": true,
+    "**/.mypy_cache": true
+  },
+  "search.exclude": {
+    "**/__pycache__": true,
+    "**/.venv": true,
+    "data/**": true,
+    "artifacts/archive_*/**": true,
+    "storage/**": true,
+    "frontend/assets/audio/**": true
+  },
+  "files.watcherExclude": {
+    "**/__pycache__/**": true,
+    "**/.venv/**": true,
+    "data/**": true
+  },
+
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+  "editor.formatOnSave": false,
+  "editor.rulers": [79],
+
+  "[python]": { "editor.tabSize": 4 },
+  "[javascript]": { "editor.tabSize": 2 },
+  "[html]": { "editor.tabSize": 2 },
+  "[css]": { "editor.tabSize": 2 },
+  "[json]": { "editor.tabSize": 2 },
+
+  // The layer each folder belongs to, so the tree reads as an
+  // architecture rather than an alphabet.
+  "explorer.sortOrder": "type",
+  "workbench.editor.labelFormat": "medium"
+}

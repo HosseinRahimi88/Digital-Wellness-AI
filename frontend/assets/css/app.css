@@ -1,0 +1,1179 @@
+.app-shell { min-height: 100vh; display: flex; flex-direction: column; }
+.app-main { flex: 1; padding: var(--space-7) 0 var(--space-8); position: relative; z-index: var(--z-content); }
+
+.view { display: none; }
+.view.active { display: block; }
+
+/* ---- Auth ---- */
+.auth-wrap { max-width: 440px; margin: 0 auto; }
+.auth-card { padding: var(--space-6); }
+.auth-title { text-align: center; margin-bottom: var(--space-2); }
+.auth-sub { text-align: center; margin-bottom: var(--space-5); }
+.auth-switch { text-align: center; margin-top: var(--space-4); font-size: .88rem; }
+.auth-switch a { cursor: pointer; }
+.terms-row { display: flex; align-items: flex-start; gap: 8px; font-size: .82rem; color: var(--text-secondary); margin: var(--space-2) 0 var(--space-4); }
+.terms-row input { margin-top: 3px; accent-color: var(--neon-cyan); }
+.terms-row a { text-decoration: underline; }
+
+.password-row { position: relative; display: flex; }
+.password-row .input { flex: 1; padding-inline-end: 42px; }
+.password-eye-btn {
+  position: absolute; inset-inline-end: 4px; top: 50%; transform: translateY(-50%);
+  width: 32px; height: 32px; border-radius: 50%; border: none; background: none;
+  cursor: pointer; font-size: 1rem; display: grid; place-items: center; opacity: .7;
+}
+.password-eye-btn:hover { opacity: 1; background: var(--surface-strong); }
+.auth-forgot-link { text-align: end; font-size: .8rem; margin: -8px 0 14px; }
+.auth-forgot-link a { cursor: pointer; }
+
+.auth-social-row { display: flex; gap: 10px; justify-content: center; margin: var(--space-4) 0 6px; }
+.social-btn {
+  width: 42px; height: 42px; border-radius: 50%; border: 1px solid var(--surface-border);
+  background: var(--surface); cursor: pointer; display: grid; place-items: center; transition: all var(--dur-fast);
+}
+.social-btn svg { width: 20px; height: 20px; }
+.social-btn:hover { transform: translateY(-2px); border-color: var(--neon-cyan); }
+.auth-social-note { text-align: center; font-size: .7rem; opacity: .7; margin-bottom: 4px; }
+
+/* ---- Onboarding ---- */
+.onboard-wrap { max-width: 560px; margin: 0 auto; }
+.onboard-option { display: block; padding: var(--space-4); border-radius: var(--radius-md); border: 1px solid var(--surface-border); background: var(--surface); margin-bottom: 10px; cursor: pointer; transition: all var(--dur-fast); }
+.onboard-option:hover { border-color: var(--neon-cyan); }
+.onboard-option.selected { border-color: var(--neon-cyan); background: rgba(34,245,198,.08); }
+
+/* ---- Onboarding, one question per slide ----
+   Three questions on one screen read as a form to get through, and the
+   note under the schedule question never got read. */
+.onboard-progress { display: flex; gap: 8px; justify-content: center; margin: 18px 0 22px; }
+.onboard-dot {
+  width: 34px; height: 4px; border-radius: 999px;
+  background: var(--surface-border);
+  transition: background var(--dur-fast), transform var(--dur-fast);
+}
+.onboard-dot.done { background: color-mix(in srgb, var(--neon-cyan) 45%, transparent); }
+.onboard-dot.active { background: var(--neon-cyan); transform: scaleY(1.6); }
+@media (prefers-reduced-motion: reduce) { .onboard-dot { transition: none; } }
+.force-reduce-motion .onboard-dot { transition: none; }
+
+.onboard-slide { animation: onboard-slide-in .24s var(--ease-out) both; }
+@keyframes onboard-slide-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) { .onboard-slide { animation: none; } }
+.force-reduce-motion .onboard-slide { animation: none; }
+
+/* The schedule question is not one preference among three: it decides
+   which signals count as problems and what the weekly plan leads with.
+   Given a visible weight to match. */
+.onboard-emphasis {
+  margin: 14px 0 0; padding: 11px 13px;
+  border-radius: 12px;
+  border: 1px solid rgba(34, 245, 198, .30);
+  background: linear-gradient(135deg, rgba(34, 245, 198, .10), rgba(34, 245, 198, .02));
+  font-size: .8rem; line-height: 1.6; text-align: start;
+}
+.onboard-skip { text-align: center; margin-top: var(--space-5); }
+
+/* The sleep-window pair. Two fields side by side because they are one
+   answer - a bedtime with no wake time says nothing about the window,
+   which is the thing the plan actually reads. Wraps on a narrow phone
+   rather than squeezing two time pickers into half a screen each. */
+.onboard-time-row { display: flex; gap: var(--space-4); flex-wrap: wrap; }
+.onboard-time-row .field { flex: 1; min-width: 140px; }
+
+/* ---- Predict wizard ---- */
+.predict-wrap { max-width: 760px; margin: 0 auto; }
+.demo-bar {
+  display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+  align-items: center; margin-bottom: var(--space-6);
+}
+.demo-bar .btn { flex: 0 0 auto; }
+@media (max-width: 560px) {
+  .demo-bar { gap: 8px; }
+  .demo-bar .btn { padding: 8px 14px; font-size: .8rem; }
+}
+.exclude-analysis-row {
+  display: flex; align-items: flex-start; gap: 9px; font-size: .82rem; color: var(--text-secondary);
+  max-width: 640px; margin: 0 auto var(--space-5); cursor: pointer; text-align: start;
+}
+.exclude-analysis-row input { margin-top: 3px; accent-color: var(--neon-cyan); flex-shrink: 0; }
+
+/* ---- "Edit today's check-in" ----
+   Shown only on a day that already has one. Given a real surface
+   rather than a bare checkbox, because it is the control standing
+   between the user and replacing a result they already have - and
+   because a 409 sends them here to find it. */
+.edit-today-row {
+  max-width: 640px; margin: 0 auto var(--space-4);
+  padding: 12px 14px; border-radius: 14px;
+  border: 1px solid rgba(255, 193, 94, .34);
+  background: linear-gradient(135deg, rgba(255, 193, 94, .10), rgba(255, 193, 94, .02));
+  text-align: start;
+}
+.edit-today-check {
+  display: flex; align-items: center; gap: 9px;
+  font-size: .88rem; font-weight: 600; cursor: pointer;
+}
+.edit-today-check input { accent-color: #ffc15e; flex-shrink: 0; }
+/* A locked tick is not broken input - it is the state after an update
+   went through, so it keeps full contrast instead of the browser's
+   greyed-out default. */
+.edit-today-check input:disabled { opacity: 1; cursor: default; }
+.edit-today-check input:disabled + span { opacity: .9; }
+.edit-today-note { margin: 6px 0 0; font-size: .78rem; line-height: 1.55; }
+
+/* Fired when a submission comes back 409: the row is scrolled to and
+   pulsed, so the answer to "why was my check-in refused" is the thing
+   the eye lands on. */
+@keyframes edit-today-flash {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 193, 94, 0); }
+  35% { box-shadow: 0 0 0 5px rgba(255, 193, 94, .30); }
+}
+.edit-today-row--flash { animation: edit-today-flash .8s ease-in-out 2; }
+@media (prefers-reduced-motion: reduce) {
+  .edit-today-row--flash { animation: none; border-color: rgba(255, 193, 94, .8); }
+}
+.force-reduce-motion .edit-today-row--flash { animation: none; border-color: rgba(255, 193, 94, .8); }
+
+/* ---- "That day sits outside your week's range" ----
+   Two options, side by side, each with the consequence written under
+   it. The consequences are genuinely different - one changes nothing,
+   the other rewrites the rest of the week - so neither is styled as
+   the safe default and the note under each button is part of the
+   control, not decoration. */
+.band-decision { margin-bottom: var(--space-5); border-left: 3px solid var(--neon-cyan, #22f5c6); }
+[dir="rtl"] .band-decision { border-left: 0; border-right: 3px solid var(--neon-cyan, #22f5c6); }
+.band-decision-title { margin: 0 0 6px; font-size: 1.05rem; }
+.band-decision-lead { margin: 0 0 var(--space-4); line-height: 1.6; }
+.band-decision-options {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--space-4);
+}
+.band-decision-option { display: flex; flex-direction: column; gap: 8px; align-items: stretch; }
+.band-decision-option .btn { width: 100%; }
+.band-decision-note { margin: 0; font-size: .78rem; line-height: 1.55; }
+.band-decision-done { margin: 0; font-weight: 600; }
+.csv-import-result {
+  white-space: pre-wrap; font-size: .8rem; text-align: center;
+  max-width: 640px; margin: -10px auto var(--space-6); line-height: 1.6;
+}
+
+/* ---- Results ---- */
+.result-wrap { max-width: 920px; margin: 0 auto; }
+.result-hero { display: flex; gap: var(--space-6); align-items: center; flex-wrap: wrap; justify-content: center; }
+.score-ring-wrap {
+  /* Wider than the SVG: the dimension readouts sit outside the arc
+     radius and would otherwise be clipped. */
+  position: relative; width: 290px; flex-shrink: 0;
+  display: flex; flex-direction: column; align-items: center;
+  padding: 14px 14px 4px; border-radius: 28px;
+  background: radial-gradient(circle at 50% 38%, var(--glass-bg, rgba(255,255,255,.06)) 0%, transparent 72%);
+}
+.score-ring-wrap .score-ring-svg { width: 212px; height: 212px; filter: drop-shadow(0 0 22px rgba(34,245,198,.18)); }
+/* Slightly above the geometric centre: the block is top-heavy (a
+   3.1rem number plus two smaller lines), so centring it on the
+   ring's midpoint made it read as sitting low. */
+.score-ring-wrap .score-center { top: 112px; width: 130px; }
+.score-ring-bg, .score-ring-fg { fill: none; }
+.ring-arc-track {
+  fill: none; stroke: var(--glass-bg, var(--surface-strong)); stroke-width: 14;
+  stroke-linecap: round;
+}
+.ring-arc-empty {
+  fill: none; stroke: var(--surface-border); stroke-width: 14; stroke-linecap: round;
+  stroke-dasharray: 2 7; opacity: .5;
+}
+.ring-arc-fill {
+  fill: none; stroke-width: 14; stroke-linecap: round;
+}
+/* The shimmer path rides the exact same arc geometry, drawn as short
+   moving dashes so a filled arc reads as liquid in motion rather than a
+   static painted segment. */
+.ring-arc-shimmer {
+  fill: none; stroke-width: 5; stroke-linecap: round; opacity: .55;
+  mix-blend-mode: screen; animation: ring-shimmer-move 1.8s linear infinite;
+}
+@keyframes ring-shimmer-move { to { stroke-dashoffset: -120; } }
+.force-reduce-motion .ring-arc-shimmer { animation: none; opacity: .25; }
+
+.score-center {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; width: 118px;
+}
+.score-center .num { font-family: var(--font-mono); font-size: 2.4rem; color: var(--text-primary); line-height: 1; }
+
+/* The headline score: bold, centred, coloured by its band. The band is
+   also named in words directly underneath - a colour on its own is not
+   a reading, and is nothing at all to a user who cannot distinguish
+   these three hues. */
+.score-center .score-big {
+  font-family: var(--font-mono); font-weight: 700;
+  font-size: 3.1rem; line-height: 1; letter-spacing: -.02em;
+  direction: ltr; unicode-bidi: isolate;
+  text-shadow: 0 0 26px currentColor;
+}
+.score-center .score-band {
+  font-size: .82rem; font-weight: 600; margin-top: 4px;
+  letter-spacing: .02em;
+}
+/* C-6-3 still applies: the interval did not go away, it moved under the
+   number it belongs to. */
+.score-center .score-range-sub {
+  margin-top: 5px; font-family: var(--font-mono); font-size: .78rem;
+  color: var(--text-secondary); direction: ltr; unicode-bidi: isolate;
+  white-space: nowrap;
+}
+.score-center .score-range-sub .dash { opacity: .5; margin: 0 1px; }
+/* Inline, not stacked: as its own line the label dropped far enough to
+   collide with the inner uncertainty gauge's track. */
+.score-center .score-range-word {
+  font-family: var(--font-label, inherit);
+  font-size: .6rem; color: var(--text-muted); letter-spacing: .05em;
+  text-transform: uppercase; margin-inline-start: 4px;
+}
+
+/* Dimension readouts placed on their own arcs instead of in a legend
+   below the ring, so the reader never has to map four colours back onto
+   four shapes. Positions come from each arc's midpoint angle. */
+.ring-dim-labels { position: absolute; inset: 0; pointer-events: none; }
+.ring-dim {
+  position: absolute; transform: translate(-50%, -50%);
+  display: flex; flex-direction: column; align-items: center; gap: 1px;
+  pointer-events: auto; cursor: pointer;
+  padding: 3px 7px; border-radius: var(--radius-pill);
+  background: var(--glass-bg); border: 1px solid var(--glass-border);
+  backdrop-filter: blur(6px);
+  transition: transform var(--dur-fast), border-color var(--dur-fast);
+  max-width: 92px;
+}
+.ring-dim:hover, .ring-dim:focus-visible {
+  transform: translate(-50%, -50%) scale(1.06);
+  border-color: var(--dot);
+  outline: none;
+}
+.ring-dim-value {
+  font-family: var(--font-mono); font-weight: 700; font-size: 1rem;
+  line-height: 1; color: var(--dot);
+}
+.ring-dim-label {
+  font-size: .58rem; line-height: 1.15; text-align: center;
+  color: var(--text-secondary); letter-spacing: .01em;
+}
+.ring-dim.is-empty { opacity: .45; }
+.ring-dim.is-empty .ring-dim-value { color: var(--text-muted); }
+
+@media (max-width: 560px) {
+  .ring-dim { padding: 2px 5px; max-width: 74px; }
+  .ring-dim-value { font-size: .85rem; }
+  .ring-dim-label { font-size: .52rem; }
+  .score-center .score-big { font-size: 2.5rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ring-dim { transition: none; }
+  .ring-dim:hover, .ring-dim:focus-visible { transform: translate(-50%, -50%); }
+}
+.score-center .lbl { font-size: .68rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: .08em; margin-top: 2px; }
+
+/* C-6-3: the calibrated interval is the headline figure; the point
+   estimate sits beneath it, deliberately smaller. Both are forced LTR:
+   a numeric range reads low-to-high in every one of the four languages,
+   and letting it mirror under RTL would show it as high-to-low. */
+.score-center .score-range {
+  font-family: var(--font-mono); font-size: 1.75rem; line-height: 1;
+  color: var(--text-primary); white-space: nowrap;
+  direction: ltr; unicode-bidi: isolate;
+}
+.score-center .score-range .dash { opacity: .5; margin: 0 1px; }
+.score-center .score-point {
+  margin-top: 3px; font-family: var(--font-mono); font-size: .82rem;
+  color: var(--text-secondary);
+  direction: ltr; unicode-bidi: isolate;
+}
+
+/* Inner uncertainty track, at a smaller radius than the four dimension
+   arcs so the two readings never look like one bar. */
+.ring-range-track {
+  fill: none; stroke: var(--surface-border); stroke-width: 2.5; opacity: .4;
+}
+/* 0 -> score, so the gauge has a readable origin at the top. */
+.ring-range-progress {
+  fill: none; stroke: var(--text-secondary); stroke-width: 2.5;
+  stroke-linecap: butt; opacity: .75;
+}
+/* lower -> upper: deliberately the widest, softest stroke of the three,
+   so it reads as a tolerance around the end of the fill. */
+.ring-range-band {
+  fill: none; stroke: var(--accent, #22f5c6); stroke-width: 7;
+  stroke-linecap: round; opacity: .35;
+}
+.ring-range-tick {
+  stroke: var(--text-primary); stroke-width: 2; stroke-linecap: round; opacity: .85;
+}
+.score-center .score-sub {
+  margin-top: 6px; font-size: .78rem; font-family: var(--font-mono);
+  color: var(--text-secondary); background: var(--glass-bg); border: 1px solid var(--glass-border);
+  border-radius: var(--radius-pill); padding: 1px 9px; cursor: help;
+}
+.ring-legend {
+  display: flex; flex-wrap: wrap; gap: 6px 12px; justify-content: center;
+  margin-top: 12px; max-width: 232px;
+}
+.ring-legend-item {
+  display: inline-flex; align-items: center; gap: 5px; font-size: .68rem;
+  color: var(--text-secondary); font-family: var(--font-label);
+}
+.ring-legend-item i {
+  width: 8px; height: 8px; border-radius: 50%; background: var(--dot, var(--neon-cyan)); flex-shrink: 0;
+  box-shadow: 0 0 6px var(--dot, var(--neon-cyan));
+}
+.ring-legend-item.is-empty { opacity: .45; }
+.ring-legend-item.is-empty i { box-shadow: none; }
+.result-info { flex: 1; min-width: 220px; }
+.result-info h2 { margin-bottom: 8px; }
+.confidence-row { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+
+.result-grid { display: grid; grid-template-columns: 1.1fr .9fr; gap: var(--space-5); margin-top: var(--space-7); }
+@media (max-width: 800px) { .result-grid { grid-template-columns: 1fr; } }
+
+.shap-bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.shap-bar-row .name { width: 40%; font-size: .8rem; color: var(--text-secondary); font-family: var(--font-label); }
+.shap-bar-track { flex: 1; height: 18px; border-radius: var(--radius-pill); position: relative; }
+.shap-wave { position: absolute; inset: 0; }
+/* Direction drives the liquid colour: "decrease" pulls the wellness
+   score down (harmful) -> warm red; "increase" pushes it up -> green.
+   Same semantics as before, just rendered as liquid rather than a flat
+   gradient. An arrow glyph carries the same information for anyone who
+   cannot rely on colour alone. */
+.shap-wave.decrease { --wave-a: var(--accent-danger); --wave-b: #ff8a9a; }
+.shap-wave.increase { --wave-a: var(--accent-success); --wave-b: var(--neon-cyan); }
+.shap-dir { width: 16px; text-align: center; font-weight: 700; font-size: .9rem; flex-shrink: 0; }
+.shap-dir.decrease { color: var(--accent-danger); }
+.shap-dir.increase { color: var(--accent-success); }
+
+.conf-wave { --wave-a: var(--neon-cyan); --wave-b: var(--neon-blue); }
+
+/* Narrative summary: the human sentence the user meets before numbers. */
+.result-narrative {
+  font-family: var(--font-quote); font-size: 1.18rem; line-height: 1.6;
+  color: var(--text-primary); text-align: center;
+  max-width: 640px; margin: 0 auto var(--space-5);
+}
+@media (max-width: 560px) { .result-narrative { font-size: 1.02rem; } }
+
+.rec-card { border-radius: var(--radius-md); border: 1px solid var(--surface-border); background: var(--surface); padding: var(--space-4); margin-bottom: var(--space-3); }
+.rec-head { display: flex; align-items: center; gap: 10px; justify-content: space-between; margin-bottom: 6px; }
+.rec-title { display: flex; align-items: center; gap: 8px; font-weight: 600; }
+.rec-desc { font-size: .86rem; margin-bottom: 6px; }
+.rec-action { font-size: .82rem; color: var(--neon-cyan); }
+.rec-meta { font-size: .74rem; color: var(--text-muted); margin-top: 8px; border-top: 1px dashed var(--surface-border); padding-top: 6px; }
+
+.uncertainty-note { font-size: .82rem; color: var(--text-muted); background: var(--surface); border: 1px dashed var(--surface-border); border-radius: var(--radius-md); padding: var(--space-3); margin-top: var(--space-4); }
+
+.confidence-label {
+  font-size: .84rem; line-height: 1.55; margin-top: var(--space-4);
+  padding: var(--space-3) var(--space-4); border-radius: var(--radius-md);
+  background: var(--glass-bg); border: 1px solid var(--glass-border);
+  border-inline-start: 3px solid var(--text-muted);
+}
+.confidence-label.level-high { border-inline-start-color: var(--accent-success); }
+.confidence-label.level-moderate { border-inline-start-color: var(--accent-amber); }
+.confidence-label.level-low { border-inline-start-color: var(--accent-danger); }
+
+.ood-warning {
+  font-size: .82rem; line-height: 1.55; margin-top: var(--space-3);
+  padding: var(--space-3) var(--space-4); border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--accent-amber) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent-amber) 40%, transparent);
+  color: var(--text-primary);
+}
+
+.dimension-block { margin-top: var(--space-6); }
+.dimension-hint { font-size: .78rem; margin: 2px 0 var(--space-3); }
+.dimension-grid { display: grid; gap: 10px; }
+.dimension-row { display: flex; align-items: center; gap: 10px; }
+.dimension-row .name { width: 42%; font-size: .8rem; color: var(--text-secondary); font-family: var(--font-label); }
+.dimension-track { flex: 1; height: 14px; border-radius: var(--radius-pill); position: relative; background: var(--surface-strong); }
+.dim-wave { position: absolute; inset: 0; --wave-a: var(--neon-purple, #9b6bff); --wave-b: var(--neon-cyan); }
+
+.rec-exclude-btn {
+  margin-top: 8px; font-size: .72rem; background: none; border: 1px solid var(--surface-border);
+  color: var(--text-muted); border-radius: var(--radius-pill); padding: 3px 10px; cursor: pointer;
+  transition: color var(--dur-fast), border-color var(--dur-fast);
+}
+.rec-exclude-btn:hover, .rec-exclude-btn:focus-visible { color: var(--accent-danger); border-color: var(--accent-danger); }
+
+.rec-your-number {
+  font-size: .78rem; color: var(--text-secondary); background: var(--glass-bg);
+  border: 1px dashed var(--glass-border); border-radius: var(--radius-sm, 8px);
+  padding: 5px 9px; margin: 6px 0; display: inline-block;
+}
+
+.roadmap-block, .future-self-block { margin-top: var(--space-6); }
+.roadmap-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.roadmap-item {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  padding: 10px 14px; border-radius: var(--radius-md); background: var(--surface);
+  border: 1px solid var(--surface-border); font-size: .84rem;
+}
+.roadmap-day { font-weight: 600; flex-shrink: 0; }
+.roadmap-theme { color: var(--text-secondary); }
+.roadmap-task { color: var(--text-muted); font-size: .78rem; margin-inline-start: auto; }
+
+.future-self-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.future-self-card {
+  padding: var(--space-4); border-radius: var(--radius-md);
+  background: linear-gradient(150deg, color-mix(in srgb, var(--neon-cyan) 10%, transparent), color-mix(in srgb, var(--neon-blue) 6%, transparent));
+  border: 1px solid var(--glass-border);
+}
+.future-self-name { font-weight: 700; font-family: var(--font-label); margin-bottom: 6px; color: var(--neon-cyan); }
+.future-self-line { font-size: .86rem; line-height: 1.55; margin: 0; }
+/* What the path would actually have you do. Set apart from the
+   headline sentence - a dotted rule and quieter type - because it is
+   the concrete half: the sentence above is the model's reading, this is
+   the behaviour behind it. It is also the only thing distinguishing two
+   cards whose scores have converged near the top of the scale. */
+.future-self-changes {
+  margin: 8px 0 0;
+  padding-top: 8px;
+  border-top: 1px dashed var(--surface-border);
+  font-size: .78rem;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.result-actions { display: flex; gap: 10px; justify-content: center; margin-top: var(--space-6); flex-wrap: wrap; }
+
+.empty-state { text-align: center; padding: var(--space-8) var(--space-4); }
+.empty-state .big-emoji { font-size: 3rem; margin-bottom: var(--space-3); }
+
+/* The canvas had no sizing rule, so it fell back to the HTML default of
+   300x150 and sat in the top-left corner of its box - measured at
+   300x150 inside a 418x200 wrapper, which is what made the weekday
+   chart look tiny against the space reserved for it. Filling the
+   wrapper is what setupCanvas() already assumes: it reads
+   getBoundingClientRect() and scales the backing store by DPR. */
+.chart-canvas-wrap { position: relative; height: 240px; }
+.chart-canvas-wrap > canvas { width: 100%; height: 100%; display: block; }
+
+/* Tooltip shown when pointing at a bar. Positioned from JS against the
+   wrapper, which is why the wrapper is position:relative above. */
+.chart-tip {
+  position: absolute; z-index: 3; pointer-events: none;
+  transform: translate(-50%, -100%);
+  background: var(--surface-2, rgba(12, 22, 30, .96));
+  border: 1px solid var(--surface-border, rgba(255, 255, 255, .12));
+  border-radius: 10px; padding: 7px 10px;
+  font-size: .78rem; line-height: 1.35; white-space: nowrap;
+  color: var(--text-primary, #e9f6f4);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, .38);
+  opacity: 0; transition: opacity .12s ease;
+}
+.chart-tip.is-on { opacity: 1; }
+.chart-tip .tip-label { color: var(--text-muted, #6f8a89); margin-inline-end: 6px; }
+.chart-tip .tip-value { font-family: var(--font-mono); font-weight: 700; }
+.force-reduce-motion .chart-tip { transition: none; }
+
+.settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
+@media (max-width: 560px) { .settings-grid { grid-template-columns: 1fr; } }
+.settings-row { display: flex; align-items: center; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid var(--surface-border); }
+.settings-row:last-child { border-bottom: none; }
+
+/* B-2: the guide's own settings block, visually separated from the global
+   switches above it so it reads as its own thing rather than four more
+   toggles in the same list. */
+.settings-group {
+  margin: 8px 0; padding: 4px 12px 12px;
+  border: 1px solid var(--glass-border); border-radius: var(--radius-md);
+  background: var(--glass-bg);
+}
+.settings-group-title {
+  margin: 12px 0 2px; font-size: .82rem; font-weight: 600;
+  letter-spacing: .04em; text-transform: uppercase; color: var(--text-secondary);
+}
+.settings-group .settings-row:last-of-type { border-bottom: 1px solid var(--surface-border); }
+
+/* Per-language voice availability. Deliberately shows the unavailable
+   languages too rather than hiding them - "Persian: not available on this
+   device" is the information the user needs, and hiding it would look
+   like the app simply forgot Persian. */
+.guide-voice-status { margin-top: 10px; display: flex; flex-direction: column; gap: 4px; }
+.guide-voice-row {
+  display: flex; justify-content: space-between; gap: 10px;
+  font-size: .76rem; color: var(--text-muted);
+  padding: 3px 0;
+}
+.guide-voice-row.is-on { color: var(--text-secondary); }
+.guide-voice-state { opacity: .85; }
+.guide-voice-row.is-on .guide-voice-state { color: var(--accent-success, #22f5c6); }
+.guide-voice-hint { font-size: .72rem; margin: 8px 0 0; line-height: 1.5; }
+/* A disabled voice switch must look disabled, or it reads as broken. */
+.switch input:disabled + .track { opacity: .4; cursor: not-allowed; }
+
+/* ---- Friends League ---- */
+.league-rules-card { max-width: 640px; margin: 0 auto; }
+.league-rules-list { padding-inline-start: 20px; line-height: 1.8; font-size: .88rem; color: var(--text-secondary); margin-bottom: var(--space-4); }
+.league-accept-row { display: flex; align-items: flex-start; gap: 8px; font-size: .84rem; margin-bottom: var(--space-4); cursor: pointer; }
+.league-accept-row input { margin-top: 3px; accent-color: var(--neon-cyan); }
+
+.league-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-5); }
+@media (max-width: 760px) { .league-grid { grid-template-columns: 1fr; } }
+.league-code-row { display: flex; gap: 8px; align-items: center; margin: 10px 0; }
+.league-code { font-size: 1.3rem; letter-spacing: .12em; padding: 8px 14px; border-radius: var(--radius-md); background: var(--glass-bg); border: 1px solid var(--glass-border); }
+.league-code-row .input { flex: 1; }
+
+.league-category-checks { display: flex; flex-wrap: wrap; gap: 8px 16px; margin: 8px 0; }
+.league-cat-check { display: flex; align-items: center; gap: 6px; font-size: .78rem; color: var(--text-secondary); cursor: pointer; }
+.league-cat-check input { accent-color: var(--neon-cyan); }
+
+.league-list { display: grid; gap: 10px; }
+.league-row { padding: var(--space-4); border-radius: var(--radius-md); background: var(--surface); border: 1px solid var(--surface-border); }
+.league-row--self { border-color: var(--neon-cyan); background: color-mix(in srgb, var(--neon-cyan) 6%, var(--surface)); }
+.league-row-head { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+.league-row-actions { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+
+.league-whoami { margin: 0 0 6px; font-size: .76rem; opacity: .85; }
+.league-pill-wait {
+  display: inline-block; font-size: .68rem; padding: 1px 8px; border-radius: 999px;
+  background: color-mix(in srgb, var(--warning, #f5c542) 18%, transparent);
+  color: var(--warning, #f5c542);
+}
+/* The standings table. Ranks are a column of their own so the medals and
+   the plain numbers below them share one left edge, and the scores are
+   tabular so 9 and 71 line up on the decimal instead of drifting. */
+.league-standings {
+  display: grid; gap: 2px; margin-bottom: var(--space-4);
+  border: 1px solid var(--surface-border); border-radius: var(--radius-md);
+  overflow: hidden;
+}
+.league-standing {
+  display: grid; grid-template-columns: 2.2rem 1fr auto; align-items: center;
+  gap: 10px; padding: 9px var(--space-4); background: var(--surface);
+}
+.league-standing.is-self {
+  background: color-mix(in srgb, var(--neon-cyan) 10%, var(--surface));
+  box-shadow: inset 3px 0 0 var(--neon-cyan);
+}
+[dir="rtl"] .league-standing.is-self { box-shadow: inset -3px 0 0 var(--neon-cyan); }
+.league-standing-rank { font-size: .95rem; color: var(--text-muted); text-align: center; }
+.league-standing.is-self .league-standing-rank { color: var(--neon-cyan); }
+.league-standing-name {
+  font-size: .88rem; color: var(--text-secondary);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.league-standing.is-self .league-standing-name { color: var(--text-primary); font-weight: 600; }
+.league-standing-score { font-size: .95rem; color: var(--text-primary); font-variant-numeric: tabular-nums; }
+
+.league-progress-card { border-color: var(--neon-cyan); background: linear-gradient(160deg, color-mix(in srgb, var(--neon-cyan) 8%, var(--surface)), var(--surface)); }
+.league-progress-grid { display: flex; gap: var(--space-6); flex-wrap: wrap; margin: var(--space-4) 0; }
+.league-progress-stat { min-width: 140px; }
+.league-progress-num { font-size: 2.1rem; color: var(--neon-cyan); }
+.league-progress-num.is-up { color: var(--success, #22f5a0); }
+.league-progress-num.is-down { color: var(--danger, #ff6b6b); }
+.league-progress-lbl { font-size: .8rem; color: var(--text-muted); margin-top: 2px; }
+.league-future-wrap { margin-top: var(--space-4); padding-top: var(--space-4); border-top: 1px solid var(--surface-border); }
+.league-future-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+.league-future-chip { flex: 1; min-width: 130px; padding: 10px 14px; border-radius: var(--radius-md); background: var(--glass-bg); border: 1px solid var(--glass-border); text-align: center; }
+.league-future-chip .num { font-family: var(--font-mono); font-size: 1.15rem; color: var(--text-primary); }
+.league-future-chip .num.is-best { color: var(--neon-cyan); }
+.league-future-chip .lbl { font-size: .72rem; color: var(--text-muted); margin-top: 3px; }
+
+/* A-1: the compact trend strip. The old chart wrapper reserved a tall
+   block for a graph that said little; the strip needs a third of it. */
+.chart-canvas-wrap--strip { height: auto; min-height: 0; }
+.chart-canvas-wrap--strip canvas { width: 100%; display: block; }
+.trend-verdict {
+  font-family: var(--font-mono); font-size: .92rem; font-weight: 600;
+  margin-bottom: 6px; color: var(--text-secondary);
+}
+.trend-verdict.is-up { color: var(--accent-success, #22f5c6); }
+.trend-verdict.is-down { color: var(--accent-danger, #ff6b6b); }
+.trend-verdict.is-flat, .trend-verdict.is-unknown { color: var(--text-muted); }
+
+/* D-cards. Each is self-contained and removable; the section itself is
+   hidden by the controller when nothing had enough data to say. */
+.insight-cards { display: grid; gap: var(--space-3); }
+.insight-card {
+  position: relative; padding: var(--space-4) var(--space-5);
+  padding-inline-end: 34px;
+  border: 1px solid var(--glass-border); border-inline-start: 3px solid var(--surface-border);
+  border-radius: var(--radius-md); background: var(--glass-bg);
+}
+.insight-card.is-good { border-inline-start-color: var(--accent-success, #22f5c6); }
+.insight-card.is-warn { border-inline-start-color: var(--accent-danger, #ff6b6b); }
+.insight-card.is-info { border-inline-start-color: var(--neon-blue, #3aa7ff); }
+.insight-card h4 { margin: 0 0 6px; font-size: .95rem; }
+.insight-card p { margin: 0 0 4px; font-size: .86rem; line-height: 1.6; }
+.insight-card .insight-caveat { font-size: .74rem; color: var(--text-muted); margin-top: 6px; }
+.insight-card .insight-action { font-size: .82rem; color: var(--text-secondary); }
+.insight-dismiss {
+  position: absolute; top: 6px; inset-inline-end: 8px;
+  background: none; border: 0; cursor: pointer; padding: 2px 6px;
+  font-size: 1rem; line-height: 1; color: var(--text-muted); opacity: .6;
+  border-radius: var(--radius-sm);
+}
+.insight-dismiss:hover { opacity: 1; color: var(--text-primary); }
+.insight-dismiss:focus-visible { outline: 2px solid var(--accent, #22f5c6); outline-offset: 1px; opacity: 1; }
+
+/* D-8 weekly challenges. Several rows share one card so the section does
+   not turn into a wall of separate boxes. Logical properties throughout,
+   because the bar has to fill from the right in fa/ar. */
+.challenge-row { padding: 8px 0; border-block-end: 1px solid var(--glass-border); }
+.challenge-row:last-of-type { border-block-end: 0; }
+.challenge-head { display: flex; align-items: center; gap: 8px; font-size: .88rem; }
+.challenge-head .challenge-count {
+  margin-inline-start: auto; font-size: .76rem; color: var(--text-muted);
+  font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+.challenge-row.is-done .challenge-count { color: var(--accent-success, #22f5c6); }
+.challenge-desc { font-size: .8rem; color: var(--text-secondary); margin: 4px 0 6px !important; }
+.challenge-bar {
+  height: 6px; border-radius: 999px; background: var(--surface-border);
+  overflow: hidden;
+}
+.challenge-bar > span {
+  display: block; height: 100%; border-radius: inherit;
+  background: var(--neon-blue, #3aa7ff);
+  transition: width var(--dur-med, .35s) var(--ease-out, ease-out);
+}
+.challenge-row.is-done .challenge-bar > span { background: var(--accent-success, #22f5c6); }
+@media (prefers-reduced-motion: reduce) {
+  .challenge-bar > span { transition: none; }
+}
+
+/* D-10 letter. The unfolding is decoration only - the text is identical
+   with reduced motion, which just skips the animation. */
+.letter-card {
+  padding: var(--space-5); border-radius: var(--radius-lg);
+  border: 1px solid var(--glass-border); background: var(--glass-bg);
+  border-inline-start: 3px solid var(--neon-blue, #3aa7ff);
+}
+.letter-card.is-encouraging { border-inline-start-color: var(--accent-success, #22f5c6); }
+.letter-card h4 { margin: 0 0 10px; font-size: 1rem; }
+.letter-card .letter-body p { font-size: .9rem; line-height: 1.75; margin: 0 0 10px; }
+.letter-card .letter-sign { font-size: .82rem; color: var(--text-muted); margin: 12px 0 0; }
+.letter-card.letter-open { animation: letter-unfold var(--dur-med, .35s) var(--ease-out, ease-out); }
+@keyframes letter-unfold {
+  from { opacity: 0; transform: translateY(-6px) scaleY(.97); transform-origin: top; }
+  to   { opacity: 1; transform: none; }
+}
+.force-reduce-motion .letter-card.letter-open { animation: none; }
+
+/* Envelope opening ---------------------------------------------------
+   A sealed envelope whose flap swings open and releases the sheet. It
+   is decoration only - it carries no text, is aria-hidden, and every
+   path through the sequence ENDS with the letter readable. An animation
+   that can strand the sheet inside the envelope would hide the one
+   thing the reader came for, so .letter-instant (reduced motion, and a
+   2.2s safety timeout) is a complete, static, open state on its own. */
+.letter-scene { position: relative; }
+
+.letter-envelope {
+  position: absolute; inset-inline-start: 50%; top: 0;
+  width: 190px; height: 124px; margin-inline-start: -95px;
+  pointer-events: none; opacity: 0; z-index: 2;
+}
+.letter-envelope span { position: absolute; inset: 0; border-radius: var(--radius-md); }
+.env-back {
+  background: color-mix(in srgb, var(--neon-blue, #3aa7ff) 16%, var(--surface-strong, #101822));
+  border: 1px solid var(--glass-border);
+}
+.env-body {
+  top: auto; height: 74px;
+  background: color-mix(in srgb, var(--neon-blue, #3aa7ff) 26%, var(--surface-strong, #101822));
+  border: 1px solid var(--glass-border);
+  clip-path: polygon(0 0, 50% 42%, 100% 0, 100% 100%, 0 100%);
+}
+.env-flap {
+  height: 62px; transform-origin: top center;
+  background: color-mix(in srgb, var(--neon-blue, #3aa7ff) 34%, var(--surface-strong, #101822));
+  border: 1px solid var(--glass-border);
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+}
+.env-seal {
+  inset: auto; top: 46px; inset-inline-start: 50%; margin-inline-start: -11px;
+  width: 22px; height: 22px; line-height: 22px; text-align: center;
+  border-radius: 50%; font-size: .7rem;
+  color: var(--surface-strong, #101822);
+  background: var(--neon-cyan, #22f5c6);
+}
+
+/* Sealed: envelope shown, sheet tucked behind it and invisible. */
+.letter-sealed .letter-envelope { opacity: 1; }
+.letter-sealed .letter-card {
+  opacity: 0; transform: translateY(34px) scale(.94);
+  transform-origin: top center;
+}
+
+/* Opening: flap swings up and back, seal fades, sheet rises out, then
+   the envelope itself gets out of the way. */
+.letter-opening .env-flap {
+  animation: env-flap-open .55s var(--ease-out, cubic-bezier(.2,.8,.3,1)) forwards;
+}
+.letter-opening .env-seal { animation: env-seal-off .3s ease-out forwards; }
+.letter-opening .letter-card {
+  animation: letter-rise .8s .38s var(--ease-out, cubic-bezier(.2,.8,.3,1)) forwards;
+}
+.letter-opening .letter-envelope {
+  animation: env-clear .5s .95s ease-in forwards;
+}
+
+@keyframes env-flap-open {
+  from { transform: rotateX(0deg); }
+  to   { transform: rotateX(-172deg); }
+}
+@keyframes env-seal-off {
+  from { opacity: 1; transform: scale(1); }
+  to   { opacity: 0; transform: scale(.5); }
+}
+@keyframes letter-rise {
+  from { opacity: 0; transform: translateY(34px) scale(.94); }
+  60%  { opacity: 1; }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes env-clear {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(26px); }
+}
+
+/* The static open state: no envelope, letter fully readable. This is
+   what reduced motion gets, and what the safety timeout falls back to. */
+.letter-instant .letter-envelope { display: none; }
+.letter-instant .letter-card { opacity: 1; transform: none; animation: none; }
+
+.letter-dateline {
+  margin: 0 0 12px; font-size: .76rem; color: var(--text-muted);
+  font-family: var(--font-mono); letter-spacing: .02em;
+}
+
+.force-reduce-motion .letter-envelope { display: none; }
+.force-reduce-motion .letter-card { opacity: 1; transform: none; animation: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .letter-envelope { display: none; }
+  .letter-card { opacity: 1; transform: none; animation: none; }
+}
+
+/* ---------------------------------------------------------------
+   Badge wall (C-3) and Hall of Fame (D-2).
+
+   Locked tiles stay in the grid, dimmed and slightly blurred: the
+   brief asks for locked badges to be visible-but-obscured so there is
+   something to discover. They keep full contrast on their name, though
+   - an unreadable tile is not mysterious, it is broken.
+   --------------------------------------------------------------- */
+.badge-section + .badge-section { margin-top: var(--space-5); }
+.badge-section.is-private {
+  border-inline-start: 3px solid var(--neon-purple, #a78bfa);
+}
+
+.hall-summary { display: flex; align-items: baseline; gap: 8px; margin-bottom: var(--space-4); }
+.hall-count { font-size: 1.6rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+/* Missed plan days that could not be paid for with a badge. Deliberately
+   quieter than the wall above it: amber rather than red, and rendered
+   only when there is something to say. This page never tells anyone
+   they failed - it shows a count and the way back. */
+.violations-section { border-inline-start: 3px solid #ffc15e; }
+.violations-count { color: #ffc15e; }
+.violations-detail { font-size: .8rem; line-height: 1.6; margin-top: 10px; }
+
+.badge-shelf { margin-bottom: var(--space-5); }
+.badge-shelf-head {
+  display: flex; justify-content: space-between; align-items: baseline;
+  gap: 10px; margin: 0 0 10px; font-size: .9rem; letter-spacing: .02em;
+}
+.badge-shelf.tier-legendary .badge-shelf-head > span:first-child { color: #ffd479; }
+.badge-shelf.tier-rare .badge-shelf-head > span:first-child { color: #7fd4ff; }
+.badge-shelf.tier-common .badge-shelf-head > span:first-child { color: var(--text-secondary); }
+
+.badge-grid-lg {
+  display: grid; gap: var(--space-3);
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+}
+.badge-grid-lg.is-awareness { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+
+.badge-tile-lg {
+  display: flex; flex-direction: column; gap: 4px;
+  padding: var(--space-4); text-align: start;
+  border: 1px solid var(--glass-border); border-radius: var(--radius-md);
+  background: var(--glass-bg); color: var(--text-primary);
+  cursor: pointer; font: inherit;
+  animation: badge-in var(--dur-med, .35s) var(--ease-out, ease-out) both;
+}
+.badge-tile-lg:hover { border-color: var(--accent, #22f5c6); }
+.badge-tile-lg:focus-visible { outline: 2px solid var(--accent, #22f5c6); outline-offset: 2px; }
+
+.badge-tile-lg.tier-legendary.is-earned { box-shadow: inset 0 0 0 1px rgba(255, 212, 121, .45); }
+.badge-tile-lg.tier-rare.is-earned { box-shadow: inset 0 0 0 1px rgba(127, 212, 255, .38); }
+
+.badge-glyph { font-size: 1.9rem; line-height: 1; }
+.badge-name { font-weight: 600; font-size: .92rem; }
+.badge-tier { font-size: .68rem; text-transform: uppercase; letter-spacing: .08em; color: var(--text-muted); }
+.badge-desc { font-size: .78rem; color: var(--text-secondary); line-height: 1.55; }
+.badge-progress { font-size: .74rem; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+.badge-next { font-size: .78rem; color: var(--text-secondary); line-height: 1.55; margin-top: 4px; }
+.badge-private { font-size: .7rem; color: var(--neon-purple, #a78bfa); margin-top: 4px; }
+
+/* Locked: readable name, obscured detail. */
+.badge-tile-lg.is-locked { opacity: .55; }
+.badge-tile-lg.is-locked .badge-glyph { filter: grayscale(1) blur(1.5px); }
+.badge-tile-lg.is-locked .badge-desc { filter: blur(0.35px); }
+.badge-tile-lg.is-unknown .badge-glyph { filter: grayscale(1) blur(2.5px); }
+
+@keyframes badge-in {
+  from { opacity: 0; transform: translateY(10px) scale(.97); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Reduced motion: the tiles still arrive, they just do not cascade -
+   the information is simplified, not removed. */
+@media (prefers-reduced-motion: reduce) {
+  .badge-tile-lg { animation: none; }
+}
+
+/* ---------------------------------------------------------------
+   The two horizons. Today's score and the seven-day band come from
+   two different models with two different targets, and the whole point
+   of this row is that a reader can never again mistake one for the
+   other.
+   --------------------------------------------------------------- */
+.horizon-row {
+  display: flex; align-items: stretch; gap: var(--space-3);
+  margin: var(--space-5) 0 var(--space-4);
+}
+.horizon-card {
+  flex: 1; display: flex; flex-direction: column; gap: 2px;
+  padding: var(--space-4); text-align: center; cursor: pointer;
+  border: 1px solid var(--glass-border); border-radius: var(--radius-md);
+  background: var(--glass-bg); font: inherit; color: inherit;
+  transition: border-color var(--dur-fast);
+}
+.horizon-card:hover, .horizon-card:focus-visible {
+  border-color: var(--accent, #22f5c6); outline: none;
+}
+.horizon-card.is-future { border-inline-start: 3px solid var(--neon-blue, #3aa7ff); }
+.horizon-card.is-today { border-inline-start: 3px solid var(--accent, #22f5c6); }
+.horizon-when {
+  font-size: .68rem; text-transform: uppercase; letter-spacing: .09em;
+  color: var(--text-muted);
+}
+.horizon-value {
+  font-family: var(--font-mono); font-weight: 700; font-size: 1.6rem;
+  line-height: 1.15; color: var(--text-primary);
+}
+.horizon-card.is-today .horizon-value { direction: ltr; unicode-bidi: isolate; }
+.horizon-band {
+  font-family: var(--font-mono); font-size: .8rem; color: var(--text-secondary);
+  direction: ltr; unicode-bidi: isolate;
+}
+.horizon-what { font-size: .7rem; color: var(--text-muted); line-height: 1.4; }
+/* Logical property, so the arrow points from today toward the future in
+   both directions - in RTL the cards mirror and a fixed → would point
+   backwards. */
+.horizon-arrow {
+  align-self: center; color: var(--text-muted); font-size: 1.2rem;
+}
+html[dir="rtl"] .horizon-arrow { transform: scaleX(-1); }
+
+@media (max-width: 560px) {
+  .horizon-row { flex-direction: column; }
+  .horizon-arrow { transform: rotate(90deg); }
+  html[dir="rtl"] .horizon-arrow { transform: rotate(90deg); }
+}
+
+/* ---------------------------------------------------------------
+   Section E games. One shell for all five, because they differ in
+   what they ask, not in how they look.
+   --------------------------------------------------------------- */
+.games-section { margin-top: var(--space-5); }
+.games-mount { display: grid; gap: var(--space-3); }
+.game-card {
+  position: relative; padding: var(--space-4) var(--space-5);
+  padding-inline-end: 34px;
+  border: 1px solid var(--glass-border); border-radius: var(--radius-md);
+  background: var(--glass-bg);
+  border-inline-start: 3px solid var(--neon-purple, #a78bfa);
+}
+.game-head { display: flex; align-items: center; gap: 8px; }
+.game-card.has-guide .game-head { cursor: help; }
+.game-head h4 { margin: 0 0 2px; font-size: .95rem; }
+.game-icon { font-size: 1.15rem; }
+.game-body p { margin: 6px 0; font-size: .86rem; line-height: 1.6; }
+.game-dismiss {
+  position: absolute; top: 6px; inset-inline-end: 8px;
+  background: none; border: 0; cursor: pointer; padding: 2px 6px;
+  font-size: 1rem; line-height: 1; color: var(--text-muted); opacity: .6;
+  border-radius: var(--radius-sm);
+}
+.game-dismiss:hover { opacity: 1; color: var(--text-primary); }
+.game-dismiss:focus-visible { outline: 2px solid var(--accent, #22f5c6); outline-offset: 1px; opacity: 1; }
+
+.game-guess-row { display: flex; align-items: center; gap: 12px; margin: 10px 0; }
+.game-slider { flex: 1; accent-color: var(--accent, #22f5c6); }
+.game-guess-value {
+  font-family: var(--font-mono); font-weight: 700; font-size: 1.2rem;
+  min-width: 3ch; text-align: center; direction: ltr; unicode-bidi: isolate;
+}
+.game-guess-row.is-locked { opacity: .6; }
+.game-guess-row.is-locked .game-slider { pointer-events: none; }
+
+.game-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+.game-choices { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0 4px; }
+.game-choice {
+  flex: 1 1 auto; min-width: 130px; padding: 9px 12px; cursor: pointer;
+  border: 1px solid var(--surface-border); border-radius: var(--radius-md);
+  background: var(--surface); color: var(--text-primary);
+  font: inherit; font-size: .84rem; text-align: center;
+  transition: border-color var(--dur-fast), background var(--dur-fast);
+}
+.game-choice:hover:not(:disabled) { border-color: var(--accent, #22f5c6); }
+.game-choice:focus-visible { outline: 2px solid var(--accent, #22f5c6); outline-offset: 2px; }
+.game-choice:disabled { cursor: default; }
+/* The right answer is always marked, whichever one was picked - the
+   point is to leave knowing the answer, not to be graded. */
+.game-choice.is-answer { border-color: var(--accent-success, #22f5c6); background: rgba(34,245,198,.1); }
+.game-choice.is-other { opacity: .5; }
+
+.game-sentence {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  font-size: .9rem; margin: 10px 0;
+}
+.game-blank {
+  min-width: 60px; padding: 2px 10px; text-align: center;
+  border-bottom: 2px dashed var(--text-muted); color: var(--text-secondary);
+  font-size: .82rem;
+}
+.game-subject { font-family: var(--font-mono); font-size: .88rem; }
+/* The digits are isolated LTR by the span inside, not by dir on the
+   block - dir="ltr" on a block also left-aligns it, which put the
+   number on the wrong side of an RTL card. */
+.game-streak-value {
+  font-family: var(--font-mono); font-weight: 700; font-size: 2.2rem;
+  line-height: 1; color: var(--accent-amber, #ffd166);
+  margin: 4px 0 0 !important; text-align: start;
+}
+
+.game-verdict {
+  margin-top: 10px; padding: 10px 12px; border-radius: var(--radius-sm);
+  background: var(--surface); border-inline-start: 3px solid var(--surface-border);
+}
+.game-verdict.is-close { border-inline-start-color: var(--accent-success, #22f5c6); }
+.game-verdict.is-far { border-inline-start-color: var(--neon-blue, #3aa7ff); }
+.game-verdict p { margin: 0 0 4px; font-size: .82rem; line-height: 1.6; }
+.game-verdict .game-verdict-head { font-weight: 600; font-size: .88rem; }
+/* G7: reduced motion drops the reveal animation, never the reveal. */
+.game-verdict.is-revealing { animation: game-reveal var(--dur-med, .35s) var(--ease-out, ease-out); }
+@keyframes game-reveal {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* ---------------------------------------------------------------
+   D-1 League chat.
+   --------------------------------------------------------------- */
+.chat-card { margin-top: var(--space-5); }
+.chat-head-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.chat-layout { display: grid; grid-template-columns: minmax(160px, 220px) 1fr; gap: var(--space-4); margin-top: var(--space-3); }
+.chat-sidebar { display: flex; flex-direction: column; gap: 6px; max-height: 380px; overflow-y: auto; }
+.chat-conversation {
+  display: flex; align-items: center; gap: 8px; width: 100%;
+  padding: 9px 11px; cursor: pointer; text-align: start; font: inherit;
+  border: 1px solid var(--surface-border); border-radius: var(--radius-md);
+  background: var(--surface); color: var(--text-primary); font-size: .84rem;
+}
+.chat-conversation:hover { border-color: var(--accent, #22f5c6); }
+.chat-conversation.is-active { border-color: var(--accent, #22f5c6); background: rgba(34,245,198,.08); }
+.chat-conversation-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* The row wraps the thread button and its rename control so the two are
+   separate hit targets - opening a thread and renaming it must never be
+   the same gesture. */
+.chat-conversation-row { display: flex; align-items: stretch; gap: 4px; }
+.chat-conversation-row .chat-conversation { flex: 1 1 auto; min-width: 0; }
+.chat-conversation-rename {
+  flex: 0 0 auto; padding: 0 8px; cursor: pointer; font-size: .78rem;
+  border: 1px solid var(--surface-border); border-radius: var(--radius-md);
+  background: var(--surface); color: var(--text-muted);
+  opacity: .6; transition: opacity var(--dur-fast), border-color var(--dur-fast);
+}
+.chat-conversation-rename:hover, .chat-conversation-rename:focus-visible {
+  opacity: 1; border-color: var(--accent, #22f5c6); color: var(--text-primary);
+}
+
+.chat-main { display: flex; flex-direction: column; min-width: 0; }
+.chat-thread-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 30px; }
+.chat-thread {
+  flex: 1; min-height: 220px; max-height: 380px; overflow-y: auto;
+  display: flex; flex-direction: column; gap: 8px; padding: 8px 2px;
+}
+.chat-message {
+  max-width: 78%; padding: 8px 11px; border-radius: var(--radius-md);
+  background: var(--surface); border: 1px solid var(--surface-border);
+  align-self: flex-start;
+}
+/* Logical alignment: your own messages sit on the end side, which
+   mirrors correctly in RTL without a second rule. */
+.chat-message.is-mine {
+  align-self: flex-end; background: rgba(34,245,198,.1);
+  border-color: rgba(34,245,198,.35);
+}
+.chat-sender { display: block; font-size: .68rem; color: var(--text-muted); margin-bottom: 2px; }
+.chat-body { margin: 0; font-size: .86rem; line-height: 1.55; white-space: pre-wrap; word-break: break-word; }
+.chat-body.is-deleted { font-style: italic; color: var(--text-muted); }
+.chat-time { display: block; font-size: .64rem; color: var(--text-muted); margin-top: 3px; }
+.chat-actions { display: flex; gap: 6px; margin-top: 5px; opacity: 0; transition: opacity var(--dur-fast); }
+.chat-message:hover .chat-actions, .chat-message:focus-within .chat-actions { opacity: 1; }
+.chat-action {
+  background: none; border: 0; padding: 0; cursor: pointer; font: inherit;
+  font-size: .68rem; color: var(--text-muted); text-decoration: underline;
+}
+.chat-action:hover { color: var(--text-primary); }
+.chat-action.is-danger:hover { color: var(--accent-danger, #ff6b6b); }
+.chat-composer { display: flex; gap: 8px; align-items: flex-end; margin-top: 8px; }
+.chat-composer .input { flex: 1; resize: vertical; min-height: 44px; }
+
+@media (max-width: 640px) {
+  .chat-layout { grid-template-columns: 1fr; }
+  .chat-sidebar { flex-direction: row; overflow-x: auto; max-height: none; }
+  .chat-conversation { flex: 0 0 auto; }
+  /* The sidebar turns into a horizontal strip here, so the row must
+     stop growing too - otherwise each thread takes the full width and
+     the strip scrolls one conversation at a time. */
+  .chat-conversation-row { flex: 0 0 auto; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .chat-actions { transition: none; opacity: 1; }
+}
+
+/* ---- Saved check-ins (DWCsvLibrary) ------------------------------
+   The result page's save box, and the list of saved files on the
+   check-in screen. Laid out so a long user-chosen name truncates
+   instead of pushing the buttons off the row - names are free text and
+   Persian/Arabic ones run longer than the English placeholder. */
+.csv-save-card { margin-top: var(--space-5); }
+.csv-save-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: var(--space-3); }
+.csv-save-row input {
+  flex: 1 1 240px; min-width: 0;
+  padding: 9px 12px; border-radius: var(--radius-pill);
+  background: var(--surface); color: var(--text-primary);
+  border: 1px solid var(--surface-border); font-family: var(--font-body);
+}
+.csv-save-status:empty { display: none; }
+.csv-save-status { margin-top: 8px; }
+
+.csv-history-card { margin-top: var(--space-4); }
+.csv-history-head {
+  display: flex; gap: 10px; align-items: center;
+  justify-content: space-between; flex-wrap: wrap;
+}
+.csv-history-tabs { display: flex; gap: 6px; }
+.csv-tab {
+  padding: 6px 14px; border-radius: var(--radius-pill); cursor: pointer;
+  font-family: var(--font-label); font-size: .8rem;
+  background: transparent; color: var(--text-secondary);
+  border: 1px solid var(--surface-border);
+}
+.csv-tab.active {
+  background: linear-gradient(90deg, var(--neon-cyan), var(--neon-blue));
+  color: #04140f; border-color: transparent;
+}
+.csv-history-list { display: flex; flex-direction: column; gap: 8px; margin-top: var(--space-3); }
+.csv-history-row { display: flex; gap: 6px; align-items: stretch; }
+.csv-history-load {
+  flex: 1 1 auto; min-width: 0; cursor: pointer; text-align: start;
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px; border-radius: var(--radius-md);
+  background: var(--surface); color: var(--text-primary);
+  border: 1px solid var(--surface-border); font-family: var(--font-body);
+  transition: border-color var(--dur-fast), background var(--dur-fast);
+}
+.csv-history-load:hover { border-color: var(--neon-cyan); background: var(--surface-strong); }
+.csv-history-name { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.csv-history-meta { color: var(--text-secondary); font-size: .78rem; flex: 0 0 auto; }
+.csv-history-score {
+  flex: 0 0 auto; font-family: var(--font-mono); font-size: .78rem;
+  padding: 2px 8px; border-radius: var(--radius-pill);
+  background: var(--surface-strong); color: var(--text-secondary);
+}
+.csv-history-dl, .csv-history-del {
+  flex: 0 0 auto; cursor: pointer; width: 40px;
+  border-radius: var(--radius-md); background: transparent;
+  color: var(--text-secondary); border: 1px solid var(--surface-border);
+}
+.csv-history-dl:hover { color: var(--text-primary); border-color: var(--neon-cyan); }
+.csv-history-del:hover { color: #ff6b7a; border-color: #ff6b7a; }
+
+/* Reopened past check-in -------------------------------------------
+   The result screen is byte-identical whether the check-in happened
+   ten seconds or ten days ago, so a reopened day says so at the top.
+   Left unmarked, an old score reads as today's. */
+.past-day-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: var(--space-4);
+  padding: 10px 14px;
+  border: 1px solid var(--neon-cyan);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--neon-cyan) 8%, transparent);
+  font-size: .85rem;
+  color: var(--text-primary);
+}
+.past-day-banner .btn { flex-shrink: 0; }
+
+
+/* ---- The demo picker's lapsed tick ----
+   Every other control in that picker chooses WHO the demo user is;
+   this one chooses whether they kept up, which is what doubles the
+   catalogue from sixteen states to thirty-two. */
+.demo-picker-tick {
+  display: flex; align-items: center; gap: 9px;
+  font-size: .86rem; font-weight: 600; cursor: pointer;
+  padding: 9px 12px; border-radius: 12px;
+  border: 1px solid rgba(255, 193, 94, .32);
+  background: linear-gradient(135deg, rgba(255, 193, 94, .09), rgba(255, 193, 94, .02));
+}
+.demo-picker-tick input { accent-color: #ffc15e; flex-shrink: 0; }
+
+/* Why the seven-day band moved. Quiet by design - the band is the
+   figure, this is its footnote - but present, because a number that
+   shifts for a personal reason has to be able to name the reason. */
+.horizon-momentum {
+  display: block;
+  margin-top: 4px;
+  font-size: .7rem;
+  line-height: 1.4;
+  color: var(--neon-cyan);
+  opacity: .9;
+}
+
+/* Hour/minute pair for the sleep-window question. Laid out with flex
+   and a gap so the colon sits between the two selects in either
+   writing direction - see the markup comment for why these are selects
+   and not <input type="time">. */
+.time-select-row { display: flex; align-items: center; gap: var(--space-2); }
+.time-select-row select.input { flex: 1; min-width: 5.5rem; text-align: center; }
+.time-select-sep { color: var(--text-secondary); font-weight: 600; }
+
+/* Week menu on the weekly plan page. Chips wrap rather than scroll: a
+   long-running user has many weeks and a hidden horizontal scrollbar is
+   how a week goes unnoticed. */
+.week-chip-row { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-3); }
+.week-chip {
+  display: inline-flex; align-items: baseline; gap: 8px;
+  padding: 8px 14px; border-radius: 999px; cursor: pointer;
+  background: var(--bg-1); color: var(--text-secondary);
+  border: 1px solid var(--surface-border);
+  font-family: var(--font-label); font-size: .84rem;
+  transition: border-color var(--dur-fast), color var(--dur-fast), background-color var(--dur-fast);
+}
+.week-chip:hover { border-color: var(--neon-cyan); color: var(--text-primary); }
+.week-chip.is-selected {
+  background: var(--surface-2); color: var(--text-primary);
+  border-color: var(--neon-cyan);
+}
+.week-chip.is-current .week-chip-label::after { content: ' •'; color: var(--neon-cyan); }
+.week-chip-count { font-family: var(--font-mono); font-size: .76rem; color: var(--text-muted); }

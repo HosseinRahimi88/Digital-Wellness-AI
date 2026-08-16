@@ -1,0 +1,144 @@
+{
+  "project": "Digital Wellness AI",
+  "task": "persona_clustering",
+  "version": "1.0.0",
+  "saved_at": "2026-08-15T17:49:25.179927",
+  "algorithm": "KMeans",
+  "k": 5,
+  "candidate_k_values": [
+    4,
+    5,
+    6,
+    7
+  ],
+  "silhouette_score": 0.0779,
+  "training_rows": 80312,
+  "feature_names": [
+    "sleep_hours",
+    "sleep_quality_1_10",
+    "stress_0_10",
+    "mental_fatigue_0_10",
+    "happiness_0_10",
+    "loneliness_1_10",
+    "life_satisfaction_1_10",
+    "social_ratio",
+    "gaming_ratio",
+    "night_ratio",
+    "fragmentation_index_0_100",
+    "focus_0_100",
+    "productivity_0_100",
+    "digital_dependence_0_100",
+    "physical_activity_min_per_day"
+  ],
+  "python_version": "3.11.15",
+  "pandas_version": "3.0.5",
+  "sklearn_version": "1.8.0",
+  "clusters": [
+    {
+      "cluster_id": 0,
+      "name": "Fragmented-Attention High-Stress",
+      "size": 14071,
+      "size_pct": 17.52,
+      "defining_traits": [
+        {
+          "feature": "fragmentation_index_0_100",
+          "z_score": 1.238,
+          "direction": "high",
+          "value": 31.99
+        },
+        {
+          "feature": "stress_0_10",
+          "z_score": 1.091,
+          "direction": "high",
+          "value": 7.54
+        }
+      ]
+    },
+    {
+      "cluster_id": 1,
+      "name": "Content Restless-Sleeper",
+      "size": 20970,
+      "size_pct": 26.11,
+      "defining_traits": [
+        {
+          "feature": "happiness_0_10",
+          "z_score": 0.464,
+          "direction": "high",
+          "value": 7.85
+        },
+        {
+          "feature": "sleep_quality_1_10",
+          "z_score": -0.457,
+          "direction": "low",
+          "value": 5.48
+        }
+      ]
+    },
+    {
+      "cluster_id": 2,
+      "name": "Low-Stress Productive",
+      "size": 19301,
+      "size_pct": 24.03,
+      "defining_traits": [
+        {
+          "feature": "stress_0_10",
+          "z_score": -0.789,
+          "direction": "low",
+          "value": 4.32
+        },
+        {
+          "feature": "productivity_0_100",
+          "z_score": 0.744,
+          "direction": "high",
+          "value": 71.77
+        }
+      ]
+    },
+    {
+      "cluster_id": 3,
+      "name": "Night-Owl Social-Media-Heavy",
+      "size": 11956,
+      "size_pct": 14.89,
+      "defining_traits": [
+        {
+          "feature": "night_ratio",
+          "z_score": 1.516,
+          "direction": "high",
+          "value": 0.25
+        },
+        {
+          "feature": "fragmentation_index_0_100",
+          "z_score": -0.89,
+          "direction": "low",
+          "value": 11.01
+        },
+        {
+          "feature": "social_ratio",
+          "z_score": 0.843,
+          "direction": "high",
+          "value": 0.32
+        }
+      ]
+    },
+    {
+      "cluster_id": 4,
+      "name": "Low-Mood High-Stress",
+      "size": 14014,
+      "size_pct": 17.45,
+      "defining_traits": [
+        {
+          "feature": "happiness_0_10",
+          "z_score": -0.871,
+          "direction": "low",
+          "value": 3.84
+        },
+        {
+          "feature": "stress_0_10",
+          "z_score": 0.598,
+          "direction": "high",
+          "value": 6.7
+        }
+      ]
+    }
+  ]
+}

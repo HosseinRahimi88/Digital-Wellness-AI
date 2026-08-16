@@ -1,0 +1,262 @@
+name: CI
+
+# The suite has 1,700+ tests and, until this file existed, nothing ran
+# them but a person remembering to. A green README badge that nobody can
+# reproduce is worth less than a red one that anybody can.
+#
+# Four jobs, deliberately separate, because they fail for unrelated
+# reasons and a single job would hide which:
+#
+#   tests     the Python suite - the bulk of it
+#   frontend  the coach's own runners, executed under Node against the
+#             real frontend files
+#   hygiene   the repository rules that are easy to break by accident
+#             and expensive to discover later (user data, secrets)
+#   smoke     the app actually starts and serves - the one thing a unit
+#             test cannot tell you
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+
+# A second push to the same branch cancels the first. Nobody needs the
+# results of a commit that has already been replaced.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Every job that touches auth needs one. A fixed test value is correct
+  # here and would be a serious mistake anywhere else - utils/tokens.py
+  # refuses anything under 32 characters, which is what stops this
+  # pattern reaching production by habit.
+  JWT_SECRET_KEY: ci-only-not-a-secret-0123456789abcdef
+  # Nothing in CI may reach a real mail server, and the log transport
+  # would print reset tokens into the build output.
+  MAIL_TRANSPORT: memory
+
+jobs:
+  tests:
+    name: Python suite
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          # 3.12 is what the Dockerfile builds on. Testing a version the
+          # app is not deployed on tests the wrong thing.
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Confirm the pinned sklearn is the one that is installed
+        # The artifacts are pickles of fitted sklearn estimators and the
+        # pin in requirements.txt is a hard `==` for that reason. A
+        # resolver that quietly satisfied it with another minor version
+        # would either raise on load or - worse - deserialize into a
+        # subtly different estimator and pass every test while scoring
+        # differently.
+        run: |
+          python - <<'PY'
+          import json, pathlib, sklearn
+          info = json.loads(pathlib.Path("artifacts/model_info.json").read_text())
+          trained = info.get("sklearn_version")
+          print(f"installed={sklearn.__version__} artifacts={trained}")
+          if trained and sklearn.__version__ != trained:
+              raise SystemExit(
+                  f"sklearn {sklearn.__version__} != the {trained} the artifacts "
+                  f"were fitted with - unpickling is not guaranteed across minor versions."
+              )
+          PY
+
+      - name: Run the suite
+        run: python -m unittest discover -s tests -t . -v
+
+      - name: Both storage engines
+        # The SQLite backend is opt-in, so the default run never touches
+        # it. Re-running the API tests against it is what makes it a
+        # supported path rather than a directory of untested code.
+        env:
+          DWAI_STORAGE_BACKEND: sqlite
+          DWAI_SQLITE_PATH: ${{ runner.temp }}/ci.db
+        run: python -m unittest discover -s tests/api -t .
+
+  frontend:
+    name: Frontend and coach
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Syntax-check every module
+        # No build step means nothing else ever parses these files. A
+        # stray character reaches the user as a blank page.
+        run: |
+          find frontend/assets/js -name '*.js' -print0 \
+            | xargs -0 -n1 node --check
+          echo "parsed $(find frontend/assets/js -name '*.js' | wc -l) modules"
+
+      - name: Coach coverage, precision and refusals
+        # The repository root is argv[2] - the runners load the real
+        # frontend modules by absolute path and exit non-zero without it.
+        # Verified: invoked bare, six of the thirteen fail.
+        run: |
+          for runner in tests/js/*_runner.js; do
+            echo "--- $runner"
+            node "$runner" "$PWD"
+          done
+
+  hygiene:
+    name: Repository hygiene
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # The user-data check needs history, not just the tip: a file
+          # deleted in the last commit is still in the repository.
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: No user data anywhere in the tree
+        # storage/ holds real accounts - email plus argon2 hash - and
+        # real logged days. It has reached a public branch before (see
+        # SECURITY.md), and once was enough.
+        run: |
+          leaked=$(git ls-files | grep -E '(^|/)storage/.*\.json$' || true)
+          if [ -n "$leaked" ]; then
+            echo "::error::user-data stores are tracked:"; echo "$leaked"; exit 1
+          fi
+          echo "no storage/*.json tracked, at any depth"
+
+      - name: No populated secrets in .env.example
+        # The template is committed and the real .env is not. A filled-in
+        # value here is a credential published on purpose by accident.
+        run: |
+          filled=$(grep -nE '^(JWT_SECRET_KEY|SESSION_SECRET_KEY|SMTP_PASSWORD|[A-Z_]*CLIENT_SECRET)=.+$' .env.example || true)
+          if [ -n "$filled" ]; then
+            echo "::error::.env.example has a populated secret:"; echo "$filled"; exit 1
+          fi
+          echo ".env.example carries no values"
+
+      - name: The reset token never reaches the response
+        # The regression this repository has already had once. Pinned by
+        # a test too, and repeated here because it is the one defect
+        # whose reappearance is worth failing the build on its own.
+        run: |
+          if grep -nE 'reset_token\s*=\s*reset_token' api/routers/auth.py; then
+            echo "::error::/auth/forgot-password is returning the reset token again"; exit 1
+          fi
+          echo "the reset code leaves by mail only"
+
+      - name: Every module compiles
+        run: python -m compileall -q api core models services utils tests
+
+  smoke:
+    name: It actually starts
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Start the app the way a user does
+        run: |
+          nohup python run.py --port 8000 --no-browser > /tmp/app.log 2>&1 &
+          for i in $(seq 1 40); do
+            if curl -fsS -m 2 http://127.0.0.1:8000/health >/dev/null 2>&1; then
+              echo "up after ${i}s"; exit 0
+            fi
+            sleep 1
+          done
+          echo "::error::the app never became healthy"; tail -50 /tmp/app.log; exit 1
+
+      - name: Models are loaded, not merely importable
+        run: curl -fsS http://127.0.0.1:8000/health/ready | tee /dev/stderr | grep -q '"status"'
+
+      - name: A real prediction, end to end
+        # Register, log a day, get a score. This is the whole product in
+        # four calls, and it catches the class of breakage where every
+        # unit passes and the app serves 500s.
+        run: |
+          python - <<'PY'
+          import json, time, urllib.request
+
+          BASE = "http://127.0.0.1:8000/api/v1"
+
+          def call(path, body=None, token=None):
+              data = json.dumps(body).encode() if body is not None else None
+              headers = {"Content-Type": "application/json"}
+              if token:
+                  headers["Authorization"] = f"Bearer {token}"
+              req = urllib.request.Request(BASE + path, data=data, headers=headers)
+              with urllib.request.urlopen(req, timeout=30) as response:
+                  return json.loads(response.read() or b"{}")
+
+          email = f"ci{int(time.time())}@example.com"
+          session = call("/auth/register", {
+              "email": email, "password": "password123", "display_name": "CI",
+          })
+          assert session["access_token"], "no access token"
+          assert session["refresh_token"], "no refresh token"
+
+          # The schema endpoint answers with a list, not an object. Written
+          # for a dict first, which crashed here rather than in production -
+          # which is the point of a smoke test that exercises real shapes.
+          schema = call("/schema/features")
+          fields = schema if isinstance(schema, list) else (
+              schema.get("fields") or schema.get("features") or []
+          )
+          assert len(fields) > 40, f"only {len(fields)} schema fields"
+          print(f"{len(fields)} schema fields")
+
+          renewed = call("/auth/refresh", {"refresh_token": session["refresh_token"]})
+          assert renewed["access_token"], "refresh did not renew"
+
+          replay = None
+          try:
+              call("/auth/refresh", {"refresh_token": session["refresh_token"]})
+              replay = "accepted"
+          except urllib.error.HTTPError as error:
+              replay = error.code
+          assert replay == 401, f"a spent refresh token was accepted ({replay})"
+
+          forgot = call("/auth/forgot-password", {"email": email})
+          assert "reset_token" not in json.dumps(forgot), "the reset code is in the response"
+
+          print("register -> refresh -> rotation -> reset: all correct")
+          PY
+
+      - name: Server log has no unhandled errors
+        if: always()
+        run: |
+          if grep -qE '"level": "(ERROR|CRITICAL)"' /tmp/app.log; then
+            echo "::error::the server logged an error while serving:"
+            grep -E '"level": "(ERROR|CRITICAL)"' /tmp/app.log | head -20
+            exit 1
+          fi
+          echo "clean"

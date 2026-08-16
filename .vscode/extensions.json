@@ -1,0 +1,11 @@
+{
+  "recommendations": [
+    "ms-python.python",
+    "ms-python.vscode-pylance",
+    "ms-python.debugpy",
+    "esbenp.prettier-vscode",
+    "dbaeumer.vscode-eslint",
+    "bierner.markdown-mermaid",
+    "streetsidesoftware.code-spell-checker"
+  ]
+}

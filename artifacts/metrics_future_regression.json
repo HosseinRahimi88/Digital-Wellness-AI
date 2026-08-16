@@ -1,0 +1,45 @@
+{
+  "task": "future_regression",
+  "target_column": "future_health_score_7d",
+  "horizon": "7_days_ahead",
+  "model_name": "hist_gradient_boosting_regressor",
+  "training_seconds": 18.4,
+  "validation": {
+    "R2": 0.9534,
+    "MAE": 1.6407,
+    "RMSE": 2.1647
+  },
+  "test": {
+    "R2": 0.959,
+    "MAE": 1.4711,
+    "RMSE": 1.9928
+  },
+  "cv_r2_mean": 0.9457,
+  "cv_r2_std": 0.0061,
+  "baseline_predict_today": {
+    "R2": 0.9011,
+    "MAE": 1.4523,
+    "RMSE": 3.1553,
+    "description": "Predicting today's score unchanged, scored against the same seven-day-ahead target on the same validation split."
+  },
+  "mae_improvement_over_baseline_pct": -12.97,
+  "beats_baseline": false,
+  "two_stage": {
+    "description": "The seven-day classifier picks the band; the user's own within-band position today picks the place inside it. No new model is trained - this reuses the shipped classifier.",
+    "validation": {
+      "R2": 0.9613,
+      "MAE": 1.1301,
+      "RMSE": 1.9732
+    },
+    "test": {
+      "R2": 0.9619,
+      "MAE": 1.0537,
+      "RMSE": 1.9215
+    },
+    "mae_improvement_over_baseline_pct": 22.19,
+    "beats_baseline": true
+  },
+  "shipped_estimator": "two_stage",
+  "minimum_improvement_required_pct": 15.0,
+  "honest_description": "R-squared here is measured against a CONSTRUCTED target - the real seven-day-ahead class label expanded into a score by within-band rank persistence (see models/augment_future_score.py). It is not a measurement of how accurately anyone's real score seven days from now is predicted, and the training data is synthetic to begin with."
+}

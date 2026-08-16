@@ -1,0 +1,67 @@
+.venv
+# The split CSVs are tracked deliberately (force-added) so the repository
+# is retrainable. `data/*` blanket-ignores the folder so that a stray
+# export or a scratch CSV cannot be committed by accident; everything
+# that belongs in the repository is un-ignored by name below.
+data/*
+!data/README.md
+!data/train.csv
+!data/validation.csv
+!data/test.csv
+# The seven-day-ahead target, built from the three splits above by
+# models/augment_future_score.py. Tracked so a clone can retrain the
+# future-score model without regenerating it first, and so the exact
+# target the shipped numbers were measured against is on the record.
+!data/train_augmented.csv
+!data/validation_augmented.csv
+!data/test_augmented.csv
+!data/archive_pre_user_split_fix/
+__pycache__/
+*.pyc
+# Real secrets. .env carries the live JWT signing key; anything holding
+# it could mint a valid session for any account on that deployment.
+# .env.example is the tracked template and carries no values.
+.env
+# ---------------------------------------------------------------
+# Real user data. Never commit this.
+#
+# storage/ is where the running app writes accounts (email + argon2
+# password hash) and every user's logged history. It was tracked, and
+# real accounts reached the public history of `main` as a result - see
+# SECURITY.md, which also covers the part gitignoring cannot fix.
+#
+# The directory is kept (via .gitkeep) because the layout should be
+# obvious in a fresh checkout; its contents never are. The app creates
+# the files it needs on first write, so an empty directory is a
+# complete, working starting state.
+# ---------------------------------------------------------------
+storage/*
+!storage/.gitkeep
+
+# The same rule, unanchored. `storage/*` above contains a slash, so git
+# anchors it to the repository root and it matches ONLY /storage/. That
+# is not enough: services/storage/ is a PACKAGE, and for a while some
+# modules resolved the project root one directory too deep and wrote
+# their JSON into it. Six files of demo-account state were tracked
+# before anyone noticed, because nothing about `git add -A` says so.
+# These two patterns match a storage directory at any depth, so the
+# next time something writes to the wrong place it stays untracked.
+**/storage/*.json
+**/storage/*.json.lock
+
+# Lock/temp sidecars written next to the data during a transaction.
+*.lock
+*.tmp
+
+# NOTE ON THE ARCHIVED MODELS.
+#
+# artifacts/archive_*/ holds the models as they were BEFORE the leakage
+# fix and before the feature-consistency fix. Their .pkl files used to be
+# ignored here as "20 MB nothing loads" - true of the running app, and
+# the wrong call for a repository whose whole claim is that those two
+# fixes were real. The metrics JSON says the numbers moved; only the
+# fitted estimators let anyone check that for themselves.
+#
+# They are tracked. Nothing in the app loads them, and nothing should:
+# they were fitted on a contaminated split and their feature lists do
+# not match the current ones. They are evidence, not a fallback.

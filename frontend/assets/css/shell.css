@@ -1,0 +1,431 @@
+/* Shared post-login navigation shell, used by every app page besides
+   app.html (which has its own inline auth/onboarding/wizard flow). */
+/* Wraps rather than clips. The eleven links come to roughly 1300px in
+   English and more in Persian/Arabic (longer labels), so on a 1280px
+   window the last one - Hall of Fame - used to be sliced in half at the
+   right edge and read as an icon escaping the bar, which is exactly how
+   it was reported. It was a horizontal scroller, so the item was
+   reachable, but a half-cut icon looks broken rather than scrollable.
+   Wrapping keeps every item whole at every width and in every language;
+   overflow-x stays as a last-resort guard for a viewport too narrow for
+   even one item. */
+.app-nav-row {
+  display: flex; flex-wrap: wrap; gap: 6px; overflow-x: auto;
+  padding: 10px var(--space-5);
+  border-bottom: 1px solid var(--surface-border);
+  background: color-mix(in srgb, var(--bg-0) 60%, transparent);
+  scrollbar-width: thin;
+}
+.app-nav-link {
+  flex: 0 0 auto; display: flex; align-items: center; gap: 6px;
+  padding: 8px 14px; border-radius: var(--radius-pill); font-size: .85rem;
+  font-family: var(--font-label); color: var(--text-secondary); white-space: nowrap;
+  border: 1px solid transparent; transition: all var(--dur-fast);
+}
+.app-nav-link:hover { background: var(--surface); color: var(--text-primary); }
+.app-nav-link.active { background: linear-gradient(90deg, var(--neon-cyan), var(--neon-blue)); color: #04140f; }
+
+/* ---- AI Coach starter prompts ---- */
+.coach-suggestions { display: flex; flex-wrap: wrap; gap: 8px; margin: var(--space-3) 0; }
+.coach-suggestion {
+  font-family: var(--font-label); font-size: .76rem; cursor: pointer;
+  padding: 6px 12px; border-radius: var(--radius-pill);
+  background: var(--glass-bg); border: 1px solid var(--glass-border);
+  color: var(--text-secondary);
+  transition: color var(--dur-fast), border-color var(--dur-fast), transform var(--dur-fast);
+}
+.coach-suggestion:hover, .coach-suggestion:focus-visible {
+  color: var(--text-primary); border-color: var(--neon-cyan); transform: translateY(-1px);
+}
+.force-reduce-motion .coach-suggestion { transition: none; }
+.force-reduce-motion .coach-suggestion:hover { transform: none; }
+
+/* ---- Our own AI: 50+ command menu ---- */
+.ai-menu-groups { display: grid; gap: 8px; }
+.ai-menu-group {
+  border: 1px solid var(--surface-border); border-radius: var(--radius-md);
+  background: var(--surface); overflow: hidden;
+}
+.ai-menu-group summary {
+  cursor: pointer; padding: 10px 14px; font-family: var(--font-label);
+  font-size: .85rem; font-weight: 600; list-style: none; display: flex; align-items: center;
+  color: var(--text-primary); user-select: none;
+}
+.ai-menu-group summary::-webkit-details-marker { display: none; }
+.ai-menu-group summary::before { content: '▸'; margin-inline-end: 8px; color: var(--neon-cyan); transition: transform var(--dur-fast); }
+.ai-menu-group[open] summary::before { transform: rotate(90deg); }
+.ai-menu-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 8px;
+  padding: 4px 14px 14px;
+}
+.ai-menu-item {
+  display: flex; align-items: center; gap: 8px; text-align: start;
+  padding: 8px 11px; border-radius: var(--radius-sm, 8px);
+  background: var(--glass-bg); border: 1px solid var(--glass-border);
+  color: var(--text-secondary); font-size: .78rem; cursor: pointer;
+  transition: color var(--dur-fast), border-color var(--dur-fast), transform var(--dur-fast);
+}
+.ai-menu-item:hover, .ai-menu-item:focus-visible {
+  color: var(--text-primary); border-color: var(--neon-cyan); transform: translateY(-1px);
+}
+.ai-menu-icon { flex-shrink: 0; }
+.force-reduce-motion .ai-menu-item { transition: none; }
+.force-reduce-motion .ai-menu-item:hover { transform: none; }
+
+.nav-icon {
+  width: 16px; height: 16px; flex-shrink: 0;
+  fill: none; stroke: currentColor; stroke-width: 1.7;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+
+.page-wrap { max-width: 1040px; margin: 0 auto; }
+.page-head { margin-bottom: var(--space-6); }
+.page-head h1 { font-size: 1.8rem; }
+
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-5); }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-5); }
+@media (max-width: 800px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+
+.stat-tile { text-align: center; padding: var(--space-5); }
+.stat-tile .val { font-family: var(--font-mono); font-size: 2rem; color: var(--neon-cyan); }
+.stat-tile .lbl { font-size: .78rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: .06em; margin-top: 4px; }
+.stat-tile .delta { font-size: .82rem; margin-top: 6px; }
+.stat-tile .delta.up { color: var(--accent-success); }
+.stat-tile .delta.down { color: var(--accent-danger); }
+
+/* The card's own head: title on one side, the way into the full
+   history on the other. */
+.trend-head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: var(--space-3); flex-wrap: wrap;
+}
+.trend-head h3 { margin: 0; }
+.trend-more-btn { flex: 0 0 auto; }
+
+/* Seven separate days, and they have to LOOK like seven separate days.
+   At gap 6px with no edge, four same-coloured days ran together into one
+   bar and the row read as a single block rather than a week - which is
+   what "the days are stuck to each other" was describing. The gap is
+   wider, every cell carries its own hairline edge so even two identical
+   neighbours have a seam between them, and a hovered day lifts. */
+.heatmap-row { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; margin-top: var(--space-3); }
+.heatmap-day-label-row { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; margin-top: var(--space-4); }
+.heatmap-cell {
+  position: relative; aspect-ratio: 1;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--surface-border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: .7rem; font-family: var(--font-mono); color: var(--text-primary);
+  cursor: pointer;
+  transition: opacity var(--dur-fast), outline-color var(--dur-fast),
+              transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast);
+}
+.heatmap-cell[role="button"]:hover { transform: translateY(-2px); box-shadow: var(--card-shadow); }
+@media (prefers-reduced-motion: reduce) {
+  .heatmap-cell[role="button"]:hover { transform: none; }
+}
+.heatmap-cell[role="button"]:hover, .heatmap-cell[role="button"]:focus-visible { outline: 2px solid var(--neon-cyan); outline-offset: 1px; }
+.heatmap-cell.excluded { opacity: .35; }
+/* Only the number is struck through - the exception toggle in the
+   corner has to stay readable on a day that is already excluded. */
+.heatmap-cell.excluded .heatmap-score { text-decoration: line-through; }
+/* Its own hit target so opening a day and marking it an exception are
+   never the same gesture. Anchored to the inline-start corner so it
+   lands on the same side in RTL as in LTR. */
+.heatmap-flag { position: absolute; top: 1px; inset-inline-start: 2px; padding: 0 3px; min-width: 14px; line-height: 1.2; background: none; border: 0; border-radius: var(--radius-sm); font-size: .62rem; font-family: var(--font-mono); color: var(--text-muted); cursor: pointer; opacity: .55; transition: opacity var(--dur-fast), color var(--dur-fast); }
+.heatmap-flag:hover, .heatmap-flag:focus-visible { opacity: 1; color: var(--text-primary); outline: 1px solid var(--neon-cyan); }
+.heatmap-flag[aria-pressed="true"] { opacity: .95; color: var(--neon-cyan); }
+/* A day the user answered "that was unusual" about. Deliberately not
+   the same marker as an EXCLUDED day (⊘, top-start): an excluded day is
+   "this is not my data" and drops out entirely, while an exception day
+   happened, stays visible, and still counts - just for less. Same
+   glyph for both would say they are the same decision. */
+.heatmap-exception { position: absolute; bottom: 1px; inset-inline-end: 3px; font-family: var(--font-mono); font-size: .66rem; line-height: 1; color: #ffc15e; opacity: .9; pointer-events: none; }
+.heatmap-cell.exception-day { box-shadow: inset 0 0 0 1px rgba(255, 193, 94, .55); }
+.heatmap-exception-line { font-size: .78rem; margin-top: 8px; line-height: 1.55; }
+.heatmap-penalty-line { font-size: .78rem; margin-top: 8px; line-height: 1.55; color: #ffc15e; }
+
+/* ---- A day, scored on both halves ----
+   Logged and done, logged but undone, done but unlogged, neither. Four
+   states, four colours, one place that decides what each looks like -
+   see services/wellness/day_status_service.py for what they mean. Colour is
+   never the only carrier: every cell also gets a translated title and
+   aria-label, so the row is readable without seeing colour at all. */
+.heatmap-cell.day-green  { background: hsla(140, 65%, 42%, .55); }
+.heatmap-cell.day-orange { background: hsla(35, 85%, 52%, .50); }
+.heatmap-cell.day-grey   { background: var(--surface-strong); box-shadow: inset 0 0 0 1px var(--surface-border); }
+.heatmap-cell.day-red    { background: hsla(357, 70%, 50%, .45); }
+/* Later this week. Not a colour in the four-state scheme - it is the
+   absence of one, said out loud. A dashed edge and no fill reads as
+   "nothing here yet" where a flat grey square read as "this failed to
+   load", which is what a reviewer reported seeing. */
+.heatmap-cell.day-upcoming {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--surface-border);
+  border: 1px dashed var(--surface-border);
+  opacity: .55;
+}
+.heatmap-day-label { text-align: center; font-size: .68rem; color: var(--text-muted); margin-bottom: 2px; letter-spacing: .04em; }
+
+/* The key to those four colours.
+   Wraps rather than scrolls, because it sits under a fixed seven-column
+   row and a legend that needs its own scrollbar is a legend nobody
+   reads. The swatches reuse .heatmap-cell so the colours here cannot
+   drift from the colours above - one rule paints both. */
+.day-legend {
+  list-style: none; margin: 10px 0 0; padding: 0;
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px;
+  font-size: .72rem; color: var(--text-muted); line-height: 1.5;
+}
+.day-legend li { display: flex; align-items: center; gap: 6px; }
+.day-legend-title { font-weight: 600; color: var(--text); flex-basis: 100%; margin-bottom: 2px; }
+.day-legend-swatch {
+  width: 13px; height: 13px; min-height: 0; border-radius: 4px;
+  flex: 0 0 auto; padding: 0; position: static;
+}
+/* The cost is the half a colour cannot carry. Tabular so the three
+   values line up rather than jittering with the digit widths. */
+.day-legend-cost {
+  font-family: var(--font-mono); font-variant-numeric: tabular-nums;
+  font-size: .68rem; color: #ffc15e; opacity: .95;
+}
+.day-legend-note { flex-basis: 100%; opacity: .8; margin-top: 2px; }
+
+.day-card { border: 1px solid var(--surface-border); border-radius: var(--radius-md); background: var(--surface); padding: var(--space-4); margin-bottom: var(--space-4); }
+/* A day that is not open yet. Dimmed, not hidden: seeing what is
+   coming is the point of a weekly plan, and hiding it would make the
+   week look shorter than it is. The tasks themselves are disabled, and
+   the server refuses the tick regardless. */
+.day-card--locked { opacity: .62; }
+.day-card--locked .task-row input { cursor: not-allowed; }
+.day-card--locked .task-row label { cursor: default; }
+.day-locked-note { margin: 0 0 10px; font-size: .78rem; color: var(--text-muted); line-height: 1.5; }
+.day-card-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.day-card-head .icon { font-size: 1.4rem; }
+.task-row { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; border-bottom: 1px dashed var(--surface-border); }
+.task-row:last-child { border-bottom: none; }
+.task-row input { margin-top: 3px; width: 18px; height: 18px; accent-color: var(--neon-cyan); cursor: pointer; }
+.task-row label { font-size: .88rem; cursor: pointer; }
+.task-row.done label { text-decoration: line-through; color: var(--text-muted); }
+.day-tip { font-size: .78rem; color: var(--text-muted); margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--surface-border); }
+.plan-tier-badge { display: inline-block; font-size: .68rem; font-weight: 600; letter-spacing: .02em; padding: 1px 8px; border-radius: 999px; background: color-mix(in srgb, var(--neon-cyan) 16%, transparent); color: var(--neon-cyan); margin-inline-start: 4px; }
+
+.metric-row { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--surface-border); font-size: .9rem; }
+.metric-row:last-child { border-bottom: none; }
+.metric-row .name { color: var(--text-secondary); flex-shrink: 0; }
+.metric-row .value { font-family: var(--font-mono); color: var(--neon-cyan); text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.model-best-badge { display: inline-block; background: linear-gradient(90deg, var(--neon-cyan), var(--neon-blue)); color: #04140f; font-size: .68rem; padding: 3px 8px; border-radius: var(--radius-pill); margin-left: 8px; }
+
+.avatar-circle {
+  width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center;
+  background: linear-gradient(135deg, var(--neon-cyan), var(--neon-blue)); color: #04140f;
+  font-family: var(--font-display); font-size: 1.4rem; font-weight: 700; flex-shrink: 0;
+}
+.profile-head { display: flex; align-items: center; gap: var(--space-4); margin-bottom: var(--space-6); }
+
+/* ---- Avatar with in-place edit ---- */
+.avatar-wrap { position: relative; flex-shrink: 0; }
+.avatar-circle.has-image { background-size: cover; background-position: center; color: transparent; }
+.avatar-edit-btn {
+  position: absolute; bottom: -2px; inset-inline-end: -2px;
+  width: 26px; height: 26px; border-radius: 50%; cursor: pointer;
+  display: grid; place-items: center; font-size: .72rem; line-height: 1;
+  background: var(--chrome-bg); border: 1px solid var(--surface-border);
+  color: var(--text-secondary);
+  transition: color var(--dur-fast), border-color var(--dur-fast);
+}
+.avatar-edit-btn:hover, .avatar-edit-btn:focus-visible { color: var(--neon-cyan); border-color: var(--neon-cyan); }
+
+/* ---- Persona ---- */
+.persona-chip-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.persona-mini-chip {
+  font-size: .7rem; font-family: var(--font-label); padding: 3px 10px;
+  border-radius: var(--radius-pill); background: var(--glass-bg);
+  border: 1px solid var(--glass-border); color: var(--text-secondary);
+}
+.persona-mini-chip.alt { opacity: .7; }
+.persona-card { margin-bottom: var(--space-5); }
+.persona-primary { display: flex; gap: var(--space-4); align-items: flex-start; margin-top: 12px; }
+.persona-icon { font-size: 2.4rem; line-height: 1; flex-shrink: 0; }
+.persona-title { font-family: var(--font-display); font-size: 1.15rem; font-weight: 700; }
+.persona-tagline { font-size: .88rem; color: var(--text-secondary); margin-top: 2px; }
+.persona-reason { font-size: .76rem; margin-top: 6px; font-family: var(--font-mono); }
+
+/* ---- Badges ---- */
+.badge-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+/* A real <button> now, not a div with a tooltip: clicking a badge asks
+   the guide what it is, so it has to be reachable by keyboard and
+   announce itself as pressable. `font: inherit` and the explicit colour
+   are what stop the browser's own button styling from landing on it. */
+.badge-tile {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  min-width: 84px; padding: 12px 10px; border-radius: var(--radius-md);
+  background: var(--glass-bg); border: 1px solid var(--glass-border);
+  color: var(--text-primary); font: inherit; text-align: center; cursor: pointer;
+  transition: border-color var(--dur-fast, .15s) ease, transform var(--dur-fast, .15s) ease;
+}
+.badge-tile:hover { border-color: var(--accent, #22f5c6); transform: translateY(-2px); }
+.badge-tile:focus-visible { outline: 2px solid var(--accent, #22f5c6); outline-offset: 2px; }
+.badge-tile.tier-legendary { box-shadow: inset 0 0 0 1px rgba(255, 212, 121, .45); }
+.badge-tile.tier-rare { box-shadow: inset 0 0 0 1px rgba(127, 212, 255, .38); }
+@media (prefers-reduced-motion: reduce) {
+  .badge-tile:hover { transform: none; }
+}
+.badge-icon { font-size: 1.5rem; line-height: 1; }
+.badge-label { font-size: .68rem; font-family: var(--font-label); color: var(--text-secondary); text-align: center; }
+
+/* ---- Progress ---- */
+.progress-stat-row { display: flex; flex-wrap: wrap; gap: var(--space-5); margin: 12px 0 var(--space-4); }
+.progress-stat { display: flex; flex-direction: column; }
+.progress-stat .val { font-family: var(--font-display); font-size: 1.6rem; font-weight: 700; color: var(--neon-cyan); }
+.progress-stat .lbl { font-size: .7rem; font-family: var(--font-label); color: var(--text-muted); text-transform: uppercase; letter-spacing: .06em; }
+.progress-sub { font-size: .82rem; font-family: var(--font-label); margin: var(--space-4) 0 6px; color: var(--text-secondary); }
+.small-win { font-size: .82rem; padding: 4px 0; }
+.small-win .win-dir { color: var(--accent-success); font-weight: 700; }
+
+.privacy-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+
+.cold-start-note {
+  font-size: .8rem; line-height: 1.55; margin: 0 0 var(--space-3);
+  padding: var(--space-3) var(--space-4); border-radius: var(--radius-md);
+  background: var(--glass-bg); border: 1px dashed var(--glass-border);
+}
+
+.about-hero { text-align: center; padding: var(--space-6) 0; }
+.tech-chip-row { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: var(--space-4); }
+.tech-chip { padding: 6px 14px; border-radius: var(--radius-pill); background: var(--surface); border: 1px solid var(--surface-border); font-size: .8rem; font-family: var(--font-mono); }
+
+.sweep-controls { display: flex; gap: var(--space-3); align-items: flex-end; flex-wrap: wrap; margin-bottom: var(--space-5); }
+.sweep-controls .field { margin-bottom: 0; min-width: 180px; }
+
+/* ===================== AI Coach chat ===================== */
+.coach-chat-head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); flex-wrap: wrap; margin-bottom: var(--space-4); }
+.coach-chat-head h3 { margin: 0; }
+
+.coach-key-panel {
+  border: 1px dashed var(--surface-border); border-radius: var(--radius-md);
+  padding: var(--space-4); margin-bottom: var(--space-4); background: var(--surface);
+}
+.coach-key-note { font-size: .8rem; line-height: 1.6; margin-bottom: var(--space-3); }
+.connector-flag-row {
+  display: flex; align-items: center; gap: 8px; font-size: .78rem; color: var(--text-secondary);
+  margin-bottom: var(--space-3); cursor: pointer;
+}
+.connector-flag-row input { accent-color: var(--accent-amber); }
+.coach-key-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.coach-key-row .input { flex: 1 1 200px; min-width: 0; }
+.coach-key-status { font-size: .74rem; margin: 8px 0 0; }
+
+.coach-chat-log {
+  max-height: 340px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;
+  padding: var(--space-4); border-radius: var(--radius-md);
+  background: var(--surface); border: 1px solid var(--surface-border);
+  margin-bottom: var(--space-3);
+}
+.chat-msg { max-width: 88%; padding: 10px 14px; border-radius: var(--radius-md); }
+.chat-msg .chat-who { display: block; font-size: .66rem; letter-spacing: .09em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 3px; }
+.chat-msg .chat-body { margin: 0; font-size: .9rem; line-height: 1.6; color: var(--text-primary); }
+.chat-coach { align-self: flex-start; background: var(--surface-strong); border: 1px solid var(--surface-border); }
+.chat-user  { align-self: flex-end; background: linear-gradient(135deg, color-mix(in srgb, var(--neon-cyan) 26%, transparent), color-mix(in srgb, var(--neon-blue) 26%, transparent)); border: 1px solid var(--glass-border); }
+html[dir="rtl"] .chat-coach { align-self: flex-end; }
+html[dir="rtl"] .chat-user  { align-self: flex-start; }
+/* Crisis replies are visually distinct so they cannot be skimmed past. */
+.chat-crisis { border-color: var(--accent-amber); background: rgba(255,184,77,.12); }
+/* The "here is what I just read from your data" line. Deliberately quiet:
+   it is provenance for the answer below it, not the answer itself. */
+.chat-digest {
+  font-family: var(--font-mono); font-size: .72rem; opacity: .8;
+  border-style: dashed; border-color: var(--neon-cyan);
+  background: color-mix(in srgb, var(--neon-cyan) 7%, transparent);
+}
+
+.coach-chat-form { display: flex; gap: 8px; }
+.coach-chat-form .input { flex: 1; min-width: 0; }
+.coach-disclaimer { font-size: .74rem; margin-top: 8px; }
+
+@media (max-width: 560px) {
+  .chat-msg { max-width: 96%; }
+  .coach-chat-log { max-height: 280px; padding: var(--space-3); }
+}
+
+/* ---- Connector configuration (provider / model / base URL) ---- */
+.connector-config { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 10px 0; }
+.connector-field { display: flex; flex-direction: column; gap: 4px; font-size: .76rem; color: var(--text-secondary); }
+.connector-field--wide { grid-column: 1 / -1; }
+.connector-field .select-pill, .connector-field .input { width: 100%; }
+.connector-cost-note { font-size: .72rem; margin: 2px 0 8px; }
+@media (max-width: 620px) { .connector-config { grid-template-columns: 1fr; } }
+
+
+/* =========================================================
+   The full trend, opened from "More detail" on the dashboard.
+   Every day this account has ever recorded, newest week first -
+   not the current week only, which was all the card could show.
+   ========================================================= */
+.trend-detail { display: flex; flex-direction: column; gap: var(--space-4); }
+.trend-detail-week { display: flex; flex-direction: column; gap: 6px; }
+.trend-detail-week h4 {
+  margin: 0; font-size: .82rem; font-weight: 600;
+  color: var(--text-muted); letter-spacing: .04em;
+}
+.trend-detail-week .wk-avg {
+  font-family: var(--font-mono); font-variant-numeric: tabular-nums;
+  color: var(--text-secondary);
+}
+.trend-detail-days { display: flex; flex-direction: column; gap: 6px; }
+
+/* One row per day. Its status colour is a stripe on the leading edge
+   rather than a wash across the whole row: at list density a full
+   colour fill turns the panel into stripes of paint and the score
+   stops being readable on the green ones. */
+.trend-day {
+  display: grid;
+  grid-template-columns: 6px minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 9px 12px 9px 0;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--surface-border);
+  background: var(--surface);
+  overflow: hidden;
+  text-align: start;
+  color: var(--text-primary);
+  font: inherit;
+  cursor: default;
+  transition: border-color var(--dur-fast), background var(--dur-fast);
+}
+.trend-day.is-open { cursor: pointer; }
+.trend-day.is-open:hover, .trend-day.is-open:focus-visible {
+  border-color: var(--neon-cyan);
+  background: var(--surface-strong);
+}
+.trend-day-stripe { align-self: stretch; background: var(--surface-border); }
+.trend-day.day-green  .trend-day-stripe { background: hsl(140, 65%, 42%); }
+.trend-day.day-orange .trend-day-stripe { background: hsl(35, 85%, 52%); }
+.trend-day.day-red    .trend-day-stripe { background: hsl(357, 70%, 50%); }
+.trend-day.day-grey   .trend-day-stripe { background: var(--text-muted); }
+.trend-day.day-upcoming { opacity: .5; }
+.trend-day.day-upcoming .trend-day-stripe { background: transparent; box-shadow: inset 2px 0 0 var(--surface-border); }
+
+.trend-day-when { display: flex; flex-direction: column; min-width: 0; }
+.trend-day-date { font-size: .9rem; }
+.trend-day-note { font-size: .74rem; color: var(--text-muted); }
+.trend-day-score {
+  font-family: var(--font-mono); font-variant-numeric: tabular-nums;
+  font-size: 1.05rem; color: var(--neon-cyan);
+}
+.trend-day.is-excluded .trend-day-score { text-decoration: line-through; opacity: .6; }
+.trend-day-band {
+  font-size: .68rem; letter-spacing: .05em; text-transform: uppercase;
+  padding: 3px 9px; border-radius: var(--radius-pill);
+  border: 1px solid var(--surface-border); color: var(--text-secondary);
+  white-space: nowrap;
+}
+.trend-day-band.band-healthy { border-color: rgba(43,232,154,.5); color: var(--accent-success); }
+.trend-day-band.band-moderate { border-color: rgba(255,184,77,.5); color: var(--accent-amber); }
+.trend-day-band.band-risk { border-color: rgba(255,92,122,.5); color: var(--accent-danger); }
+
+@media (max-width: 520px) {
+  .trend-day { grid-template-columns: 6px minmax(0, 1fr) auto; }
+  .trend-day-band { display: none; }
+}

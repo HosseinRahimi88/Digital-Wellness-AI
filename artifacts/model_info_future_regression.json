@@ -1,0 +1,9 @@
+{
+  "project": "Digital Wellness AI",
+  "task": "future_regression",
+  "target_column": "future_health_score_7d",
+  "horizon": "7_days_ahead",
+  "model_name": "hist_gradient_boosting_regressor",
+  "number_of_features": 186,
+  "target_is_augmented": true
+}

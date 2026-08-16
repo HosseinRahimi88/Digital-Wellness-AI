@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="theme-color" content="#05080f" />
+<title>Profile — Digital Wellness AI</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧠</text></svg>" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=Orbitron:wght@600;700&family=JetBrains+Mono:wght@500&family=Sora:wght@600;700&family=IBM+Plex+Sans:wght@500&family=Cairo:wght@500;700&family=Noto+Sans+SC:wght@500;700&display=swap" media="print" onload="this.media='all';this.onload=null">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=Orbitron:wght@600;700&family=JetBrains+Mono:wght@500&family=Sora:wght@600;700&family=IBM+Plex+Sans:wght@500&family=Cairo:wght@500;700&family=Noto+Sans+SC:wght@500;700&display=swap"></noscript>
+<link rel="stylesheet" href="assets/css/variables.css" />
+<link rel="stylesheet" href="assets/css/base.css" />
+<link rel="stylesheet" href="assets/css/animations.css" />
+<link rel="stylesheet" href="assets/css/components.css" />
+<link rel="stylesheet" href="assets/css/processing.css" />
+<link rel="stylesheet" href="assets/css/app.css" />
+<link rel="stylesheet" href="assets/css/shell.css" />
+<link rel="stylesheet" href="assets/css/modern.css" />
+</head>
+<body>
+
+<div class="bg-layer">
+  <canvas id="bgCanvas"></canvas>
+  <div class="blob blob--cyan blob--a" style="width:28vw;height:28vw;top:-8%;right:-6%;opacity:.3;"></div>
+  <div class="blob blob--blue blob--b" style="width:24vw;height:24vw;bottom:-10%;left:-6%;opacity:.28;"></div>
+</div>
+
+<div class="app-shell">
+  <header class="navbar">
+    <a class="brand" href="dashboard.html"><span class="brand-dot"></span> Digital Wellness AI</a>
+    <div class="nav-controls">
+      <div class="select-pill"><select data-lang-select><option value="en">EN</option><option value="fa">فا</option><option value="ar">AR</option><option value="zh">中文</option></select></div>
+      <button class="icon-btn" data-theme-toggle><span data-theme-icon>☀️</span></button>
+      <button class="btn btn-ghost btn-sm" data-logout data-i18n="nav_logout">Log out</button>
+    </div>
+  </header>
+  <nav class="app-nav-row">
+    <a class="app-nav-link" data-page="dashboard" href="dashboard.html"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11 12 4l8 7"/><path d="M6 10v9h12v-9"/><path d="M10 19v-5h4v5"/></svg> <span data-i18n="nav_dashboard">Dashboard</span></a>
+    <a class="app-nav-link" data-page="checkin" href="app.html"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3.5" width="14" height="17" rx="2"/><path d="M9 8h6M9 12h6M9 16h3"/></svg> <span data-i18n="nav_checkin">Check-in</span></a>
+    <a class="app-nav-link" data-page="weekly" href="weekly.html"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 9.5h16M8 3v4M16 3v4"/><path d="M8.5 13.5h2M13.5 13.5h2M8.5 17h2"/></svg> <span data-i18n="nav_weekly">Weekly Plan</span></a>
+    <a class="app-nav-link" data-page="coach" href="coach.html"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4a7 7 0 0 0-7 7c0 2 .8 3.7 2 5l-1 4 4.3-1.4A7 7 0 1 0 12 4Z"/><circle cx="9.2" cy="11" r="1"/><circle cx="12" cy="11" r="1"/><circle cx="14.8" cy="11" r="1"/></svg> <span data-i18n="nav_coach">AI Coach</span></a>
+    <a class="app-nav-link" data-page="analytics" href="analytics.html"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V4"/><path d="M4 20h16"/><rect x="7" y="12" width="3" height="8"/><rect x="12" y="8" width="3" height="12"/><rect x="17" y="14" width="3" height="6"/></svg> <span data-i18n="nav_analytics">Analytics</span></a>
+    <a class="app-nav-link" data-page="whatif" href="whatif.html"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 3h4"/><path d="M10.5 3v5.2L6 17a2 2 0 0 0 1.8 3h8.4A2 2 0 0 0 18 17l-4.5-8.8V3"/><path d="M8.5 14h7"/></svg> <span data-i18n="nav_whatif">What-if</span></a>
+    <a class="app-nav-link" data-page="model" href="model-performance.html"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 4 5.5v5c0 5 3.4 8.7 8 10 4.6-1.3 8-5 8-10v-5L12 2Z"/><path d="m9.2 12 1.9 1.9 3.7-3.9"/></svg> <span data-i18n="nav_model">Model</span></a>
+    <a class="app-nav-link" data-page="profile" href="profile.html"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.3" r="3.3"/><path d="M5.5 20c1.2-3.6 3.9-5.5 6.5-5.5s5.3 1.9 6.5 5.5"/></svg> <span data-i18n="nav_profile">Profile</span></a>
+    <a class="app-nav-link" data-page="league" href="league.html"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/><path d="M16.5 11.2a2.6 2.6 0 1 0 0-5.2"/><path d="M2 19.5c.7-3.4 2.9-5.3 6-5.3s5.3 1.9 6 5.3"/><path d="M15 14.6c2.3.4 3.9 2.1 4.5 4.9"/></svg> <span data-i18n="nav_league">Friends League</span></a>
+    <a class="app-nav-link" data-page="hall" href="hall.html"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4h8v4a4 4 0 0 1-8 0V4Z"/><path d="M8 5H5.5v1.5A3.5 3.5 0 0 0 9 10"/><path d="M16 5h2.5v1.5A3.5 3.5 0 0 1 15 10"/><path d="M12 12v4"/><path d="M9 20h6"/><path d="M10 16h4l1 4H9l1-4Z"/></svg> <span data-i18n="nav_hall">Hall of Fame</span></a>
+    <a class="app-nav-link" data-page="you" href="you.html"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h6.2a2.3 2.3 0 0 1 2.3 2.3V20a2 2 0 0 0-2-2H5Z"/><path d="M19 4.5h-3.2a2.3 2.3 0 0 0-2.3 2.3V20a2 2 0 0 1 2-2H19Z"/></svg> <span data-i18n="nav_you">Your Book</span></a>
+    <a class="app-nav-link" data-page="about" href="about.html"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 11v5.3"/><circle cx="12" cy="8.1" r="0.15" fill="currentColor" stroke-width="1.6"/></svg> <span data-i18n="nav_about">About</span></a>
+  </nav>
+
+  <main class="app-main">
+    <div class="container page-wrap">
+      <div class="profile-head" data-guide="profile_avatar">
+        <div class="avatar-wrap">
+          <div class="avatar-circle" id="avatarCircle">?</div>
+          <button type="button" class="avatar-edit-btn" id="avatarEditBtn" data-i18n-title="profile_avatar_change" title="Change picture" aria-label="Change picture">📷</button>
+          <input type="file" id="avatarInput" accept="image/*" class="hidden" />
+        </div>
+        <div>
+          <h1 style="margin-bottom:2px;" data-account-name>—</h1>
+          <p class="muted" data-account-email style="margin:0;">—</p>
+          <div class="persona-chip-row" id="personaChipRow"></div>
+        </div>
+      </div>
+
+      <!-- Persona identity -->
+      <div class="card persona-card" id="personaCard" data-guide="profile_persona">
+        <h3 data-i18n="profile_persona_title">Your persona</h3>
+        <div id="personaBody" class="persona-body"></div>
+      </div>
+
+      <!-- Badges -->
+      <div class="card" id="badgeCard" data-guide="profile_badges">
+        <h3 data-i18n="profile_badges_title">Badges earned</h3>
+        <p class="muted dimension-hint" data-i18n="profile_badges_hint">Each one comes from a real logged value — hover to see what it required.</p>
+        <div class="badge-grid" id="badgeGrid"></div>
+      </div>
+
+      <!-- Progress: streaks, personal bests, small wins -->
+      <div class="card" id="progressCard">
+        <h3 data-i18n="profile_progress_title">Your progress</h3>
+        <div class="progress-stat-row" id="progressStats"></div>
+        <div id="smallWinsWrap"></div>
+        <div id="beforeAfterWrap"></div>
+      </div>
+
+      <div class="card" style="margin-bottom:var(--space-5);">
+        <h3 data-i18n="profile_prefs_title">Preferences</h3>
+        <div style="margin-top:16px;">
+          <p class="wizard-step-title" data-i18n="onboard_goal">What would you most like to improve?</p>
+          <div id="goalOptions"></div>
+        </div>
+        <div style="margin-top:20px;">
+          <p class="wizard-step-title" data-i18n="onboard_purpose">What do you mainly use your devices for?</p>
+          <div id="purposeOptions"></div>
+        </div>
+        <div style="margin-top:20px;">
+          <p class="wizard-step-title" data-i18n="onboard_schedule">What does your daily schedule look like?</p>
+          <div id="scheduleOptions"></div>
+          <!-- Same emphasis as onboarding: this answer changes which
+               signals count as problems and what the weekly plan
+               reaches for first, so it must not read as one preference
+               among three. -->
+          <p class="onboard-emphasis" data-i18n="onboard_schedule_weight">This one matters more than the others: it changes which signals count as problems for you and what your weekly plan reaches for first. On an irregular or rotating schedule, sleep and stress recovery come before screen-time rules.</p>
+        </div>
+        <button class="btn btn-primary btn-shine" id="saveProfileBtn" style="margin-top:var(--space-5);" data-i18n="profile_save">Save changes</button>
+      </div>
+
+      <!-- Tone -->
+      <div class="card" style="margin-bottom:var(--space-5);" data-guide="profile_tone">
+        <h3 data-i18n="profile_tone_title">How should advice sound?</h3>
+        <p class="muted dimension-hint" data-i18n="profile_tone_hint">Wording only — this never changes which recommendations you get or their priority.</p>
+        <div class="intake-chips" id="toneOptions"></div>
+      </div>
+
+      <!-- Privacy -->
+      <div class="card" style="margin-bottom:var(--space-5);" data-guide="privacy_controls">
+        <h3 data-i18n="profile_privacy_title">Your data</h3>
+        <p class="muted dimension-hint" data-i18n="profile_privacy_hint">Everything this app stores about you is yours to take or erase.</p>
+        <div class="privacy-actions">
+          <a class="btn btn-ghost btn-sm" id="exportDataBtn" href="#" data-i18n="profile_export">⬇️ Export my data</a>
+          <a class="btn btn-ghost btn-sm" id="exportCsvBtn" href="#" data-i18n="profile_export_csv">⬇️ Export as spreadsheet</a>
+          <button type="button" class="btn btn-danger btn-sm" id="deleteDataBtn" data-i18n="profile_delete">🗑️ Delete my account</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 data-i18n="profile_links_title">More</h3>
+        <a class="app-nav-link" style="border:1px solid var(--surface-border);margin-bottom:8px;" href="model-performance.html">🏆 <span data-i18n="profile_view_model">View real model performance</span></a><br/>
+        <a class="app-nav-link" style="border:1px solid var(--surface-border);" href="about.html">ℹ️ <span data-i18n="profile_view_about">About this project</span></a>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="mascot-widget">
+  <div class="mascot-bubble" id="mascotBubble" role="status" aria-live="polite"></div>
+  <svg id="mascotBtn" class="mascot-btn mascot-orb" viewBox="0 0 100 100" role="button" aria-label="Guide character" tabindex="0">
+    <defs><radialGradient id="orbGrad7" cx="35%" cy="30%" r="75%"><stop offset="0%" stop-color="#7ffbe0"/><stop offset="55%" stop-color="#22f5c6"/><stop offset="100%" stop-color="#3aa7ff"/></radialGradient></defs>
+    <circle cx="50" cy="52" r="40" fill="url(#orbGrad7)"/>
+    <g class="mascot-brows"></g>
+    <g class="mascot-eye"><circle cx="36" cy="48" r="6" fill="#04140f"/><circle cx="64" cy="48" r="6" fill="#04140f"/></g>
+    <path class="mascot-mouth" d="M38 67 Q50 71 62 67" stroke="#04140f" stroke-width="4" fill="none" stroke-linecap="round"/>
+  </svg>
+</div>
+<div class="music-widget" id="musicWidget">
+  <div class="play" id="musicPlayBtn" data-dw-icon="play" data-dw-icon-size="16"></div>
+  <div class="music-track-name" id="musicTrackName">Calm Focus</div>
+  <!-- Two arrows, one for each direction. The track name used to be
+       the only way to change track - clicking a label is not a control
+       anybody finds, and it could only ever go forwards. -->
+  <button type="button" class="music-step-btn" id="musicPrevBtn" title="Previous track" aria-label="Previous track" data-dw-icon="prevTrack" data-dw-icon-size="14"></button>
+  <button type="button" class="music-step-btn" id="musicNextBtn" title="Next track" aria-label="Next track" data-dw-icon="nextTrack" data-dw-icon-size="14"></button>
+  <!-- The library: the five built-in tracks and every track you have
+       added, each with its own delete. Replaces a lone upload button
+       that looked like a microphone and, once a file was chosen, left
+       no way back to it or out of it. -->
+  <button type="button" class="music-library-btn" id="musicLibraryBtn" title="Tracks" aria-label="Tracks" aria-expanded="false" data-dw-icon="library" data-dw-icon-size="16"></button>
+  <input type="file" id="musicUploadInput" accept="audio/*" class="hidden" />
+  <div class="music-library-popover" id="musicLibraryPopover" role="dialog" aria-label="Tracks">
+    <div class="music-library-list" id="musicLibraryList"></div>
+    <button type="button" class="btn btn-ghost btn-sm music-library-add" id="musicUploadBtn" data-i18n="music_add_track">Add a track</button>
+    <p class="music-library-note" id="musicLibraryNote" data-i18n="music_library_note">Your files stay on this device.</p>
+  </div>
+  <button type="button" class="music-volume-btn" id="musicVolumeBtn" title="Volume" aria-label="Volume" data-dw-icon="volume" data-dw-icon-size="16"></button>
+  <div class="music-volume-popover" id="musicVolumePopover">
+    <div class="music-volume-value" id="musicVolumeValue" dir="ltr">60%</div>
+    <div class="music-volume-track" id="musicVolumeTrack"><div class="music-volume-fill" id="musicVolumeFill"></div></div>
+  </div>
+  <div class="music-bars"><span></span><span></span><span></span></div>
+</div>
+
+<script src="assets/js/core/icons.js"></script>
+<script src="assets/js/core/theme.js"></script>
+<script src="assets/js/core/motion.js"></script>
+<script src="assets/js/chrome/sound-engine.js"></script>
+<script src="assets/js/core/i18n.js"></script>
+<script src="assets/js/core/server-text.js"></script>
+<script src="assets/js/chrome/loading-messages.js"></script>
+<script src="assets/js/chrome/processing-screen.js"></script>
+<script src="assets/js/core/toast.js"></script>
+<script src="assets/js/core/sheet.js"></script>
+<script src="assets/js/chrome/particles.js"></script>
+<script src="assets/js/guide/guide-voice.js"></script>
+<script src="assets/js/chrome/mascot.js"></script>
+<script src="assets/js/chrome/celebrate.js"></script>
+<script src="assets/js/guide/guide-tips.js"></script>
+<script src="assets/js/guide/guide-content-controls.js"></script>
+<script src="assets/js/guide/guide-content-v3.js"></script>
+<script src="assets/js/guide/guide-click.js"></script>
+<script src="assets/js/guide/guide-content-insights.js"></script>
+<script src="assets/js/chrome/music-player.js"></script>
+<script src="assets/js/chrome/intro-slides.js"></script>
+<script src="assets/js/features/csv-library.js"></script>
+<script src="assets/js/features/demo.js"></script>
+<script src="assets/js/chrome/app-chrome.js"></script>
+<script src="assets/js/core/api.js"></script>
+<script src="assets/js/core/last-result.js"></script>
+<script src="assets/js/core/api-guard.js"></script>
+<script src="assets/js/core/shell.js"></script>
+<script src="assets/js/features/onboarding-options.js"></script>
+<script src="assets/js/features/badge-registry.js"></script>
+<script src="assets/js/pages/profile.js"></script>
+</body>
+</html>

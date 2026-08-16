@@ -1,0 +1,288 @@
+/*
+  Digital Wellness AI — the refinement layer.
+
+  WHY THIS IS A LAYER AND NOT A REWRITE
+  The palette, the glass surfaces, the two themes and the RTL handling
+  in variables.css / components.css / shell.css are coherent and are
+  asserted on by a large part of the test suite. Throwing them out to
+  "modernise" would have meant re-proving contrast in four languages and
+  two themes to arrive somewhere no better. What actually dates this
+  interface is narrower and fixable without touching any of that:
+
+    * one type size for almost everything, so nothing has a hierarchy;
+    * a single heavy drop shadow, which reads as 2016 material rather
+      than as depth - real depth is a tight contact shadow plus a wide
+      ambient one;
+    * hover states that change colour and nothing else;
+    * `:focus` rings that fire on mouse clicks, so the app either looks
+      noisy or (the usual fix) has no visible focus at all;
+    * headings that break one word onto their own last line.
+
+  Loaded last, so it refines rather than fights. Everything here is
+  expressed in the existing tokens - no new colours are invented, and
+  both themes get the same treatment because both are real.
+*/
+
+/* ============================ TYPE ============================
+   A scale, and fluid within it. The old page had h1 through h3 within
+   a few pixels of each other, which is what makes a screen read as a
+   wall - the reader has nothing to skim by. */
+:root {
+  --step--1: clamp(.78rem, .76rem + .1vw, .84rem);
+  --step-0: clamp(.94rem, .92rem + .12vw, 1rem);
+  --step-1: clamp(1.1rem, 1.04rem + .3vw, 1.28rem);
+  --step-2: clamp(1.35rem, 1.22rem + .62vw, 1.75rem);
+  --step-3: clamp(1.75rem, 1.48rem + 1.3vw, 2.6rem);
+  --step-4: clamp(2.3rem, 1.7rem + 2.8vw, 3.9rem);
+
+  /* Depth, in two parts. A contact shadow that says the card is
+     touching the page, and an ambient one that says there is air
+     behind it. One blur can only ever do one of those. */
+  --lift-1: 0 1px 2px rgba(0, 0, 0, .18), 0 8px 24px -12px rgba(0, 0, 0, .35);
+  --lift-2: 0 2px 4px rgba(0, 0, 0, .20), 0 18px 44px -18px rgba(0, 0, 0, .48);
+  --ring: 0 0 0 3px color-mix(in srgb, var(--neon-cyan) 38%, transparent);
+}
+:root[data-theme="light"] {
+  /* Light surfaces need less blur and much less black, or the shadow
+     turns into a grey smear rather than reading as height. */
+  --lift-1: 0 1px 2px rgba(16, 60, 55, .10), 0 8px 20px -12px rgba(16, 60, 55, .18);
+  --lift-2: 0 2px 4px rgba(16, 60, 55, .12), 0 18px 38px -18px rgba(16, 60, 55, .24);
+}
+
+body {
+  font-size: var(--step-0);
+  /* Stops the widow-word line at the end of a paragraph. Ignored by
+     browsers that do not have it, which is the correct failure. */
+  text-wrap: pretty;
+}
+
+h1, .auth-title, .about-hero h1 { font-size: var(--step-3); }
+h2 { font-size: var(--step-2); }
+h3 { font-size: var(--step-1); }
+h1, h2, h3, h4, .section-head h2, .wizard-step-title {
+  /* Balanced rather than ragged: a heading that drops one word onto a
+     line by itself is the single most common thing that makes an
+     otherwise careful page look unconsidered. */
+  text-wrap: balance;
+  line-height: 1.18;
+  letter-spacing: -.015em;
+}
+.lede, .auth-sub {
+  font-size: var(--step-1);
+  line-height: 1.55;
+  color: var(--text-secondary);
+  max-width: 62ch;
+}
+p, li { line-height: 1.65; }
+.muted, .dimension-hint, .hint { font-size: var(--step--1); }
+
+/* Uppercase labels need tracking or they read as a compressed block. */
+.field label, .league-progress-lbl, .stat-label {
+  letter-spacing: .02em;
+}
+
+/* Numbers that sit in a column have to line up. Anywhere digits are
+   compared - scores, deltas, tables - they get tabular figures. */
+.mono, .league-progress-num, .stat-value, .score-value,
+.league-standing-score, .day-card .num {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+/* ========================== SURFACES ==========================
+   Two-part depth, and a card that responds to the pointer. The lift is
+   1px: enough to feel alive, small enough that a grid of cards does not
+   appear to jump when the mouse crosses it. */
+.card {
+  box-shadow: var(--lift-1), inset 0 1px 0 var(--glass-sheen);
+  transition:
+    box-shadow var(--dur-med) var(--ease-out),
+    transform var(--dur-med) var(--ease-out),
+    border-color var(--dur-med) var(--ease-out);
+}
+.card:hover {
+  box-shadow: var(--lift-2), inset 0 1px 0 var(--glass-sheen);
+  border-color: color-mix(in srgb, var(--neon-cyan) 26%, var(--glass-border));
+}
+/* A card that is only ever read does not need to react to being passed
+   over - the movement is then noise rather than affordance. */
+.card:not(:hover) { transform: none; }
+
+/* ============================ NAV ============================
+   The active tab was a hard cyan-to-blue gradient with near-black text
+   - high contrast, and it shouted over the page it was labelling. A
+   tinted pill with an underline reads as "you are here" without
+   competing with the content. */
+.app-nav-row {
+  gap: 2px;
+  padding-inline: var(--space-5);
+  /* The row scrolls on a phone; a hard edge tells the reader there is
+     more, without a scrollbar that only appears on some platforms. */
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 12px, #000 calc(100% - 12px), transparent);
+  mask-image: linear-gradient(to right, transparent, #000 12px, #000 calc(100% - 12px), transparent);
+}
+.app-nav-link {
+  position: relative;
+  transition:
+    color var(--dur-fast) var(--ease-out),
+    background-color var(--dur-fast) var(--ease-out);
+}
+.app-nav-link.active {
+  background: color-mix(in srgb, var(--neon-cyan) 12%, transparent);
+  color: var(--text-primary);
+  font-weight: 600;
+}
+.app-nav-link.active::after {
+  content: "";
+  position: absolute;
+  inset-inline: 14px;
+  inset-block-end: -11px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--neon-cyan);
+}
+.app-nav-link .nav-icon { opacity: .72; transition: opacity var(--dur-fast); }
+.app-nav-link.active .nav-icon,
+.app-nav-link:hover .nav-icon { opacity: 1; }
+
+/* =========================== CONTROLS =========================== */
+.btn {
+  transition:
+    transform var(--dur-fast) var(--ease-spring),
+    box-shadow var(--dur-fast) var(--ease-out),
+    background-color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out);
+}
+.btn:hover:not(:disabled) { transform: translateY(-1px); }
+/* Pressed is the state most interfaces forget, and its absence is why
+   a button can feel like a picture of a button. */
+.btn:active:not(:disabled) { transform: translateY(0) scale(.985); }
+.btn:disabled { opacity: .55; cursor: not-allowed; }
+
+.input, select.input, textarea.input {
+  transition:
+    border-color var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out),
+    background-color var(--dur-fast) var(--ease-out);
+}
+
+/* ============================ FOCUS ============================
+   :focus-visible, not :focus. A ring on every mouse click is what
+   leads people to remove the ring entirely, and then the keyboard user
+   is the one who pays. This gives the ring to whoever is actually
+   navigating by keyboard, on every interactive thing at once. */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible,
+.onboard-option:focus-visible,
+.app-nav-link:focus-visible {
+  outline: 2px solid var(--neon-cyan);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+/* Mouse users keep the softer inner glow the inputs already had. */
+.input:focus, select.input:focus { box-shadow: var(--ring); }
+
+/* ========================== SELECTION ========================== */
+::selection {
+  background: color-mix(in srgb, var(--neon-cyan) 30%, transparent);
+  color: var(--text-primary);
+}
+
+/* ========================= CHOICE CHIPS =========================
+   The onboarding options are the first thing a new account touches, and
+   they were a flat list of bordered boxes. A selected state that is
+   visible at a glance matters more here than anywhere else in the app:
+   somebody mid-questionnaire needs to know their tap registered. */
+.onboard-option {
+  transition:
+    border-color var(--dur-fast) var(--ease-out),
+    background-color var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-spring);
+  cursor: pointer;
+}
+.onboard-option:hover { transform: translateX(calc(2px * var(--dir-mult, 1))); }
+.onboard-option.selected {
+  border-color: var(--neon-cyan);
+  background: color-mix(in srgb, var(--neon-cyan) 10%, transparent);
+  box-shadow: inset calc(3px * var(--dir-mult, 1)) 0 0 var(--neon-cyan);
+}
+
+/* =========================== TABLES ===========================
+   Wide content scrolls inside its own container. A page that scrolls
+   sideways because of one table is a page that is broken on a phone. */
+.table-wrap, .analytics-table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+table { border-collapse: collapse; }
+th { font-weight: 600; letter-spacing: .02em; }
+td, th { font-variant-numeric: tabular-nums; }
+
+/* ========================== SCROLLBARS ========================== */
+* { scrollbar-width: thin; scrollbar-color: var(--surface-border) transparent; }
+*::-webkit-scrollbar { width: 10px; height: 10px; }
+*::-webkit-scrollbar-track { background: var(--scrollbar-track); }
+*::-webkit-scrollbar-thumb {
+  background: var(--surface-border);
+  border-radius: var(--radius-pill);
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--neon-cyan) 45%, var(--surface-border));
+  background-clip: content-box;
+}
+
+/* ======================== REDUCED MOTION ========================
+   Everything above that moves is a transition, so one rule covers all
+   of it. The colour and depth changes stay - somebody who asked for
+   less movement did not ask for less feedback. */
+@media (prefers-reduced-motion: reduce) {
+  .card, .card:hover,
+  .btn, .btn:hover:not(:disabled), .btn:active:not(:disabled),
+  .onboard-option, .onboard-option:hover {
+    transform: none;
+    transition-duration: 1ms;
+  }
+}
+.force-reduce-motion .card,
+.force-reduce-motion .btn,
+.force-reduce-motion .onboard-option { transform: none; transition-duration: 1ms; }
+
+/* ====================== THE TOUR'S WAY OUT ======================
+   The first-run tour starts itself, right after a new account
+   finishes the preference questions. Something that arrives
+   uninvited needs a visible way to leave for as long as it is
+   running - a keyboard shortcut nobody is told about does not
+   count. Positioned clear of the guide's own corner so it never
+   covers the bubble it is offering to dismiss. */
+.dw-tour-skip {
+  position: fixed;
+  inset-block-end: 22px;
+  inset-inline-start: 22px;
+  z-index: calc(var(--z-floating) + 1);
+  padding: 9px 16px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  color: var(--text-secondary);
+  font-family: var(--font-label);
+  font-size: var(--step--1);
+  cursor: pointer;
+  box-shadow: var(--lift-1);
+  transition: color var(--dur-fast) var(--ease-out),
+              border-color var(--dur-fast) var(--ease-out);
+}
+.dw-tour-skip:hover {
+  color: var(--text-primary);
+  border-color: color-mix(in srgb, var(--neon-cyan) 40%, var(--glass-border));
+}
+@media (max-width: 640px) {
+  .dw-tour-skip { inset-block-end: 12px; inset-inline-start: 12px; }
+}

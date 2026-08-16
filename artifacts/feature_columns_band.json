@@ -1,0 +1,33 @@
+{
+  "features": [
+    "n_days",
+    "score_mean",
+    "score_sd",
+    "score_mad",
+    "score_range",
+    "last_dev",
+    "slope",
+    "diff_mean",
+    "diff_max",
+    "ewma_vol",
+    "score_last",
+    "score_min",
+    "score_max",
+    "prior_days",
+    "prior_sd",
+    "prior_mad",
+    "prior_dev_mean",
+    "last_sleep_hours",
+    "last_sleep_quality_1_10",
+    "last_total_screen_min",
+    "last_night_ratio",
+    "last_social_ratio",
+    "last_stress_0_10",
+    "last_focus_0_100",
+    "last_fragmentation_index_0_100",
+    "last_pickups_per_day",
+    "last_physical_activity_min_per_day",
+    "sd_sleep_hours",
+    "sd_total_screen_min"
+  ]
+}

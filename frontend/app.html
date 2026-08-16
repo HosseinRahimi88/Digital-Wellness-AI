@@ -1,0 +1,602 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#05080f" />
+<title>Digital Wellness AI — App</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧠</text></svg>" />
+<link rel="manifest" href="manifest.webmanifest" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=Orbitron:wght@600;700&family=JetBrains+Mono:wght@500&family=Baloo+2:wght@600&family=Playfair+Display:ital@1&family=Sora:wght@600;700&family=IBM+Plex+Sans:wght@500&family=Cairo:wght@500;700&family=Noto+Sans+SC:wght@500;700&display=swap" media="print" onload="this.media='all';this.onload=null">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=Orbitron:wght@600;700&family=JetBrains+Mono:wght@500&family=Baloo+2:wght@600&family=Playfair+Display:ital@1&family=Sora:wght@600;700&family=IBM+Plex+Sans:wght@500&family=Cairo:wght@500;700&family=Noto+Sans+SC:wght@500;700&display=swap"></noscript>
+
+<link rel="stylesheet" href="assets/css/variables.css" />
+<link rel="stylesheet" href="assets/css/base.css" />
+<link rel="stylesheet" href="assets/css/animations.css" />
+<link rel="stylesheet" href="assets/css/components.css" />
+<link rel="stylesheet" href="assets/css/processing.css" />
+<link rel="stylesheet" href="assets/css/app.css" />
+<link rel="stylesheet" href="assets/css/shell.css" />
+<link rel="stylesheet" href="assets/css/modern.css" />
+</head>
+<body>
+
+<div class="bg-layer">
+  <canvas id="bgCanvas"></canvas>
+  <div class="blob blob--cyan blob--a" style="width:30vw;height:30vw;top:-8%;right:-6%;opacity:.35;"></div>
+  <div class="blob blob--blue blob--b" style="width:26vw;height:26vw;bottom:-10%;left:-6%;opacity:.3;"></div>
+</div>
+
+<div class="app-shell">
+  <header class="navbar">
+    <a class="brand" href="dashboard.html"><span class="brand-dot"></span> Digital Wellness AI</a>
+    <div class="nav-controls">
+      <div class="select-pill">
+        <select data-lang-select aria-label="Language">
+          <option value="en">EN</option>
+          <option value="fa">فا</option><option value="ar">AR</option>
+          <option value="zh">中文</option>
+        </select>
+      </div>
+      <button class="icon-btn" data-theme-toggle aria-label="Toggle theme"><span data-theme-icon>☀️</span></button>
+      <button class="icon-btn hidden" id="notifBell" aria-label="Notifications"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9a6 6 0 1 1 12 0c0 4 1.4 5.4 2 6H4c.6-.6 2-2 2-6Z"/><path d="M9.5 19a2.6 2.6 0 0 0 5 0"/></svg><span class="notif-badge hidden" id="notifBadge">0</span></button>
+      <button class="icon-btn" id="settingsBtn" data-guide="settings_panel" aria-label="Settings"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"/><path d="M19.4 13.5a7.6 7.6 0 0 0 0-3l2-1.5-2-3.4-2.3.9a7.7 7.7 0 0 0-2.6-1.5L14 2h-4l-.5 2.4a7.7 7.7 0 0 0-2.6 1.5l-2.3-.9-2 3.4 2 1.5a7.6 7.6 0 0 0 0 3l-2 1.6 2 3.4 2.3-1a7.7 7.7 0 0 0 2.6 1.5L10 22h4l.5-2.4a7.7 7.7 0 0 0 2.6-1.5l2.3 1 2-3.4-2-1.6Z"/></svg></button>
+      <button class="btn btn-ghost btn-sm hidden" id="logoutBtn" data-i18n="nav_logout">Log out</button>
+    </div>
+  </header>
+  <nav class="app-nav-row hidden" id="appNavRow">
+    <a class="app-nav-link" data-page="dashboard" href="dashboard.html"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11 12 4l8 7"/><path d="M6 10v9h12v-9"/><path d="M10 19v-5h4v5"/></svg> <span data-i18n="nav_dashboard">Dashboard</span></a>
+    <a class="app-nav-link active" data-page="checkin" href="app.html"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3.5" width="14" height="17" rx="2"/><path d="M9 8h6M9 12h6M9 16h3"/></svg> <span data-i18n="nav_checkin">Check-in</span></a>
+    <a class="app-nav-link" data-page="weekly" href="weekly.html"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 9.5h16M8 3v4M16 3v4"/><path d="M8.5 13.5h2M13.5 13.5h2M8.5 17h2"/></svg> <span data-i18n="nav_weekly">Weekly Plan</span></a>
+    <a class="app-nav-link" data-page="coach" href="coach.html"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4a7 7 0 0 0-7 7c0 2 .8 3.7 2 5l-1 4 4.3-1.4A7 7 0 1 0 12 4Z"/><circle cx="9.2" cy="11" r="1"/><circle cx="12" cy="11" r="1"/><circle cx="14.8" cy="11" r="1"/></svg> <span data-i18n="nav_coach">AI Coach</span></a>
+    <a class="app-nav-link" data-page="analytics" href="analytics.html"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V4"/><path d="M4 20h16"/><rect x="7" y="12" width="3" height="8"/><rect x="12" y="8" width="3" height="12"/><rect x="17" y="14" width="3" height="6"/></svg> <span data-i18n="nav_analytics">Analytics</span></a>
+    <a class="app-nav-link" data-page="whatif" href="whatif.html"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 3h4"/><path d="M10.5 3v5.2L6 17a2 2 0 0 0 1.8 3h8.4A2 2 0 0 0 18 17l-4.5-8.8V3"/><path d="M8.5 14h7"/></svg> <span data-i18n="nav_whatif">What-if</span></a>
+    <a class="app-nav-link" data-page="model" href="model-performance.html"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 4 5.5v5c0 5 3.4 8.7 8 10 4.6-1.3 8-5 8-10v-5L12 2Z"/><path d="m9.2 12 1.9 1.9 3.7-3.9"/></svg> <span data-i18n="nav_model">Model</span></a>
+    <a class="app-nav-link" data-page="profile" href="profile.html"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.3" r="3.3"/><path d="M5.5 20c1.2-3.6 3.9-5.5 6.5-5.5s5.3 1.9 6.5 5.5"/></svg> <span data-i18n="nav_profile">Profile</span></a>
+    <a class="app-nav-link" data-page="league" href="league.html"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/><path d="M16.5 11.2a2.6 2.6 0 1 0 0-5.2"/><path d="M2 19.5c.7-3.4 2.9-5.3 6-5.3s5.3 1.9 6 5.3"/><path d="M15 14.6c2.3.4 3.9 2.1 4.5 4.9"/></svg> <span data-i18n="nav_league">Friends League</span></a>
+    <a class="app-nav-link" data-page="hall" href="hall.html"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4h8v4a4 4 0 0 1-8 0V4Z"/><path d="M8 5H5.5v1.5A3.5 3.5 0 0 0 9 10"/><path d="M16 5h2.5v1.5A3.5 3.5 0 0 1 15 10"/><path d="M12 12v4"/><path d="M9 20h6"/><path d="M10 16h4l1 4H9l1-4Z"/></svg> <span data-i18n="nav_hall">Hall of Fame</span></a>
+    <a class="app-nav-link" data-page="you" href="you.html"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h6.2a2.3 2.3 0 0 1 2.3 2.3V20a2 2 0 0 0-2-2H5Z"/><path d="M19 4.5h-3.2a2.3 2.3 0 0 0-2.3 2.3V20a2 2 0 0 1 2-2H19Z"/></svg> <span data-i18n="nav_you">Your Book</span></a>
+    <a class="app-nav-link" data-page="about" href="about.html"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 11v5.3"/><circle cx="12" cy="8.1" r="0.15" fill="currentColor" stroke-width="1.6"/></svg> <span data-i18n="nav_about">About</span></a>
+  </nav>
+
+  <main class="app-main">
+    <div class="container">
+
+      <!-- AUTH -->
+      <section class="view active" id="view-auth">
+        <div class="auth-wrap">
+          <div class="tabs">
+            <button class="tab-btn active" data-auth-tab="login" data-i18n="auth_switch_login">Log in</button>
+            <button class="tab-btn" data-auth-tab="register" data-i18n="auth_switch_register">Sign up</button>
+          </div>
+
+          <form class="card auth-card" id="loginForm">
+            <h2 class="auth-title" data-i18n="auth_login_title">Welcome back</h2>
+            <p class="auth-sub" data-i18n="auth_login_sub">Log in to see your wellness dashboard.</p>
+            <div class="field">
+              <label data-i18n="auth_email">Email</label>
+              <input class="input" type="email" name="email" required autocomplete="email" />
+              <div class="err"></div>
+            </div>
+            <div class="field">
+              <label data-i18n="auth_password">Password</label>
+              <div class="password-row">
+                <input class="input" type="password" name="password" required autocomplete="current-password" />
+                <button type="button" class="password-eye-btn" data-password-toggle aria-label="Show password">👁️</button>
+              </div>
+              <div class="err"></div>
+            </div>
+            <p class="auth-forgot-link"><a href="#" id="forgotPasswordLink" data-i18n="auth_forgot_link">Forgot password?</a></p>
+            <button class="btn btn-primary btn-block btn-shine" type="submit" data-i18n="auth_login_btn">Log in</button>
+
+            <!-- The GitHub sign-in button was removed: it needs an OAuth
+                 app registered with a client id, secret and callback URL,
+                 none of which exist for a locally-run copy, so the button
+                 could only ever fail. A control that cannot work is worse
+                 than no control - it reads as the app being broken rather
+                 than as the feature being absent. Email and password is
+                 the supported way in. The backend OAuth route is left in
+                 place for anyone who does configure credentials. -->
+          </form>
+
+          <!-- Forgot / reset password -->
+          <div class="card auth-card hidden" id="forgotPasswordPanel">
+            <h2 class="auth-title" data-i18n="auth_forgot_title">Reset your password</h2>
+            <p class="auth-sub" data-i18n="auth_forgot_sub">Enter your email, then answer the question you chose when you signed up.</p>
+            <div class="field">
+              <label data-i18n="auth_email">Email</label>
+              <input class="input" type="email" id="forgotEmailInput" required />
+            </div>
+            <button class="btn btn-primary btn-block" type="button" id="forgotSendBtn" data-i18n="auth_forgot_send">Continue</button>
+
+            <!-- One way back in: the question the user set at sign-up.
+                 The emailed-code route is gone from this screen. It only
+                 ever worked where a mail server was configured, so for
+                 most installs it was a door that opened onto nothing -
+                 the person had already forgotten their password and the
+                 code never arrived. The /auth/reset-password endpoint
+                 still exists and is still tested; nothing here reaches
+                 it. -->
+            <div class="hidden" id="securityAnswerBlock" style="margin-top:18px;">
+              <div class="field">
+                <label id="securityQuestionLabel"></label>
+                <div class="password-row">
+                  <input class="input" type="password" id="securityAnswerInput" autocomplete="off" />
+                  <button type="button" class="password-eye-btn" data-password-toggle aria-label="Show answer">👁️</button>
+                </div>
+              </div>
+              <div class="field">
+                <label data-i18n="auth_new_password">New password</label>
+                <div class="password-row">
+                  <input class="input" type="password" id="securityNewPasswordInput" autocomplete="new-password" />
+                  <button type="button" class="password-eye-btn" data-password-toggle aria-label="Show password">👁️</button>
+                </div>
+              </div>
+              <button class="btn btn-primary btn-block btn-shine" type="button" id="securityAnswerSubmitBtn" data-i18n="auth_answer_submit">Answer &amp; set new password</button>
+            </div>
+            <p class="auth-forgot-link"><a href="#" id="backToLoginLink" data-i18n="auth_back_to_login">Back to log in</a></p>
+          </div>
+
+          <form class="card auth-card hidden" id="registerForm">
+            <h2 class="auth-title" data-i18n="auth_register_title">Create your account</h2>
+            <p class="auth-sub" data-i18n="auth_register_sub">Takes less than a minute.</p>
+            <div class="field">
+              <label data-i18n="auth_name">Display name</label>
+              <input class="input" type="text" name="display_name" required minlength="1" maxlength="120" />
+              <div class="err"></div>
+            </div>
+            <div class="field">
+              <label data-i18n="auth_email">Email</label>
+              <input class="input" type="email" name="email" required autocomplete="email" />
+              <div class="err"></div>
+            </div>
+            <div class="field">
+              <label data-i18n="auth_password">Password</label>
+              <div class="password-row">
+                <input class="input" type="password" name="password" required autocomplete="new-password" />
+                <button type="button" class="password-eye-btn" data-password-toggle aria-label="Show password">👁️</button>
+              </div>
+              <div class="err"></div>
+            </div>
+            <!-- The second way back in. Required, not optional: this app
+                 ships with no mail server, so the emailed reset code goes
+                 to a server log the user cannot read. Without a question,
+                 a forgotten password is a permanently lost account.
+                 The user writes their OWN question rather than picking
+                 from a list - "mother's maiden name" and its siblings are
+                 researchable facts about a person, which is exactly what
+                 makes canned security questions weak. -->
+            <div class="field">
+              <label data-i18n="auth_security_question">A question only you can answer</label>
+              <input class="input" type="text" name="security_question" required
+                     maxlength="200" placeholder="What did I name my first bike?"
+                     data-i18n-placeholder="auth_security_question_ph" />
+              <p class="muted" style="font-size:.72rem;margin:4px 0 0;" data-i18n="auth_security_question_hint">If you ever forget your password, this is how you get back in. Pick something nobody could look up.</p>
+              <div class="err"></div>
+            </div>
+            <div class="field">
+              <label data-i18n="auth_security_answer">Your answer</label>
+              <div class="password-row">
+                <input class="input" type="password" name="security_answer" required
+                       minlength="3" maxlength="200" autocomplete="off" />
+                <button type="button" class="password-eye-btn" data-password-toggle aria-label="Show answer">👁️</button>
+              </div>
+              <p class="muted" style="font-size:.72rem;margin:4px 0 0;" data-i18n="auth_security_answer_hint">Capital letters and extra spaces do not matter.</p>
+              <div class="err"></div>
+            </div>
+            <div class="terms-row">
+              <input type="checkbox" id="termsCheck" required />
+              <label for="termsCheck"><span data-i18n="auth_terms_prefix">I agree to the</span> <a href="terms.html" target="_blank" data-i18n="auth_terms_link">Terms & Privacy Notice</a></label>
+            </div>
+            <button class="btn btn-primary btn-block btn-shine" type="submit" data-i18n="auth_register_btn">Create account</button>
+          </form>
+        </div>
+      </section>
+
+      <!-- ONBOARDING -->
+      <section class="view" id="view-onboarding">
+        <div class="onboard-wrap card">
+          <h2 class="text-center" data-i18n="onboard_title">Let's tailor things to you</h2>
+          <p class="text-center" data-i18n="onboard_sub">Optional — answer what you like, skip the rest.</p>
+
+          <!-- One question per slide. Three questions stacked on a
+               single screen read as a form to get through; one at a
+               time reads as a conversation, and it is also the only way
+               the note under the schedule question gets read at all.
+               The all-at-once version still exists on the profile page,
+               which is where these answers are edited later. -->
+          <div class="onboard-progress" id="onboardProgress" aria-hidden="true"></div>
+
+          <div class="onboard-slide" data-onboard-slide="0">
+            <p class="wizard-step-title" data-i18n="onboard_goal">What would you most like to improve?</p>
+            <div id="goalOptions"></div>
+          </div>
+          <div class="onboard-slide hidden" data-onboard-slide="1">
+            <p class="wizard-step-title" data-i18n="onboard_purpose">What do you mainly use your devices for?</p>
+            <div id="purposeOptions"></div>
+          </div>
+          <div class="onboard-slide hidden" data-onboard-slide="2" data-guide="schedule_regularity">
+            <p class="wizard-step-title" data-i18n="onboard_schedule">What does your daily schedule look like?</p>
+            <div id="scheduleOptions"></div>
+            <!-- Said right under the question, not only in the guide.
+                 This one answer changes which signals are treated as
+                 problems and which themes the weekly plan reaches for
+                 first - a rotating or irregular schedule pushes sleep
+                 and stress recovery ahead of screen rules. Somebody
+                 picking at random here gets a plan aimed at a life they
+                 are not living. -->
+            <p class="onboard-emphasis" data-i18n="onboard_schedule_weight">This one matters more than the others: it changes which signals count as problems for you and what your weekly plan reaches for first. On an irregular or rotating schedule, sleep and stress recovery come before screen-time rules.</p>
+          </div>
+          <!-- These three used to be hard-coded in the client: the app
+               submitted "moderate", "23:00", "07:00" and "not required"
+               on everybody's behalf and then read none of them back.
+               They are asked for real now, and each one changes the
+               plan - see ImprovementPlanService._theme_weight and
+               _EFFORT_TIER_SHIFT. -->
+          <div class="onboard-slide hidden" data-onboard-slide="3">
+            <p class="wizard-step-title" data-i18n="onboard_effort">How hard do you want to be pushed?</p>
+            <div id="effortOptions"></div>
+            <p class="onboard-emphasis" data-i18n="onboard_effort_note">This sets the pace, not the goal. A gentler setting keeps each habit at its easier step for longer; a stronger one starts you a rung up instead of spending a week on the basics.</p>
+          </div>
+          <div class="onboard-slide hidden" data-onboard-slide="4">
+            <p class="wizard-step-title" data-i18n="onboard_work_screen">Does your work or study require a screen?</p>
+            <div id="workScreenOptions"></div>
+            <p class="onboard-emphasis" data-i18n="onboard_work_screen_note">If it does, the plan stops leading with "use your device less" — that is the one instruction your day overrules. It works on when and how you use it instead.</p>
+          </div>
+          <div class="onboard-slide hidden" data-onboard-slide="5">
+            <p class="wizard-step-title" data-i18n="onboard_sleep_window">When do you usually sleep and wake?</p>
+            <!-- Two selects per time, not <input type="time">.
+                 The native control renders a locale-specific segmented
+                 spinner, and on a Persian Windows browser it would not
+                 take a new value at all - the field was simply stuck at
+                 23:00. A select is the same control in every locale and
+                 every writing direction, works by keyboard, touch and
+                 mouse alike, and cannot be defeated by a picker the page
+                 does not draw. #onboardSleepTime / #onboardWakeTime are
+                 still here as hidden inputs, so everything downstream
+                 keeps reading one "HH:MM" string. -->
+            <div class="onboard-time-row">
+              <div class="field">
+                <label data-i18n="onboard_sleep_time">Usually asleep by</label>
+                <div class="time-select-row">
+                  <select class="input" id="onboardSleepHour" data-time-part="hour" aria-label="hour"></select>
+                  <span class="time-select-sep">:</span>
+                  <select class="input" id="onboardSleepMinute" data-time-part="minute" aria-label="minute"></select>
+                </div>
+                <input type="hidden" id="onboardSleepTime" value="23:00" />
+              </div>
+              <div class="field">
+                <label data-i18n="onboard_wake_time">Usually awake at</label>
+                <div class="time-select-row">
+                  <select class="input" id="onboardWakeHour" data-time-part="hour" aria-label="hour"></select>
+                  <span class="time-select-sep">:</span>
+                  <select class="input" id="onboardWakeMinute" data-time-part="minute" aria-label="minute"></select>
+                </div>
+                <input type="hidden" id="onboardWakeTime" value="07:00" />
+              </div>
+            </div>
+            <p class="onboard-emphasis" data-i18n="onboard_sleep_window_note">A window under seven hours moves sleep to the front of your plan before your first check-in has said anything about it.</p>
+          </div>
+
+          <div class="wizard-nav">
+            <button class="btn btn-ghost" id="onboardSkip" data-i18n="onboard_skip">Skip for now</button>
+            <button class="btn btn-ghost hidden" id="onboardBack" data-i18n="predict_back">Back</button>
+            <button class="btn btn-primary btn-shine" id="onboardNext" data-i18n="predict_next">Next</button>
+            <button class="btn btn-primary btn-shine hidden" id="onboardSave" data-i18n="onboard_save">Save & continue</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- PREDICT WIZARD -->
+      <section class="view" id="view-predict">
+        <div class="predict-wrap">
+          <div class="section-head" style="margin-bottom:20px;">
+            <h2 data-i18n="predict_title">Daily wellness check-in</h2>
+            <p data-i18n="predict_sub">Answer honestly — the model only works as well as your data.</p>
+          </div>
+
+          <div class="demo-bar" data-guide="demo_profiles">
+            <span class="muted" data-i18n="demo_label" style="align-self:center;">Or try a demo profile:</span>
+            <button class="btn btn-ghost btn-sm" data-demo="healthy">🌿 Healthy</button>
+            <button class="btn btn-ghost btn-sm" data-demo="borderline">🌗 Borderline</button>
+            <button class="btn btn-ghost btn-sm" data-demo="at_risk">🔥 At Risk</button>
+            <button class="btn btn-ghost btn-sm" data-demo="baseline">⚪ Baseline</button>
+          </div>
+
+          <div class="demo-bar" id="csvImportBar" data-guide="csv_import">
+            <span class="muted" data-i18n="csv_import_label" style="align-self:center;">Got several days already logged elsewhere?</span>
+            <a class="btn btn-ghost btn-sm" id="csvTemplateBtn" href="#" data-i18n="csv_download_template">⬇️ Download CSV template</a>
+            <button type="button" class="btn btn-ghost btn-sm" id="csvUploadBtn" data-i18n="csv_upload_btn">⬆️ Upload CSV</button>
+            <input type="file" id="csvUploadInput" accept=".csv,text/csv" class="hidden" />
+          </div>
+          <p class="muted csv-import-result hidden" id="csvImportResult"></p>
+
+          <!-- Saved check-ins, split into the two shelves. Hidden until
+               something has actually been saved, so a first-time user
+               is not shown an empty box. -->
+          <div class="card csv-history-card hidden" id="csvHistoryCard" data-guide="csv_history">
+            <div class="csv-history-head">
+              <h3 data-i18n="csv_history_title">Your saved check-ins</h3>
+              <div class="csv-history-tabs" role="tablist">
+                <button type="button" class="csv-tab active" id="csvTabMain" role="tab"
+                        data-kind="main" data-i18n="csv_history_tab_main">Real check-ins</button>
+                <button type="button" class="csv-tab" id="csvTabTest" role="tab"
+                        data-kind="test" data-i18n="csv_history_tab_test">Test check-ins</button>
+              </div>
+            </div>
+            <p class="muted" data-i18n="csv_history_desc">Pick one and the whole form fills in with those answers — then just carry on to the next step.</p>
+            <div id="csvHistoryList" class="csv-history-list"></div>
+          </div>
+
+          <!-- Shown only on a day that already has a main check-in.
+               One main check-in per day is the rule, so the second
+               submission of a day is an EDIT and has to be said out
+               loud - the old behaviour replaced the day silently and
+               the earlier score simply vanished. Ticking it refills the
+               form with what was actually submitted this morning, so
+               correcting one number does not mean retyping forty. -->
+          <div class="edit-today-row hidden" id="editTodayRow" data-guide="edit_today">
+            <label class="edit-today-check">
+              <input type="checkbox" id="editTodayCheck" />
+              <span data-i18n="edit_today_label">Edit today's check-in</span>
+            </label>
+            <p class="edit-today-note muted" id="editTodayNote" data-i18n="edit_today_note">You have already checked in today. Tick this to update that check-in — your weekly plan and improvements will be rebuilt from the new answers.</p>
+          </div>
+
+          <label class="exclude-analysis-row" data-guide="exclude_from_analysis">
+            <input type="checkbox" id="excludeFromAnalysisCheck" />
+            <span data-i18n="exclude_from_analysis_label">Don't record this — just testing, don't let it affect my weekly analysis</span>
+          </label>
+
+          <div class="card">
+            <div class="wizard-progress" id="wizardProgress"></div>
+            <p class="wizard-step-title" id="wizardStepTitle"></p>
+            <form id="wizardForm">
+              <div id="wizardFields" class="field-grid step-in"></div>
+            </form>
+            <div class="derived-panel" id="derivedPanel" data-guide="wizard_derived">
+              <p class="muted" style="grid-column:1/-1;font-size:.78rem;" data-i18n="derived_title">Auto-calculated (from what you entered above)</p>
+            </div>
+            <div class="wizard-nav">
+              <button class="btn btn-ghost" id="wizardBack" data-i18n="predict_back">Back</button>
+              <button class="btn btn-primary btn-shine" id="wizardNext" data-i18n="predict_next">Next</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- GAMES. Sits between processing and the result on purpose - see
+           games.js's header for the rules (G1-G9). The prediction is
+           already in hand by the time this view shows; nothing here
+           delays the request, only the moment the result is REVEALED.
+           Never appears at all if games are switched off in Settings or
+           nothing here is eligible for this result (G4) - app.js decides
+           that before this view is ever shown. -->
+      <section class="view" id="view-games">
+        <div class="predict-wrap">
+          <div class="section-head" style="margin-bottom:20px;" data-guide="games_page">
+            <h2 data-i18n="games_title">Try one</h2>
+            <p data-i18n="games_page_lead">Your result is ready. One quick thing about it before you see it.</p>
+          </div>
+          <div class="card">
+            <div class="games-mount" id="gamesPageMount"></div>
+            <button type="button" class="btn btn-primary btn-block" id="gamesContinueBtn" style="margin-top:18px;" data-i18n="games_continue_btn">See my result</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- RESULT -->
+      <section class="view" id="view-result">
+        <div class="result-wrap">
+          <!-- Shown only when the screen is a reopened past day. Without
+               it this view is indistinguishable from a check-in the user
+               just submitted, and they would read an old score as today's. -->
+          <div class="past-day-banner hidden" id="pastDayBanner">
+            <span id="pastDayBannerText"></span>
+            <button class="btn btn-ghost btn-sm" id="pastDayRerunBtn" type="button"></button>
+          </div>
+          <p class="result-narrative" id="resultNarrative"></p>
+          <div class="card pop-in">
+            <div class="result-hero">
+              <div class="score-ring-wrap" id="scoreRingWrap" data-guide="result_ring"></div>
+              <div class="result-info">
+                <span class="badge" id="classBadge"></span>
+                <h2 id="resultTitle" data-i18n="result_title">Your wellness result</h2>
+                <div class="confidence-row" data-guide="result_confidence">
+                  <span class="muted" data-i18n="result_confidence">Confidence</span>
+                  <div class="wave-bar conf-wave" id="confidenceBar" style="flex:1;height:10px;" data-fill="0"></div>
+                  <span class="mono" id="confidenceNum">--%</span>
+                </div>
+                <p class="muted" id="personaLine" style="margin-top:10px;font-size:.85rem;"></p>
+              </div>
+            </div>
+
+            <!-- The two horizons, side by side and each labelled with the
+                 one it belongs to. Before this they were shown as a
+                 single reading: a score about today next to a class
+                 about next week, with nothing saying so. -->
+            <div class="horizon-row" id="horizonRow">
+              <div class="horizon-card is-today" data-guide="score_today" tabindex="0" role="button">
+                <span class="horizon-when" data-i18n="horizon_today">Today</span>
+                <span class="horizon-value" id="horizonTodayScore" dir="ltr">--</span>
+                <span class="horizon-what" data-i18n="horizon_today_what">the day you just logged</span>
+              </div>
+              <div class="horizon-arrow" aria-hidden="true">→</div>
+              <div class="horizon-card is-future" data-guide="score_seven_day" tabindex="0" role="button">
+                <span class="horizon-when" data-i18n="horizon_7d">In 7 days</span>
+                <span class="horizon-value" id="horizonFutureClass">--</span>
+                <span class="horizon-band" id="horizonFutureBand" dir="ltr"></span>
+                <span class="horizon-what" data-i18n="horizon_7d_what">the band the model expects you in</span>
+                <!-- Says WHY the band moved when the reader's own recent
+                     days moved it. Hidden entirely when they did not. -->
+                <span class="horizon-momentum hidden" id="horizonMomentum"></span>
+              </div>
+            </div>
+
+            <div class="confidence-label" id="confidenceLabel"></div>
+            <div class="ood-warning hidden" id="oodWarning" data-guide="result_ood"></div>
+            <div class="uncertainty-note" id="uncertaintyNote"></div>
+
+            <div class="dimension-block" data-guide="result_dimensions">
+              <h3 data-i18n="result_dimension_title">Wellness dimension breakdown</h3>
+              <p class="muted dimension-hint" data-i18n="result_dimension_hint">A transparent, rule-based view of the same inputs, grouped by area — separate from the model's own score above.</p>
+              <div id="dimensionBars" class="dimension-grid"></div>
+            </div>
+
+            <div class="result-grid">
+              <div>
+                <h3 data-i18n="result_shap_title">What drove this score</h3>
+                <div id="shapBars" data-guide="result_shap"></div>
+              </div>
+              <div>
+                <h3 data-i18n="result_rec_title">Recommended for you</h3>
+                <p class="muted dimension-hint" data-i18n="result_rec_exclude_hint">Not interested in coaching on a topic? Use "Don't coach me on this" below — it only changes future recommendations, never your score.</p>
+                <div id="recCards" data-guide="result_recs"></div>
+              </div>
+            </div>
+
+            <div class="roadmap-block" id="roadmapBlock" data-guide="result_roadmap">
+              <h3 data-i18n="result_roadmap_title">Your 7-day roadmap</h3>
+              <p class="muted dimension-hint" data-i18n="result_roadmap_hint">Built from today's own weakest signals — see it change over time on the Weekly Plan page.</p>
+              <ol id="roadmapList" class="roadmap-list"></ol>
+            </div>
+
+            <div class="future-self-block" id="futureSelfBlock" data-guide="future_self">
+              <h3 data-i18n="result_future_title">Talk to your future self</h3>
+              <p class="muted dimension-hint" data-i18n="result_future_hint">Real numbers from re-running the same trained model on a hypothetical future pattern — not a guess.</p>
+              <div id="futureSelfCards" class="future-self-grid"></div>
+            </div>
+
+            <!-- Section E, second half. The pre-result games (guess the
+                 score / the confidence / above-or-below average) already
+                 ran in view-games, before this number existed on screen.
+                 These games read secondary context - SHAP factors,
+                 streak, badges, historical stats - and are written
+                 assuming the reader has already seen this result, so
+                 they render down here instead. Hidden by default and
+                 revealed only if games.js finds one eligible (G4) -
+                 games.js itself flips this via mount.closest('.games-section'). -->
+            <!-- "That day sits outside your week's range" - rendered
+                 only when the SERVER says today needs an answer (see
+                 band-decision.js). Above the games and the
+                 actions, because the answer decides what the rest of
+                 this week's plan is going to be. -->
+            <div id="bandDecisionMount" class="hidden" data-guide="band_decision"></div>
+
+            <div class="games-section hidden" id="gamesAfterSection" data-guide="games_after">
+              <h3 data-i18n="games_after_title">One more thing</h3>
+              <p class="muted dimension-hint" data-i18n="games_after_lead">Now that you've seen it, a couple of things about the story behind it.</p>
+              <div class="games-mount" id="gamesAfterMount"></div>
+            </div>
+
+            <div class="result-actions">
+              <button class="btn btn-ghost" id="downloadPdfBtn" data-i18n="result_download">Download PDF report</button>
+              <a class="btn btn-ghost" href="dashboard.html" data-i18n="result_dashboard">Go to Dashboard</a>
+              <button class="btn btn-primary btn-shine" id="runAgainBtn" data-i18n="result_again">Run another check-in</button>
+            </div>
+
+            <!-- Save these exact answers as a CSV: downloads to the
+                 user's machine AND joins the list on the check-in
+                 screen, so the same day can be reloaded without
+                 retyping it. -->
+            <div class="card csv-save-card" data-guide="csv_save">
+              <h3 data-i18n="csv_save_title">Save these answers</h3>
+              <p class="muted" data-i18n="csv_save_desc">Give this check-in a name. You get the CSV file, and it stays on the check-in screen so you can reload these answers instead of filling the form again.</p>
+              <div class="csv-save-row">
+                <input type="text" id="csvSaveName" maxlength="60"
+                       data-i18n-placeholder="csv_save_placeholder"
+                       placeholder="e.g. a normal work Tuesday" />
+                <button type="button" class="btn btn-primary btn-sm" id="csvSaveBtn" data-i18n="csv_save_btn">Save &amp; download</button>
+              </div>
+              <p class="muted csv-save-status" id="csvSaveStatus"></p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<!-- Settings modal -->
+
+
+<div class="mascot-widget">
+  <div class="mascot-bubble" id="mascotBubble" role="status" aria-live="polite"></div>
+  <svg id="mascotBtn" class="mascot-btn mascot-orb" viewBox="0 0 100 100" role="button" aria-label="Guide character" tabindex="0">
+    <defs><radialGradient id="orbGrad2" cx="35%" cy="30%" r="75%"><stop offset="0%" stop-color="#7ffbe0"/><stop offset="55%" stop-color="#22f5c6"/><stop offset="100%" stop-color="#3aa7ff"/></radialGradient></defs>
+    <circle cx="50" cy="52" r="40" fill="url(#orbGrad2)"/>
+    <g class="mascot-brows"></g>
+    <g class="mascot-eye"><circle cx="36" cy="48" r="6" fill="#04140f"/><circle cx="64" cy="48" r="6" fill="#04140f"/></g>
+    <path class="mascot-mouth" d="M38 67 Q50 71 62 67" stroke="#04140f" stroke-width="4" fill="none" stroke-linecap="round"/>
+  </svg>
+</div>
+<div class="music-widget" id="musicWidget">
+  <div class="play" id="musicPlayBtn" data-dw-icon="play" data-dw-icon-size="16"></div>
+  <div class="music-track-name" id="musicTrackName">Calm Focus</div>
+  <!-- Two arrows, one for each direction. The track name used to be
+       the only way to change track - clicking a label is not a control
+       anybody finds, and it could only ever go forwards. -->
+  <button type="button" class="music-step-btn" id="musicPrevBtn" title="Previous track" aria-label="Previous track" data-dw-icon="prevTrack" data-dw-icon-size="14"></button>
+  <button type="button" class="music-step-btn" id="musicNextBtn" title="Next track" aria-label="Next track" data-dw-icon="nextTrack" data-dw-icon-size="14"></button>
+  <!-- The library: the five built-in tracks and every track you have
+       added, each with its own delete. Replaces a lone upload button
+       that looked like a microphone and, once a file was chosen, left
+       no way back to it or out of it. -->
+  <button type="button" class="music-library-btn" id="musicLibraryBtn" title="Tracks" aria-label="Tracks" aria-expanded="false" data-dw-icon="library" data-dw-icon-size="16"></button>
+  <input type="file" id="musicUploadInput" accept="audio/*" class="hidden" />
+  <div class="music-library-popover" id="musicLibraryPopover" role="dialog" aria-label="Tracks">
+    <div class="music-library-list" id="musicLibraryList"></div>
+    <button type="button" class="btn btn-ghost btn-sm music-library-add" id="musicUploadBtn" data-i18n="music_add_track">Add a track</button>
+    <p class="music-library-note" id="musicLibraryNote" data-i18n="music_library_note">Your files stay on this device.</p>
+  </div>
+  <button type="button" class="music-volume-btn" id="musicVolumeBtn" title="Volume" aria-label="Volume" data-dw-icon="volume" data-dw-icon-size="16"></button>
+  <div class="music-volume-popover" id="musicVolumePopover">
+    <div class="music-volume-value" id="musicVolumeValue" dir="ltr">60%</div>
+    <div class="music-volume-track" id="musicVolumeTrack"><div class="music-volume-fill" id="musicVolumeFill"></div></div>
+  </div>
+  <div class="music-bars"><span></span><span></span><span></span></div>
+</div>
+
+<script src="assets/js/core/icons.js"></script>
+<script src="assets/js/core/theme.js"></script>
+<script src="assets/js/core/motion.js"></script>
+<script src="assets/js/chrome/sound-engine.js"></script>
+<script src="assets/js/core/i18n.js"></script>
+<script src="assets/js/features/score-ring.js"></script>
+<script src="assets/js/core/server-text.js"></script>
+<script src="assets/js/features/motivation.js"></script>
+<script src="assets/js/coach/coach-labels.js"></script>
+<script src="assets/js/chrome/loading-messages.js"></script>
+<script src="assets/js/chrome/processing-screen.js"></script>
+<script src="assets/js/core/toast.js"></script>
+<script src="assets/js/core/sheet.js"></script>
+<script src="assets/js/chrome/particles.js"></script>
+<script src="assets/js/guide/guide-voice.js"></script>
+<script src="assets/js/chrome/mascot.js"></script>
+<script src="assets/js/chrome/celebrate.js"></script>
+<script src="assets/js/guide/guide-tips.js"></script>
+<script src="assets/js/guide/guide-content-controls.js"></script>
+<script src="assets/js/guide/guide-content-v3.js"></script>
+<script src="assets/js/guide/guide-click.js"></script>
+<script src="assets/js/guide/guide-content-insights.js"></script>
+<script src="assets/js/guide/guide-content-score.js"></script>
+<script src="assets/js/guide/guide-content-games.js"></script>
+<script src="assets/js/features/games.js"></script>
+<script src="assets/js/chrome/music-player.js"></script>
+<script src="assets/js/chrome/intro-slides.js"></script>
+<script src="assets/js/features/csv-library.js"></script>
+<script src="assets/js/features/demo.js"></script>
+<script src="assets/js/chrome/app-chrome.js"></script>
+<script src="assets/js/core/api.js"></script>
+<script src="assets/js/core/last-result.js"></script>
+<script src="assets/js/core/api-guard.js"></script>
+<script src="assets/js/core/schema.js"></script>
+<script src="assets/js/features/onboarding-options.js"></script>
+<script src="assets/js/features/band-decision.js"></script>
+<script src="assets/js/pages/app.js"></script>
+</body>
+</html>

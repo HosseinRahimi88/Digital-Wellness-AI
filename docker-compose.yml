@@ -1,0 +1,38 @@
+# Digital Wellness AI - FastAPI backend.
+#
+# Usage:
+#   cp .env.example .env   # fill in JWT_SECRET_KEY at minimum
+#   docker compose up --build
+#
+# The API is then at http://localhost:8000 (docs at /docs).
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      # Overridable without editing .env - see docker-compose.override.yml
+      # convention for per-environment tuning.
+      WEB_CONCURRENCY: "2"
+    volumes:
+      # Persist accounts/history across container restarts - without
+      # this, `docker compose down` would silently discard all real
+      # registered accounts and prediction history (storage/*.json are
+      # written inside the image's filesystem otherwise, which is
+      # ephemeral by default in Docker).
+      - wellness_storage:/app/storage
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=3)"]
+      interval: 30s
+      timeout: 5s
+      start_period: 15s
+      retries: 3
+    restart: unless-stopped
+
+volumes:
+  wellness_storage:

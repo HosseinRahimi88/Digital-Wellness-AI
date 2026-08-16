@@ -1,0 +1,413 @@
+"""
+Gamification Service
+----------------------
+Pure, rule-based helpers for the "Journey" product features (Healthy
+Streak Tracker, User Level/Progress, Achievement Badges, Journey
+Summary). Every input here is a real `HistoryService` entry (built
+from real `PredictionService` output) - this module never touches the
+ML pipeline, never re-predicts, and never re-derives features. It only
+aggregates dates/scores that already exist.
+
+Kept separate from `services/achievement_service.py` on purpose:
+`AchievementService` answers one narrow question ("did the score just
+improve vs. one other score?") and is already used by the celebration
+banner. This module answers a different, broader set of questions
+("what badges has this user earned across their whole history?",
+"what's their current streak?", "what level are they?") - composing
+`AchievementService` would have meant threading extra parameters
+through a class that isn't shaped for it, so these are new pure
+functions instead, following the existing pattern of one small
+service per concern (see `dashboard_service.py`).
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+from datetime import date, datetime, timedelta
+from typing import Any, Optional
+
+from config.gamification_settings import (
+    CHECKINS_PER_LEVEL,
+    CONSISTENT_LOGGER_MIN_ENTRIES_PER_WEEK,
+    HEALTHY_DAY_SCORE_THRESHOLD,
+    HIGH_SCORE_BADGE_THRESHOLD,
+    LEVEL_TITLES,
+    MOST_IMPROVED_MIN_DELTA,
+    GRACE_DAYS_PER_MONTH,
+    STREAK_PENALTY_DAYS,
+    MAX_UNABSORBED_MISSES,
+)
+
+
+@dataclass(slots=True)
+class StreakInfo:
+    current_streak: int = 0
+    longest_streak: int = 0
+    is_active_today_or_yesterday: bool = False
+    # D-7 / game 12: how the chain survived a bad day, so the UI can say
+    # what happened instead of silently showing a smaller number.
+    shortened_by: int = 0          # days removed by the most recent miss
+    grace_days_used: int = 0       # misses absorbed this calendar month
+    grace_days_remaining: int = 0
+    exception_days_skipped: int = 0  # days the user marked as exceptions
+
+
+@dataclass(slots=True)
+class LevelInfo:
+    level: int
+    title: str
+    total_checkins: int
+    checkins_into_level: int
+    checkins_for_next_level: int
+    progress_fraction: float
+
+
+@dataclass(slots=True)
+class Badge:
+    id: str
+    name: str
+    description: str
+    icon: str
+    unlocked: bool
+
+
+@dataclass(slots=True)
+class JourneySummary:
+    total_checkins: int
+    first_date: Optional[str]
+    last_date: Optional[str]
+    days_since_first: Optional[int]
+    avg_score: Optional[float]
+    best_score: Optional[float]
+    best_date: Optional[str]
+    latest_score: Optional[float]
+    improvement_since_first: Optional[float]
+
+
+class GamificationService:
+    """Pure data-shaping helpers - no Streamlit/UI code, no I/O."""
+
+    # ------------------------------------------------------------
+    # Streaks
+    # ------------------------------------------------------------
+    @staticmethod
+    def compute_streak(
+        entries: list[dict[str, Any]],
+        today: Optional[date] = None,
+    ) -> StreakInfo:
+        """
+        `entries` must be sorted ascending by date (HistoryService.get_all()
+        already returns them that way). A day counts toward the streak
+        when it has a logged entry with health_score >=
+        HEALTHY_DAY_SCORE_THRESHOLD.
+
+        A miss does NOT wipe the chain (D-7 / game 12). Zeroing weeks of
+        real progress over one bad day is punishment dressed as a metric,
+        and it is the moment people quit. Instead:
+
+          * A day the user marked as an exception is neutral - it neither
+            extends nor breaks the chain. They already told us it was not
+            a normal day; overruling that would make the label pointless.
+          * The first GRACE_DAYS_PER_MONTH misses in a calendar month are
+            absorbed, so an ordinary bad day costs nothing.
+          * Once grace is spent, a miss SHORTENS the chain by
+            STREAK_PENALTY_DAYS rather than resetting it. The user keeps
+            what they earned, minus a real but survivable cost.
+
+        `longest_streak` stays strict - it is a record of consecutive
+        healthy days and softening it would make the record meaningless.
+        """
+        if not entries:
+            return StreakInfo()
+
+        today = today or datetime.now().date()
+
+        by_date: dict[date, Optional[float]] = {}
+        excluded_days: set[date] = set()
+        for e in entries:
+            d_str = e.get("date")
+            if not d_str:
+                continue
+            try:
+                d = date.fromisoformat(d_str)
+            except ValueError:
+                continue
+            by_date[d] = e.get("health_score")
+            if e.get("excluded"):
+                excluded_days.add(d)
+
+        if not by_date:
+            return StreakInfo()
+
+        def is_healthy(d: date) -> bool:
+            score = by_date.get(d)
+            return score is not None and score >= HEALTHY_DAY_SCORE_THRESHOLD
+
+        def is_exception(d: date) -> bool:
+            return d in excluded_days
+
+        # Longest streak: scan the logged days in order, resetting the
+        # run whenever a day isn't healthy OR isn't the calendar day
+        # right after the previous one (a gap day with no entry breaks
+        # the streak just like an unhealthy day does).
+        all_days = sorted(by_date.keys())
+        longest = running = 0
+        previous_day: Optional[date] = None
+        for d in all_days:
+            if is_healthy(d) and previous_day is not None and d == previous_day + timedelta(days=1):
+                running += 1
+            elif is_healthy(d):
+                running = 1
+            else:
+                running = 0
+            longest = max(longest, running)
+            previous_day = d
+
+        # Current streak: walk backwards from today (or yesterday, so a
+        # user who hasn't logged *today* yet doesn't lose an otherwise
+        # intact streak), applying the forgiveness rules above.
+        current = 0
+        shortened_by = 0
+        grace_used = 0
+        exceptions_skipped = 0
+        cursor = today
+        if cursor not in by_date and (cursor - timedelta(days=1)) in by_date:
+            cursor = cursor - timedelta(days=1)
+
+        earliest = min(all_days)
+        healthy_days = 0
+        unabsorbed_misses = 0
+        while cursor >= earliest:
+            # A day with no entry at all ends the chain, exactly as before.
+            # Forgiveness is for days the user LOGGED and had a rough
+            # result on - a day they never recorded is missing data, not a
+            # bad day, and counting a chain through it would be inventing
+            # history the user never claimed.
+            if cursor not in by_date:
+                break
+            if is_exception(cursor):
+                # Neutral: the user said this was not a normal day.
+                exceptions_skipped += 1
+                cursor -= timedelta(days=1)
+                continue
+            if is_healthy(cursor):
+                healthy_days += 1
+                cursor -= timedelta(days=1)
+                continue
+
+            # A miss. Grace is counted within the calendar month the miss
+            # falls in, so a rough patch in one month cannot silently eat
+            # the allowance of another.
+            if cursor.month == today.month and cursor.year == today.year \
+                    and grace_used < GRACE_DAYS_PER_MONTH:
+                grace_used += 1
+                cursor -= timedelta(days=1)
+                continue
+
+            # An unabsorbed miss costs days but does NOT stop the walk -
+            # otherwise a miss sitting on top of a long chain would score
+            # zero, because none of the earlier healthy days have been
+            # counted yet when walking backwards. That is the exact
+            # "twelve days wiped by one bad day" behaviour this is meant
+            # to remove. Only a genuine lapse (several unabsorbed misses)
+            # ends the chain.
+            unabsorbed_misses += 1
+            if unabsorbed_misses > MAX_UNABSORBED_MISSES:
+                break
+            cursor -= timedelta(days=1)
+
+        penalty = unabsorbed_misses * STREAK_PENALTY_DAYS
+        current = max(0, healthy_days - penalty)
+        shortened_by = healthy_days - current
+
+        active = current > 0 and (today - max(all_days)).days <= 1
+
+        return StreakInfo(
+            current_streak=current,
+            # Strict on purpose: `longest` is a record of genuinely
+            # consecutive healthy days. Letting the forgiving `current`
+            # raise it would make the record mean nothing.
+            longest_streak=longest,
+            is_active_today_or_yesterday=active,
+            shortened_by=shortened_by,
+            grace_days_used=grace_used,
+            grace_days_remaining=max(0, GRACE_DAYS_PER_MONTH - grace_used),
+            exception_days_skipped=exceptions_skipped,
+        )
+
+    # ------------------------------------------------------------
+    # Level / progress
+    # ------------------------------------------------------------
+    @staticmethod
+    def compute_level(entries: list[dict[str, Any]]) -> LevelInfo:
+        total = len(entries)
+        level_index = min(total // CHECKINS_PER_LEVEL, len(LEVEL_TITLES) - 1)
+        level = level_index + 1
+        title = LEVEL_TITLES[level_index]
+
+        into_level = total - (level_index * CHECKINS_PER_LEVEL)
+        is_max_level = level_index == len(LEVEL_TITLES) - 1
+        for_next = CHECKINS_PER_LEVEL if not is_max_level else max(into_level, 1)
+        progress = 1.0 if is_max_level else min(into_level / CHECKINS_PER_LEVEL, 1.0)
+
+        return LevelInfo(
+            level=level,
+            title=title,
+            total_checkins=total,
+            checkins_into_level=min(into_level, for_next),
+            checkins_for_next_level=for_next,
+            progress_fraction=progress,
+        )
+
+    # ------------------------------------------------------------
+    # Badges
+    # ------------------------------------------------------------
+    @classmethod
+    def compute_badges(
+        cls,
+        entries: list[dict[str, Any]],
+        streak_info: Optional[StreakInfo] = None,
+    ) -> list[Badge]:
+        streak_info = streak_info or cls.compute_streak(entries)
+        total = len(entries)
+
+        scores = [e["health_score"] for e in entries if e.get("health_score") is not None]
+        first_score = scores[0] if scores else None
+        best_score = max(scores) if scores else None
+
+        # Consistent Logger: any single calendar week with enough entries.
+        week_counts: dict[str, int] = {}
+        for e in entries:
+            d_str = e.get("date")
+            if not d_str:
+                continue
+            try:
+                iso = date.fromisoformat(d_str).isocalendar()
+            except ValueError:
+                continue
+            key = f"{iso[0]}-W{iso[1]:02d}"
+            week_counts[key] = week_counts.get(key, 0) + 1
+        has_consistent_week = any(
+            c >= CONSISTENT_LOGGER_MIN_ENTRIES_PER_WEEK for c in week_counts.values()
+        )
+
+        most_improved = (
+            first_score is not None
+            and best_score is not None
+            and (best_score - first_score) >= MOST_IMPROVED_MIN_DELTA
+        )
+
+        badges = [
+            Badge(
+                id="first_checkin",
+                name="First Check-in",
+                description="Logged your very first digital wellness check-in.",
+                icon="🌱",
+                unlocked=total >= 1,
+            ),
+            Badge(
+                id="streak_3",
+                name="3-Day Streak",
+                description="Kept a healthy score 3 days in a row.",
+                icon="🔥",
+                unlocked=streak_info.longest_streak >= 3,
+            ),
+            Badge(
+                id="streak_7",
+                name="7-Day Streak",
+                description="Kept a healthy score a full week in a row.",
+                icon="🔥",
+                unlocked=streak_info.longest_streak >= 7,
+            ),
+            Badge(
+                id="checkins_10",
+                name="10 Check-ins",
+                description="Logged 10 check-ins total.",
+                icon="📈",
+                unlocked=total >= 10,
+            ),
+            Badge(
+                id="checkins_30",
+                name="30 Check-ins",
+                description="Logged 30 check-ins total.",
+                icon="🏆",
+                unlocked=total >= 30,
+            ),
+            Badge(
+                id="most_improved",
+                name="Most Improved",
+                description=f"Improved your score by {MOST_IMPROVED_MIN_DELTA:.0f}+ points since your first check-in.",
+                icon="🚀",
+                unlocked=most_improved,
+            ),
+            Badge(
+                id="consistent_logger",
+                name="Consistent Logger",
+                description=f"Logged {CONSISTENT_LOGGER_MIN_ENTRIES_PER_WEEK}+ check-ins in a single week.",
+                icon="🗓️",
+                unlocked=has_consistent_week,
+            ),
+            Badge(
+                id="high_scorer",
+                name="High Scorer",
+                description=f"Reached a wellness score of {HIGH_SCORE_BADGE_THRESHOLD:.0f}+.",
+                icon="⭐",
+                unlocked=best_score is not None and best_score >= HIGH_SCORE_BADGE_THRESHOLD,
+            ),
+        ]
+        return badges
+
+    # ------------------------------------------------------------
+    # Journey summary
+    # ------------------------------------------------------------
+    @staticmethod
+    def compute_journey_summary(entries: list[dict[str, Any]]) -> JourneySummary:
+        if not entries:
+            return JourneySummary(
+                total_checkins=0,
+                first_date=None,
+                last_date=None,
+                days_since_first=None,
+                avg_score=None,
+                best_score=None,
+                best_date=None,
+                latest_score=None,
+                improvement_since_first=None,
+            )
+
+        ordered = sorted(entries, key=lambda e: e.get("date", ""))
+        scores = [(e.get("date"), e.get("health_score")) for e in ordered if e.get("health_score") is not None]
+
+        avg_score = round(sum(s for _, s in scores) / len(scores), 1) if scores else None
+        best_date, best_score = (None, None)
+        if scores:
+            best_date, best_score = max(scores, key=lambda pair: pair[1])
+
+        first_score = scores[0][1] if scores else None
+        latest_score = scores[-1][1] if scores else None
+        improvement = (
+            round(latest_score - first_score, 1)
+            if first_score is not None and latest_score is not None
+            else None
+        )
+
+        first_date_str = ordered[0].get("date")
+        last_date_str = ordered[-1].get("date")
+        days_since_first = None
+        if first_date_str:
+            try:
+                days_since_first = (datetime.now().date() - date.fromisoformat(first_date_str)).days
+            except ValueError:
+                days_since_first = None
+
+        return JourneySummary(
+            total_checkins=len(ordered),
+            first_date=first_date_str,
+            last_date=last_date_str,
+            days_since_first=days_since_first,
+            avg_score=avg_score,
+            best_score=best_score,
+            best_date=best_date,
+            latest_score=latest_score,
+            improvement_since_first=improvement,
+        )

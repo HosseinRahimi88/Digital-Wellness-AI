@@ -1,0 +1,89 @@
+*, *::before, *::after { box-sizing: border-box; }
+html, body { height: 100%; }
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background: var(--bg-0);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  transition: background var(--dur-med) var(--ease-out), color var(--dur-med) var(--ease-out);
+}
+
+html[lang="ar"] body { font-family: var(--font-ar); }
+html[lang="zh"] body { font-family: var(--font-zh); }
+
+h1, h2, h3, h4 { font-family: var(--font-display); line-height: 1.15; margin: 0 0 var(--space-3); font-weight: 700; letter-spacing: -0.01em; }
+p { margin: 0 0 var(--space-3); color: var(--text-secondary); }
+a { color: var(--neon-cyan); text-decoration: none; }
+img, svg { display: block; max-width: 100%; }
+button { font-family: inherit; }
+
+::selection { background: var(--neon-cyan); color: #04140f; }
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: var(--scrollbar-track); }
+::-webkit-scrollbar-thumb { background: linear-gradient(var(--neon-cyan), var(--neon-blue)); border-radius: var(--radius-pill); }
+
+/* Focus ring must stay visible on every surface, including glass and
+   gradient-filled buttons - hence the double ring (dark halo + bright
+   core) rather than a single hairline. */
+:focus-visible {
+  outline: 2px solid var(--neon-cyan);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 5px color-mix(in srgb, var(--neon-cyan) 28%, transparent);
+  border-radius: 6px;
+}
+
+.container { max-width: 1180px; margin: 0 auto; padding: 0 var(--space-5); width: 100%; }
+
+/* Anchors/headings must clear the sticky chrome when scrolled to. */
+:target, h1, h2, h3 { scroll-margin-top: calc(var(--header-h) + 16px); }
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+}
+.hidden { display: none !important; }
+.text-center { text-align: center; }
+.text-gradient {
+  background: linear-gradient(90deg, var(--neon-cyan), var(--neon-blue) 55%, var(--neon-purple));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.mono { font-family: var(--font-mono); }
+.muted { color: var(--text-muted); }
+
+.section { padding: var(--space-8) 0; position: relative; z-index: var(--z-content); }
+.section-head { max-width: 640px; margin: 0 auto var(--space-6); text-align: center; }
+.eyebrow {
+  display: inline-block; font-family: var(--font-label); font-size: .78rem;
+  letter-spacing: .12em; text-transform: uppercase; color: var(--neon-cyan);
+  padding: 6px 14px; border: 1px solid var(--surface-border); border-radius: var(--radius-pill);
+  background: var(--surface); margin-bottom: var(--space-4);
+}
+
+@media (max-width: 640px) {
+  .container { padding: 0 var(--space-4); }
+  .section { padding: var(--space-7) 0; }
+}
+
+/* Nothing may create horizontal scroll on a phone. Measured 414px of
+   content in a 390px viewport before this. */
+@media (max-width: 700px) {
+  :root { --header-h: 57px; }
+  html, body { max-width: 100%; overflow-x: hidden; }
+  /* Reserve room for the two fixed companions so they never overlap the
+     last interactive row of a page (they were covering the wizard's
+     Back button on mobile). */
+  .app-main, main { padding-bottom: 150px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; scroll-behavior: auto !important; }
+}
+.force-reduce-motion *, .force-reduce-motion *::before, .force-reduce-motion *::after {
+  animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; scroll-behavior: auto !important;
+}

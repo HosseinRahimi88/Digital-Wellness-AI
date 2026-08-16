@@ -1,0 +1,91 @@
+{
+  "train": {
+    "rows": 80312,
+    "spearman_with_ordinal_class": {
+      "night_ratio": -0.6459,
+      "pre_sleep_ratio": -0.5115,
+      "night_screen_min": -0.4303,
+      "pre_sleep_screen_min": -0.3956,
+      "total_screen_min": 0.1757,
+      "recreational_min": 0.1063,
+      "work_study_min": 0.2716
+    },
+    "class_conditional_means": {
+      "At Risk": {
+        "night_ratio": 0.29,
+        "pre_sleep_ratio": 0.24,
+        "night_screen_min": 32.05,
+        "pre_sleep_screen_min": 24.61,
+        "total_screen_min": 124.9,
+        "recreational_min": 158.97,
+        "work_study_min": 34.61
+      },
+      "Moderate": {
+        "night_ratio": 0.18,
+        "pre_sleep_ratio": 0.14,
+        "night_screen_min": 26.44,
+        "pre_sleep_screen_min": 19.36,
+        "total_screen_min": 152.91,
+        "recreational_min": 188.95,
+        "work_study_min": 47.69
+      },
+      "Healthy": {
+        "night_ratio": 0.11,
+        "pre_sleep_ratio": 0.09,
+        "night_screen_min": 15.9,
+        "pre_sleep_screen_min": 12.12,
+        "total_screen_min": 148.1,
+        "recreational_min": 176.77,
+        "work_study_min": 51.58
+      }
+    }
+  },
+  "validation": {
+    "rows": 5022,
+    "spearman_with_ordinal_class": {
+      "night_ratio": -0.6283,
+      "pre_sleep_ratio": -0.4737,
+      "night_screen_min": -0.4163,
+      "pre_sleep_screen_min": -0.3055,
+      "total_screen_min": 0.2237,
+      "recreational_min": 0.1097,
+      "work_study_min": 0.4212
+    },
+    "class_conditional_means": {
+      "At Risk": {
+        "night_ratio": 0.27,
+        "pre_sleep_ratio": 0.23,
+        "night_screen_min": 28.22,
+        "pre_sleep_screen_min": 23.13,
+        "total_screen_min": 117.33,
+        "recreational_min": 147.35,
+        "work_study_min": 34.47
+      },
+      "Moderate": {
+        "night_ratio": 0.19,
+        "pre_sleep_ratio": 0.16,
+        "night_screen_min": 25.49,
+        "pre_sleep_screen_min": 20.72,
+        "total_screen_min": 144.83,
+        "recreational_min": 175.08,
+        "work_study_min": 45.55
+      },
+      "Healthy": {
+        "night_ratio": 0.11,
+        "pre_sleep_ratio": 0.09,
+        "night_screen_min": 15.03,
+        "pre_sleep_screen_min": 13.19,
+        "total_screen_min": 147.69,
+        "recreational_min": 168.76,
+        "work_study_min": 58.4
+      }
+    }
+  },
+  "conclusion": {
+    "label_responds_to_screen_timing": true,
+    "label_responds_to_screen_volume": false,
+    "strongest_timing_signal": -0.6459,
+    "strongest_volume_signal": 0.1063,
+    "note": "future_health_class_7d is a real seven-day-ahead label and is not rewritten. It encodes late-night and pre-sleep use as harmful and daytime recreational volume as roughly neutral, with the sign inverted. The volume half of the app's guidance therefore comes from health_score_0_100, which is measured against published thresholds in utils/screen_load.py, and not from this label."
+  }
+}

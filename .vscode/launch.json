@@ -1,0 +1,54 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      // The one the README tells everyone to use: it picks a free port,
+      // serves the frontend from the same origin, and refuses to start a
+      // second copy alongside one that is already running.
+      "name": "Run the app (python run.py)",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/run.py",
+      "console": "integratedTerminal",
+      "justMyCode": false
+    },
+    {
+      "name": "API only (uvicorn --reload)",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "uvicorn",
+      "args": ["api.main:app", "--reload"],
+      "console": "integratedTerminal",
+      "justMyCode": false
+    },
+    {
+      "name": "Full test suite",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "unittest",
+      "args": ["discover", "-s", "tests", "-t", "."],
+      "console": "integratedTerminal",
+      "justMyCode": false
+    },
+    {
+      "name": "This test file",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "unittest",
+      "args": ["${relativeFileDirname}.${fileBasenameNoExtension}", "-v"],
+      "console": "integratedTerminal",
+      "justMyCode": false
+    },
+    {
+      // Legacy Streamlit UI, kept in the repo but not the primary
+      // interface - see docs/reports/FASTAPI_MIGRATION_REPORT.md.
+      "name": "Legacy Streamlit UI",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "streamlit",
+      "args": ["run", "app/Home.py"],
+      "console": "integratedTerminal",
+      "justMyCode": false
+    }
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "method": "StratifiedGroupKFold(n_splits=18, shuffle=True, random_state=42); fold 0 held-out -> test, fold 1 held-out -> validation, remaining 16 -> train",
+  "group_key_columns": [
+    "age",
+    "gender",
+    "occupation_group",
+    "region_group",
+    "education_group",
+    "device_category",
+    "primary_platform",
+    "purpose_group",
+    "is_content_creator",
+    "uses_screen_time_limits"
+  ],
+  "total_rows": 90351,
+  "total_user_groups": 3216,
+  "rows": {
+    "train": 80312,
+    "validation": 5022,
+    "test": 5017
+  },
+  "row_ratios_pct": {
+    "train": 88.89,
+    "validation": 5.56,
+    "test": 5.55
+  },
+  "user_groups": {
+    "train": 2861,
+    "validation": 175,
+    "test": 180
+  },
+  "group_intersections": {
+    "train_and_validation": 0,
+    "train_and_test": 0,
+    "validation_and_test": 0
+  },
+  "class_distribution_pct": {
+    "train": {
+      "Moderate": 36.66,
+      "At Risk": 32.1,
+      "Healthy": 31.240000000000002
+    },
+    "validation": {
+      "Moderate": 36.7,
+      "At Risk": 32.08,
+      "Healthy": 31.22
+    },
+    "test": {
+      "Moderate": 36.64,
+      "At Risk": 32.11,
+      "Healthy": 31.25
+    }
+  }
+}

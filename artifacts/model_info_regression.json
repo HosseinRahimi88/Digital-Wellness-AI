@@ -1,0 +1,12 @@
+{
+    "project": "Digital Wellness AI",
+    "task": "regression",
+    "version": "1.0.0",
+    "saved_at": "2026-08-16T07:54:01.451581",
+    "model_name": "hist_gradient_boosting_regressor",
+    "target_column": "health_score_0_100",
+    "number_of_features": 185,
+    "python_version": "3.11.15",
+    "pandas_version": "3.0.5",
+    "sklearn_version": "1.8.0"
+}

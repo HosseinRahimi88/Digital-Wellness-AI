@@ -1,0 +1,853 @@
+/* ===================== Navbar ===================== */
+.navbar {
+  position: sticky; top: 0; z-index: var(--z-nav);
+  display: flex; align-items: center; justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  backdrop-filter: blur(14px) saturate(140%);
+  /* Opaque enough that page content scrolling underneath does not read
+     through it - the old 72% mix let headings ghost through and look
+     "cut off" at the top of the viewport. */
+  background: var(--chrome-bg);
+  border-bottom: 1px solid var(--surface-border);
+  flex-wrap: nowrap;
+}
+.brand {
+  font-family: var(--font-brand); font-size: 1.15rem; letter-spacing: .04em;
+  display: flex; align-items: center; gap: var(--space-2); color: var(--text-primary);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0;
+}
+.brand-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--neon-cyan); box-shadow: 0 0 12px var(--neon-cyan); }
+.nav-links { display: flex; gap: var(--space-5); align-items: center; }
+.nav-links a { color: var(--text-secondary); font-family: var(--font-label); font-size: .92rem; }
+.nav-links a:hover { color: var(--text-primary); }
+.nav-controls { display: flex; align-items: center; gap: var(--space-3); flex-shrink: 0; }
+
+/* Narrow screens: the brand text is the only expendable element, so it
+   collapses to just the dot rather than wrapping the whole bar onto
+   three lines (which pushed the header to ~200px tall and shoved
+   "Log out" off-screen). */
+@media (max-width: 560px) {
+  .navbar { padding: 10px var(--space-4); gap: var(--space-2); }
+  .brand { font-size: 0; gap: 0; }
+  .brand-dot { width: 12px; height: 12px; }
+  .nav-controls { gap: 6px; }
+  .nav-links { display: none; }
+}
+
+/* ===================== Buttons ===================== */
+.btn {
+  position: relative; overflow: hidden; cursor: pointer; border: none;
+  font-family: var(--font-cta); font-weight: 600; font-size: .95rem;
+  padding: 13px 26px; border-radius: var(--radius-pill);
+  display: inline-flex; align-items: center; gap: 8px; justify-content: center;
+  transition: transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out), opacity var(--dur-fast);
+  white-space: nowrap;
+}
+.btn:active { transform: scale(.97); }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.btn-primary {
+  background: linear-gradient(90deg, var(--neon-cyan), var(--neon-blue));
+  color: #04140f;
+  box-shadow: 0 8px 24px rgba(34,245,198,.25);
+}
+.btn-primary:hover { box-shadow: 0 10px 30px rgba(34,245,198,.4); transform: translateY(-2px); }
+.btn-ghost {
+  background: var(--surface); color: var(--text-primary); border: 1px solid var(--surface-border);
+}
+.btn-ghost:hover { background: var(--surface-strong); }
+.btn-danger { background: linear-gradient(90deg, var(--accent-danger), #ff8a65); color: #23060c; }
+.btn-block { width: 100%; }
+.btn-sm { padding: 9px 18px; font-size: .85rem; }
+.icon-btn {
+  position: relative;
+  width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--surface); border: 1px solid var(--surface-border); color: var(--text-primary);
+  cursor: pointer; transition: background var(--dur-fast), transform var(--dur-fast);
+}
+.icon-btn:hover { background: var(--surface-strong); transform: translateY(-2px); }
+.icon-btn svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.notif-badge {
+  position: absolute; top: -3px; inset-inline-end: -3px; min-width: 17px; height: 17px; padding: 0 4px;
+  border-radius: var(--radius-pill); background: var(--accent-danger); color: #fff;
+  font-size: .62rem; font-weight: 700; display: grid; place-items: center; line-height: 1;
+  border: 2px solid var(--bg-1, #05080f);
+}
+/* The sound-effects toggle is no longer duplicated into the music
+   widget (see assets/js/app-chrome.js); it lives labelled in the
+   settings panel. Kept only so an older cached page still renders it
+   correctly rather than as a raw 24px SVG. */
+.sound-fx-btn svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
+
+/* ===================== Cards ===================== */
+/* Real glass: background blur + a bright hairline edge + a soft inner
+   sheen along the top edge + depth shadow. The background token is
+   opaque enough that body text keeps its contrast over the animated
+   canvas behind it (see variables.css). */
+.card {
+  position: relative;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  box-shadow: var(--card-shadow), inset 0 1px 0 var(--glass-sheen);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+}
+/* Browsers without backdrop-filter get a more opaque solid so text is
+   still readable over the moving background. */
+@supports not (backdrop-filter: blur(1px)) {
+  .card, .mascot-bubble, .music-widget { background: var(--bg-2); }
+}
+.card-glow { position: relative; }
+.card-glow::before {
+  content: ''; position: absolute; inset: -1px; border-radius: inherit; padding: 1px;
+  background: linear-gradient(135deg, var(--neon-cyan), transparent 40%, var(--neon-blue));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none; opacity: .6;
+}
+
+/* ===================== Forms ===================== */
+.field { margin-bottom: var(--space-4); }
+.field label {
+  display: block; font-family: var(--font-label); font-size: .82rem;
+  color: var(--text-secondary); margin-bottom: 6px; letter-spacing: .01em;
+}
+.field .hint { font-size: .76rem; color: var(--text-muted); margin-top: 4px; }
+.field .err { font-size: .78rem; color: var(--accent-danger); margin-top: 4px; display: none; }
+.field.has-error .err { display: block; }
+.field.has-error input, .field.has-error select { border-color: var(--accent-danger); }
+
+.input, select.input {
+  width: 100%; padding: 12px 14px; border-radius: var(--radius-sm);
+  background: var(--bg-1); border: 1px solid var(--surface-border); color: var(--text-primary);
+  font-family: var(--font-body); font-size: .95rem; transition: border-color var(--dur-fast), box-shadow var(--dur-fast);
+}
+.input:focus, select.input:focus { border-color: var(--neon-cyan); box-shadow: 0 0 0 3px rgba(34,245,198,.15); outline: none; }
+.input[type="checkbox"] { width: auto; accent-color: var(--neon-cyan); }
+
+.checkbox-row { display: flex; align-items: center; gap: 10px; }
+.checkbox-row label { margin: 0; }
+
+.range-row { display: flex; align-items: center; gap: var(--space-3); }
+input[type="range"] {
+  -webkit-appearance: none; width: 100%; height: 6px; border-radius: var(--radius-pill);
+  background: linear-gradient(90deg, var(--neon-cyan), var(--neon-blue)); outline: none;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%;
+  background: #fff; border: 3px solid var(--neon-blue); cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,.3);
+}
+.range-value {
+  font-family: var(--font-mono); min-width: 46px; text-align: center; padding: 4px 8px;
+  background: var(--surface-strong); border-radius: var(--radius-sm); font-size: .85rem;
+}
+
+.field-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-4) var(--space-5); }
+@media (max-width: 640px) { .field-grid { grid-template-columns: 1fr; } }
+
+/* Derived field readouts */
+.derived-panel {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: var(--space-3);
+  margin-top: var(--space-4); padding: var(--space-4); border-radius: var(--radius-md);
+  background: var(--surface); border: 1px dashed var(--surface-border);
+}
+.derived-item { text-align: center; }
+.derived-item .val { font-family: var(--font-mono); font-size: 1.1rem; color: var(--neon-cyan); }
+.derived-item .lbl { font-size: .7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: .06em; }
+
+/* ===================== Wizard / Steps ===================== */
+.wizard-progress { display: flex; align-items: center; gap: 6px; margin-bottom: var(--space-6); }
+.wizard-progress .dot {
+  flex: 1; height: 6px; border-radius: var(--radius-pill); background: var(--surface-strong); position: relative; overflow: hidden;
+}
+.wizard-progress .dot.active, .wizard-progress .dot.done {
+  background: linear-gradient(90deg, var(--neon-cyan), var(--neon-blue));
+}
+.wizard-step-title { font-family: var(--font-label); color: var(--text-muted); font-size: .8rem; text-transform: uppercase; letter-spacing: .1em; margin-bottom: 4px; }
+.wizard-nav { display: flex; justify-content: space-between; margin-top: var(--space-6); gap: var(--space-3); }
+
+/* ===================== Toast ===================== */
+/* Offset by the real sticky-chrome height so a toast never lands on top
+   of the header or the first row of page content (that is what clipped
+   the "Baseline" demo chip to "B..." in earlier builds). */
+.toast-stack {
+  position: fixed; top: calc(var(--header-h) + var(--space-3)); z-index: var(--z-toast);
+  display: flex; flex-direction: column; gap: 10px; width: min(340px, calc(100vw - 32px));
+  pointer-events: none;
+}
+.toast-stack > * { pointer-events: auto; }
+html:not([dir="rtl"]) .toast-stack { right: var(--space-5); }
+html[dir="rtl"] .toast-stack { left: var(--space-5); }
+@media (max-width: 560px) {
+  html:not([dir="rtl"]) .toast-stack { right: 16px; left: 16px; width: auto; }
+  html[dir="rtl"] .toast-stack { left: 16px; right: 16px; width: auto; }
+}
+.toast {
+  padding: 14px 16px; border-radius: var(--radius-md); background: var(--bg-2);
+  border: 1px solid var(--surface-border); box-shadow: var(--card-shadow);
+  display: flex; gap: 10px; align-items: flex-start; position: relative; overflow: hidden;
+}
+.toast .icon { font-size: 1.2rem; line-height: 1; }
+.toast .msg { flex: 1; font-size: .88rem; color: var(--text-primary); }
+.toast .bar { position: absolute; bottom: 0; left: 0; height: 3px; background: var(--neon-cyan); }
+.toast--success .bar { background: var(--accent-success); }
+.toast--danger .bar { background: var(--accent-danger); }
+.toast--info .bar { background: var(--neon-blue); }
+.toast--warning .bar { background: var(--accent-amber); }
+
+/* ===================== Thinking overlay ===================== */
+.think-overlay {
+  position: fixed; inset: 0; z-index: var(--z-modal); display: grid; place-items: center;
+  background: color-mix(in srgb, var(--bg-0) 78%, transparent); backdrop-filter: blur(6px);
+}
+.think-box { text-align: center; }
+.think-status { font-family: var(--font-mono); margin-top: var(--space-4); color: var(--neon-cyan); min-height: 1.4em; }
+
+/* ===================== Mascot widget =====================
+   The bubble is pointer-transparent and the whole widget sits at
+   --z-floating (below toasts, above page background but never above a
+   modal). On small screens both companions shrink and the page gets
+   bottom padding instead, so they can no longer sit on top of the
+   wizard's Back/Next buttons. */
+.mascot-widget { position: fixed; bottom: 22px; z-index: var(--z-floating); display: flex; flex-direction: column; align-items: flex-end; gap: 10px; pointer-events: none; }
+.mascot-widget > * { pointer-events: auto; }
+html:not([dir="rtl"]) .mascot-widget { right: 22px; }
+html[dir="rtl"] .mascot-widget { left: 22px; right: auto; align-items: flex-start; }
+.mascot-bubble {
+  max-width: 250px; background: var(--glass-bg); border: 1px solid var(--glass-border);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  border-radius: var(--radius-md); padding: 12px 14px; font-family: var(--font-mascot);
+  font-size: .88rem; color: var(--text-primary); box-shadow: var(--card-shadow); display: none;
+  /* Speech is decoration, never an obstacle: clicks pass straight
+     through to whatever is underneath (it was swallowing taps on the
+     wizard's Next button on small screens). */
+  pointer-events: none;
+}
+.mascot-bubble.show { display: block; }
+.mascot-bubble { position: relative; }
+.mascot-bubble-text { display: block; padding-inline-end: 14px; }
+
+/* The bubble sets pointer-events: none so speech never blocks a tap
+   underneath it. The dismiss control has to opt back in, or it would be
+   visible and completely unclickable. Positioned with logical properties
+   so it sits top-left in Persian/Arabic without a separate RTL rule. */
+.mascot-bubble-close {
+  position: absolute; top: 2px; inset-inline-end: 4px;
+  pointer-events: auto; cursor: pointer;
+  background: none; border: 0; padding: 0 4px;
+  font-size: 1rem; line-height: 1.2;
+  color: var(--text-secondary); opacity: .55;
+  border-radius: var(--radius-sm);
+}
+.mascot-bubble-close:hover { opacity: 1; color: var(--text-primary); }
+.mascot-bubble-close:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; opacity: 1; }
+
+.mascot-btn { width: 64px; height: 64px; cursor: pointer; border-radius: 50%; }
+
+/* ===================== Music player ===================== */
+.music-widget {
+  position: fixed; bottom: 22px; z-index: var(--z-floating);
+  display: flex; align-items: center; gap: 10px;
+  background: var(--glass-bg); backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  border: 1px solid var(--glass-border); border-radius: var(--radius-pill);
+  padding: 8px 14px 8px 8px; box-shadow: var(--card-shadow);
+}
+html:not([dir="rtl"]) .music-widget { left: 22px; }
+html[dir="rtl"] .music-widget { right: 22px; left: auto; }
+
+@media (max-width: 700px) {
+  .mascot-widget { bottom: 12px; }
+  html:not([dir="rtl"]) .mascot-widget { right: 12px; }
+  html[dir="rtl"] .mascot-widget { left: 12px; }
+  .mascot-btn { width: 48px; height: 48px; }
+  .mascot-bubble { max-width: min(220px, calc(100vw - 90px)); font-size: .82rem; padding: 10px 12px; }
+  .music-widget { bottom: 12px; padding: 6px 10px 6px 6px; }
+  html:not([dir="rtl"]) .music-widget { left: 12px; }
+  html[dir="rtl"] .music-widget { right: 12px; }
+  .music-widget .play { width: 34px; height: 34px; }
+  .music-track-name { max-width: 74px; font-size: .72rem; }
+}
+.music-widget .play { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; background: linear-gradient(135deg, var(--neon-cyan), var(--neon-blue)); color: #04140f; cursor: pointer; flex-shrink: 0; }
+.music-track-name { font-size: .78rem; color: var(--text-secondary); max-width: 120px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.music-bars { display: flex; align-items: flex-end; gap: 2px; height: 16px; }
+.music-bars span { width: 3px; background: var(--neon-cyan); border-radius: 2px; animation: bar-bounce 1s ease-in-out infinite; }
+.music-bars span:nth-child(2) { animation-delay: .15s; }
+.music-bars span:nth-child(3) { animation-delay: .3s; }
+@keyframes bar-bounce { 0%,100% { height: 4px; } 50% { height: 14px; } }
+.music-widget.paused .music-bars span { animation-play-state: paused; height: 4px; }
+/* The widget's small round controls: previous, next, library, volume.
+   One rule for all of them, so a new control cannot arrive a pixel off
+   the others. */
+.music-step-btn,
+.music-library-btn,
+.music-volume-btn {
+  width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0; cursor: pointer;
+  border: 1px solid var(--surface-border); background: transparent; color: var(--text-muted);
+  font-size: .8rem; line-height: 1; display: grid; place-items: center;
+  transition: color var(--dur-fast), border-color var(--dur-fast), transform var(--dur-fast);
+}
+.music-step-btn:hover, .music-step-btn:focus-visible,
+.music-library-btn:hover, .music-library-btn:focus-visible {
+  color: var(--neon-cyan); border-color: var(--neon-cyan);
+}
+.music-step-btn:active { transform: scale(.9); }
+/* Tighter together than the rest: the two arrows are one control with
+   two directions, not two unrelated buttons. */
+#musicPrevBtn { margin-inline-end: -4px; }
+
+/* The track library. Wider than the volume popover because it holds
+   names, and scrollable because the list of tracks you have added has
+   no fixed length. */
+.music-library-popover {
+  position: absolute; bottom: calc(100% + 10px); inset-inline-start: 0;
+  width: 236px; max-height: 300px; overflow-y: auto;
+  display: flex; flex-direction: column; gap: 4px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  border: 1px solid var(--glass-border); border-radius: var(--radius-md);
+  padding: 8px; opacity: 0; pointer-events: none;
+  transform: translateY(6px);
+  transition: opacity var(--dur-fast), transform var(--dur-fast);
+  box-shadow: var(--card-shadow);
+}
+.music-library-popover.show { opacity: 1; pointer-events: auto; transform: translateY(0); }
+.music-library-list { display: flex; flex-direction: column; gap: 2px; }
+.music-library-row {
+  display: flex; align-items: center; gap: 4px;
+  border-radius: var(--radius-sm);
+}
+.music-library-row.is-current { background: var(--surface-strong); }
+.music-library-pick {
+  flex: 1 1 auto; min-width: 0;
+  padding: 7px 9px; border: 0; background: transparent; cursor: pointer;
+  color: var(--text-secondary); font: inherit; font-size: .78rem;
+  text-align: start; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  border-radius: var(--radius-sm);
+}
+.music-library-row.is-current .music-library-pick { color: var(--neon-cyan); font-weight: 600; }
+.music-library-pick:hover { background: var(--surface); color: var(--text-primary); }
+.music-library-del {
+  flex: 0 0 auto; width: 24px; height: 24px; display: grid; place-items: center;
+  border: 0; background: transparent; color: var(--text-muted);
+  border-radius: var(--radius-sm); cursor: pointer;
+  transition: color var(--dur-fast), background var(--dur-fast);
+}
+.music-library-del:hover, .music-library-del:focus-visible {
+  color: var(--accent-danger); background: var(--surface);
+}
+.music-library-add { width: 100%; margin-top: 4px; }
+.music-library-note {
+  margin: 2px 0 0; font-size: .66rem; line-height: 1.4;
+  color: var(--text-muted); text-align: center;
+}
+
+@media (max-width: 560px) {
+  .music-library-popover { width: min(236px, calc(100vw - 40px)); }
+}
+
+.music-volume-btn {
+  width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0; cursor: pointer;
+  border: 1px solid var(--surface-border); background: transparent; color: var(--text-muted);
+  font-size: .8rem; line-height: 1; display: grid; place-items: center;
+  transition: color var(--dur-fast), border-color var(--dur-fast);
+}
+.music-volume-btn:hover, .music-volume-btn:focus-visible { color: var(--neon-cyan); border-color: var(--neon-cyan); }
+.music-volume-popover {
+  position: absolute; bottom: calc(100% + 10px); left: 50%; transform: translateX(-50%) translateY(6px);
+  background: var(--glass-bg); backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  border: 1px solid var(--glass-border); border-radius: var(--radius-pill);
+  padding: 10px 14px; opacity: 0; pointer-events: none; transition: opacity var(--dur-fast), transform var(--dur-fast);
+  box-shadow: var(--card-shadow);
+}
+.music-volume-popover.show { opacity: 1; pointer-events: auto; transform: translateX(-50%) translateY(0); }
+.music-volume-track {
+  width: 100px; height: 6px; border-radius: var(--radius-pill); background: var(--surface-strong);
+  cursor: pointer; position: relative; touch-action: none;
+}
+.music-volume-fill {
+  height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--neon-cyan), var(--neon-blue));
+  width: 60%; pointer-events: none;
+}
+
+/* ---- Digital Guide affordance ----
+   Any element the guide can explain gets a subtle, non-intrusive hint
+   that it is askable. Deliberately quiet until hover/focus so it never
+   competes with the real content. */
+.has-guide { position: relative; cursor: help; }
+.has-guide::after {
+  content: "?";
+  position: absolute; top: 6px; inset-inline-end: 6px;
+  width: 16px; height: 16px; border-radius: 50%;
+  display: grid; place-items: center;
+  font-size: .62rem; font-weight: 700; font-family: var(--font-label);
+  color: var(--text-muted); background: var(--surface-strong);
+  border: 1px solid var(--surface-border);
+  opacity: 0; transition: opacity var(--dur-fast), color var(--dur-fast), border-color var(--dur-fast);
+  pointer-events: none;
+}
+.has-guide:hover::after, .has-guide:focus-visible::after { opacity: .9; }
+.has-guide:focus-visible { outline: 2px solid var(--neon-cyan); outline-offset: 2px; }
+.force-reduce-motion .has-guide::after { transition: none; }
+
+/* ===================== Chip options (intake / focus-area tags) ===================== */
+/* C-5-2: centred rather than left-aligned, to match the centred
+   heading and CTA the card already uses. */
+.intake-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: var(--space-3); justify-content: center; }
+.chip-option {
+  padding: 8px 16px; border-radius: var(--radius-pill); border: 1px solid var(--surface-border);
+  background: var(--surface); color: var(--text-primary); cursor: pointer; font-size: .85rem;
+  font-family: inherit; transition: all var(--dur-fast);
+}
+.chip-option.selected { background: linear-gradient(90deg, var(--neon-cyan), var(--neon-blue)); color: #04140f; border-color: transparent; }
+
+/* ===================== Badges / chips ===================== */
+.badge { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: var(--radius-pill); font-size: .78rem; font-family: var(--font-label); }
+.badge--healthy { background: rgba(43,232,154,.14); color: var(--accent-success); }
+.badge--moderate { background: rgba(255,184,77,.14); color: var(--accent-amber); }
+.badge--risk { background: rgba(255,92,122,.14); color: var(--accent-danger); }
+.badge--priority-high { background: rgba(255,92,122,.14); color: var(--accent-danger); }
+.badge--priority-medium { background: rgba(255,184,77,.14); color: var(--accent-amber); }
+.badge--priority-low { background: rgba(58,167,255,.14); color: var(--neon-blue); }
+
+/* ===================== Tabs ===================== */
+.tabs { display: flex; gap: 6px; padding: 5px; background: var(--surface); border-radius: var(--radius-pill); border: 1px solid var(--surface-border); width: fit-content; margin: 0 auto var(--space-6); }
+.tab-btn { padding: 9px 20px; border: none; background: transparent; color: var(--text-secondary); border-radius: var(--radius-pill); cursor: pointer; font-family: var(--font-label); font-size: .85rem; transition: all var(--dur-fast); }
+.tab-btn.active { background: linear-gradient(90deg, var(--neon-cyan), var(--neon-blue)); color: #04140f; }
+
+/* ===================== Switches ===================== */
+/* inline-block, because `.switch` is a <label>: as a bare inline box its
+   width/height were ignored and the track collapsed. It only ever
+   looked right because every call site happens to put it in a flex row. */
+.switch { position: relative; display: inline-block; width: 46px; height: 26px; }
+.switch input { opacity: 0; width: 0; height: 0; }
+.switch .track { position: absolute; inset: 0; background: var(--surface-strong); border-radius: var(--radius-pill); cursor: pointer; transition: background var(--dur-fast), box-shadow var(--dur-fast); border: 1px solid var(--surface-border); }
+/* C-5-6. Off sits at the start edge, on at the end edge, and both
+   mirror under RTL - so it is always "away from the label means on",
+   which is the direction every OS uses.
+
+   inset-inline-start, not left: with a physical `left: 2px` the RTL
+   thumb still started at the visual LEFT edge and the checked
+   translateX(-20px) then carried it off the track entirely. Using the
+   logical property puts the resting thumb on the right in RTL, where
+   -20px correctly moves it to the left. */
+.switch .thumb {
+  position: absolute; top: 2px; inset-inline-start: 2px; width: 20px; height: 20px; border-radius: 50%;
+  background: var(--text-primary); transition: transform var(--dur-fast) var(--ease-spring);
+  display: grid; place-items: center; box-shadow: 0 1px 3px rgba(0,0,0,.25);
+}
+.switch .thumb::after { content: ''; width: 8px; height: 8px; border-radius: 50%; background: transparent; transition: background var(--dur-fast); }
+.switch input:checked + .track { background: linear-gradient(90deg, var(--neon-cyan), var(--neon-blue)); box-shadow: 0 0 10px -1px var(--neon-cyan); }
+.switch input:checked + .track .thumb { transform: translateX(20px); background: #04140f; }
+.switch input:checked + .track .thumb::after { background: var(--neon-cyan); }
+/* The lit end of the gradient follows the thumb rather than staying
+   pinned to the physical left. */
+html[dir="rtl"] .switch input:checked + .track { background: linear-gradient(270deg, var(--neon-cyan), var(--neon-blue)); }
+html[dir="rtl"] .switch input:checked + .track .thumb { transform: translateX(-20px); }
+.force-reduce-motion .switch .track,
+.force-reduce-motion .switch .thumb { transition: none; }
+
+/* ===================== Select dropdown (lang) ===================== */
+.select-pill { position: relative; }
+.select-pill select {
+  appearance: none; background: var(--surface); border: 1px solid var(--surface-border); color: var(--text-primary);
+  padding: 8px 30px 8px 14px; border-radius: var(--radius-pill); font-size: .82rem; cursor: pointer; font-family: var(--font-label);
+}
+html[dir="rtl"] .select-pill select { padding: 8px 14px 8px 30px; }
+/* The native open-dropdown popup ignores most <select> styling in every
+   browser, but DOES respect colors set directly on <option> - without
+   this, the popup falls back to the OS default (usually a white
+   background), which combined with this app's light theme-independent
+   text colour made the open menu unreadable in dark mode. */
+.select-pill select option { background: var(--bg-1); color: var(--text-primary); }
+
+/* ===================== Modal ===================== */
+.modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.6); z-index: var(--z-modal); display: none; place-items: center; padding: var(--space-4); }
+.modal-backdrop.show { display: grid; }
+.modal { max-width: 520px; width: 100%; max-height: 80vh; overflow-y: auto; }
+
+/* ===================== Progress bars ===================== */
+.bar-track { height: 8px; border-radius: var(--radius-pill); background: var(--surface-strong); overflow: hidden; }
+.bar-fill { height: 100%; border-radius: var(--radius-pill); background: linear-gradient(90deg, var(--neon-cyan), var(--neon-blue)); transition: width 1s var(--ease-out); }
+
+/* ===================== Intro slideshow ===================== */
+.intro-overlay {
+  position: fixed; inset: 0; z-index: calc(var(--z-modal) + 10);
+  background: rgba(4,10,16,.78); backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center; padding: var(--space-4);
+  animation: intro-fade-in .35s var(--ease-out);
+}
+@keyframes intro-fade-in { from { opacity: 0; } to { opacity: 1; } }
+.intro-box {
+  position: relative; max-width: 480px; width: 100%; text-align: center;
+  background: var(--glass-bg, var(--surface)); border: 1px solid var(--glass-border, var(--surface-border));
+  backdrop-filter: blur(var(--glass-blur, 10px)); border-radius: var(--radius-lg, 22px);
+  padding: var(--space-7) var(--space-6) var(--space-6);
+}
+.intro-skip {
+  position: absolute; top: 14px; inset-inline-end: 14px; background: none; border: none;
+  color: var(--text-muted); font-size: .8rem; cursor: pointer; padding: 4px 8px;
+}
+.intro-skip:hover { color: var(--text-primary); }
+.intro-icon {
+  width: 72px; height: 72px; margin: 0 auto var(--space-4);
+  display: flex; align-items: center; justify-content: center; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, rgba(34,245,198,.28), rgba(58,167,255,.14) 65%, transparent 100%);
+  border: 1px solid var(--glass-border, var(--surface-border));
+  animation: intro-icon-pop .4s var(--ease-out);
+}
+.intro-icon svg {
+  width: 34px; height: 34px; fill: none; stroke: var(--neon-cyan, currentColor);
+  stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round;
+}
+@keyframes intro-icon-pop { from { transform: scale(.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.intro-title { margin-bottom: var(--space-3); }
+.intro-body { color: var(--text-secondary); line-height: 1.7; min-height: 132px; }
+.intro-dots { display: flex; justify-content: center; gap: 7px; margin: var(--space-5) 0; }
+.intro-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--surface-border); transition: background var(--dur-fast), transform var(--dur-fast); }
+.intro-dot.active { background: var(--neon-cyan); transform: scale(1.3); }
+.intro-nav-row, .intro-cta-row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+
+/* C-5-3: the volume readout. Above the track, LTR-forced (a percentage
+   reads the same way in all four languages), tabular so it does not
+   jitter as the number changes while dragging. */
+.music-volume-value {
+  font-size: .72rem; font-variant-numeric: tabular-nums;
+  color: var(--text-secondary); text-align: center; margin-bottom: 6px;
+  direction: ltr; unicode-bidi: isolate;
+}
+.music-volume-track:focus-visible { outline: 2px solid var(--accent, #22f5c6); outline-offset: 3px; }
+
+/* DWIcon: one rule for the whole set, so an icon always aligns with the
+   text beside it and always takes the colour of its control. */
+.dw-icon { display: inline-block; vertical-align: -0.15em; flex-shrink: 0; }
+button .dw-icon, .btn .dw-icon { pointer-events: none; }
+.btn .dw-icon + span { margin-inline-start: 6px; }
+.music-widget .play { display: grid; place-items: center; }
+
+/* ---------------------------------------------------------------
+   API guard banner (see assets/js/api-guard.js)
+
+   Shown when the pages are being served by something that is not the
+   API - a static file server, or a file:// open. It is the only thing
+   on the page that matters at that moment, so it sits at the top, in
+   the warning colour, and does not scroll away with the content.
+   --------------------------------------------------------------- */
+.api-guard-banner {
+  position: sticky; top: 0; z-index: 9999;
+  margin: 0 0 var(--space-4);
+  padding: 16px 20px;
+  border: 1px solid var(--accent-danger, #ff6b6b);
+  border-inline-start: 4px solid var(--accent-danger, #ff6b6b);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--accent-danger, #ff6b6b) 12%, var(--bg-deep, #05080f));
+  color: var(--text-primary);
+  line-height: 1.7;
+}
+.api-guard-banner strong { display: block; font-size: 1.02rem; margin-bottom: 6px; }
+.api-guard-banner p { margin: 6px 0; color: var(--text-secondary); }
+.api-guard-banner code {
+  display: inline-block; margin: 6px 0;
+  padding: 6px 12px; border-radius: var(--radius-sm, 6px);
+  background: var(--glass-bg); border: 1px solid var(--glass-border);
+  font-family: var(--font-mono); font-size: .92rem;
+  unicode-bidi: isolate;
+}
+.api-guard-banner .api-guard-hint { font-size: .86rem; color: var(--text-muted); }
+
+/* ---------------------------------------------------------------
+   Demo Mode (see assets/js/demo.js)
+
+   The banner is sticky and unmissable on purpose: a demo runs in a
+   separate account, and the one thing that must never be ambiguous is
+   which account the user is looking at.
+   --------------------------------------------------------------- */
+.demo-banner {
+  position: sticky; top: 0; z-index: 9998;
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
+  padding: 10px 18px;
+  background: color-mix(in srgb, var(--neon-purple, #a78bfa) 18%, var(--bg-deep, #05080f));
+  border-bottom: 1px solid var(--neon-purple, #a78bfa);
+  color: var(--text-primary); font-size: .9rem;
+}
+.demo-banner .demo-banner-body { color: var(--text-secondary); flex: 1 1 auto; }
+.demo-banner button { margin-inline-start: auto; }
+
+.demo-picker-overlay {
+  position: fixed; inset: 0; z-index: 10000;
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px; background: rgba(0, 0, 0, .6);
+  overflow-y: auto;
+}
+.demo-picker {
+  width: min(560px, 100%); padding: 26px 28px;
+  max-height: 90vh; overflow-y: auto;
+}
+.demo-picker h3 { margin: 0 0 6px; }
+.demo-picker h4 { margin: 0 0 8px; font-size: .82rem; color: var(--text-muted);
+                  text-transform: uppercase; letter-spacing: .07em; }
+.demo-picker-group { margin-top: 20px; }
+.demo-picker-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.demo-picker-note { font-size: .84rem; margin-top: 8px; line-height: 1.6; }
+/* Which of the thirty-two states the button will open. Set apart from
+   the four controls above it, because it is a statement about them
+   rather than another thing to choose. */
+.demo-picker-summary {
+  margin: 22px 0 0; padding: 10px 14px;
+  border-inline-start: 3px solid #ffc15e;
+  border-radius: var(--radius-sm);
+  background: var(--surface-strong);
+  font-weight: 600; font-size: .92rem; line-height: 1.5;
+}
+.demo-picker-summary + .demo-picker-note { margin-top: 6px; }
+.demo-picker-actions {
+  display: flex; gap: 10px; justify-content: flex-end; margin-top: 26px;
+}
+
+/* ---- Saved coach conversations (assets/js/coach-conversations.js) ---- */
+.coach-chat-head-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+.coach-threads {
+  margin: 12px 0 4px; padding: 14px 16px;
+  border: 1px solid var(--glass-border); border-radius: var(--radius-md);
+  background: var(--glass-bg);
+}
+.coach-threads-note { font-size: .84rem; margin: 0 0 10px; line-height: 1.6; }
+.coach-thread-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.coach-thread {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 10px; border-radius: var(--radius-sm, 6px);
+  border: 1px solid transparent;
+}
+.coach-thread:hover { border-color: var(--glass-border); }
+.coach-thread.is-active { border-color: var(--accent, #22f5c6); }
+.coach-thread-open {
+  flex: 1 1 auto; display: flex; flex-direction: column; gap: 2px;
+  background: none; border: 0; padding: 0; cursor: pointer;
+  font: inherit; color: var(--text-primary); text-align: start;
+}
+.coach-thread-title { font-size: .92rem; }
+.coach-thread-meta { font-size: .74rem; color: var(--text-muted); }
+.coach-thread-action {
+  font: inherit; font-size: .76rem; padding: 4px 9px; cursor: pointer;
+  color: var(--text-secondary); background: var(--glass-bg);
+  border: 1px solid var(--glass-border); border-radius: 999px;
+}
+.coach-thread-action:hover { border-color: var(--accent, #22f5c6); }
+.coach-thread-action.is-danger:hover { border-color: var(--accent-danger, #ff6b6b); color: var(--accent-danger, #ff6b6b); }
+.coach-thread-empty { font-size: .86rem; padding: 4px 2px; }
+
+/* =========================================================
+   DWSheet — the app's one modal (assets/js/sheet.js).
+
+   Sits at --z-modal, above the mascot and the music player, because
+   it is asking a question the user has to answer before the thing
+   behind it can continue. Nothing here is CSV-specific; the CSV
+   upload chooser, the decline check-in and the trend detail view all
+   render into the same shell.
+   ========================================================= */
+body.dw-sheet-open {
+  overflow: hidden;
+}
+
+.dw-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+}
+
+.dw-sheet-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(2, 6, 12, 0.62);
+  backdrop-filter: blur(6px);
+  opacity: 0;
+  transition: opacity var(--dur-med) var(--ease-out);
+}
+
+.dw-sheet-panel {
+  position: relative;
+  width: min(560px, 100%);
+  max-height: min(82vh, 760px);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  box-shadow: var(--card-shadow);
+  color: var(--text-primary);
+  /* Starts slightly small and low, so the panel arrives rather than
+     appearing - the one bit of motion a blocking dialog earns. */
+  opacity: 0;
+  transform: translateY(14px) scale(.98);
+  transition:
+    opacity var(--dur-med) var(--ease-out),
+    transform var(--dur-med) var(--ease-spring);
+}
+
+.dw-sheet--sm .dw-sheet-panel { width: min(420px, 100%); }
+.dw-sheet--lg .dw-sheet-panel { width: min(820px, 100%); }
+
+.dw-sheet--in .dw-sheet-backdrop { opacity: 1; }
+.dw-sheet--in .dw-sheet-panel { opacity: 1; transform: none; }
+.dw-sheet--leaving .dw-sheet-backdrop { opacity: 0; }
+.dw-sheet--leaving .dw-sheet-panel { opacity: 0; transform: translateY(8px) scale(.99); }
+
+.dw-sheet-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.28rem;
+  line-height: 1.25;
+  text-wrap: balance;
+}
+
+.dw-sheet-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  color: var(--text-secondary);
+  font-size: .96rem;
+  line-height: 1.6;
+}
+.dw-sheet-body p { margin: 0; }
+
+.dw-sheet-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  justify-content: flex-end;
+}
+/* .btn is a pill with `white-space: nowrap`, which is right for "Save"
+   and wrong for "Just show me the scores (nothing is saved)" - that one
+   clipped its own label at both ends. Inside a sheet a button is allowed
+   to wrap. */
+.dw-sheet-btn { white-space: normal; }
+
+/* A chooser's options are the content, not a footer afterthought. They
+   become full-width option rows: label on the first line, what it will
+   actually do on the second, and the accent carried on the border
+   rather than as a fill, so a long sentence stays readable. */
+.dw-sheet--choice .dw-sheet-actions {
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: var(--space-2);
+}
+.dw-sheet--choice .dw-sheet-btn {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  text-align: start;
+  padding: 13px 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--surface-border);
+  background: var(--surface);
+  color: var(--text-primary);
+  box-shadow: none;
+  font-family: var(--font-body);
+  font-weight: 500;
+}
+.dw-sheet--choice .dw-sheet-btn:hover {
+  background: var(--surface-strong);
+  transform: none;
+  box-shadow: none;
+}
+.dw-sheet--choice .dw-sheet-btn.btn-primary {
+  border-color: var(--neon-cyan);
+  background: color-mix(in srgb, var(--neon-cyan) 10%, transparent);
+}
+.dw-sheet--choice .dw-sheet-btn.btn-danger {
+  border-color: var(--accent-amber);
+  background: color-mix(in srgb, var(--accent-amber) 10%, transparent);
+}
+.dw-sheet-btn-label { font-size: .95rem; font-weight: 600; }
+.dw-sheet-btn-hint { font-size: .8rem; font-weight: 400; color: var(--text-muted); line-height: 1.45; }
+
+@media (max-width: 520px) {
+  .dw-sheet-actions { flex-direction: column-reverse; align-items: stretch; }
+  .dw-sheet-btn { width: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dw-sheet-backdrop,
+  .dw-sheet-panel { transition: none; }
+  .dw-sheet-panel { transform: none; }
+}
+
+/* ---- The CSV upload chooser's own body ---- */
+.dw-csv-choice-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.dw-csv-choice-facts li {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 5px 11px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--surface-border);
+  background: var(--surface);
+  font-size: .86rem;
+}
+.dw-csv-choice-facts b {
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+}
+.dw-csv-choice-facts li.is-clash {
+  border-color: rgba(255, 184, 77, .5);
+  background: rgba(255, 184, 77, .12);
+}
+.dw-csv-choice-days {
+  margin: 0;
+  font-size: .84rem;
+  color: var(--text-muted);
+  word-break: break-word;
+}
+
+/* The three-days-down question. Chips are a shortcut into the box, not
+   a replacement for it - the point of asking is the sentence, and a
+   fixed list of six reasons cannot cover a real week. */
+.decline-reasons { display: flex; flex-wrap: wrap; gap: 6px; }
+.decline-reason {
+  padding: 6px 12px; border-radius: var(--radius-pill);
+  border: 1px solid var(--surface-border); background: var(--surface);
+  color: var(--text-secondary); font: inherit; font-size: .8rem; cursor: pointer;
+  transition: border-color var(--dur-fast), color var(--dur-fast), background var(--dur-fast);
+}
+.decline-reason:hover { border-color: var(--neon-cyan); color: var(--text-primary); }
+.decline-reason.is-on {
+  border-color: var(--neon-cyan); color: var(--neon-cyan);
+  background: color-mix(in srgb, var(--neon-cyan) 12%, transparent);
+}
+.decline-note-label { font-size: .78rem; color: var(--text-muted); }
+.decline-note { width: 100%; resize: vertical; font-size: .88rem; }
+
+/* ── The weekday chart's verdict line ──────────────────────────────
+   The chart is half the height it was (analytics.html); this is what
+   the space went to. Seven bars answer "which day is hardest" only if
+   the reader compares them by eye - this says it. */
+.weekday-verdict {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 10px;
+  font-size: .82rem;
+  line-height: 1.5;
+}
+.weekday-verdict:empty { display: none; }
+.weekday-verdict-best { color: var(--good, #2be08e); font-weight: 600; }
+.weekday-verdict-worst { color: var(--warn, #ffb347); font-weight: 600; }
+.weekday-verdict-gap { font-size: .76rem; }

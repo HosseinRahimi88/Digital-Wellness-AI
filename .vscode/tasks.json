@@ -1,0 +1,32 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Install dependencies",
+      "type": "shell",
+      "command": "pip install -r requirements.txt",
+      "problemMatcher": []
+    },
+    {
+      "label": "Run the app",
+      "type": "shell",
+      "command": "python run.py",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    },
+    {
+      "label": "Full test suite",
+      "type": "shell",
+      "command": "python3 -m unittest discover -s tests -t .",
+      "group": { "kind": "test", "isDefault": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "Rebuild the cohort reference",
+      "detail": "Only possible where data/train.csv is present; the 14KB summary it writes is what ships.",
+      "type": "shell",
+      "command": "python3 -m services.ml.cohort_reference --write",
+      "problemMatcher": []
+    }
+  ]
+}

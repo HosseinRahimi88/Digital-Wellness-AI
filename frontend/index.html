@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#05080f" />
+<title>Digital Wellness AI — Know your screen habits before they know you</title>
+<meta name="description" content="A real machine-learning model reads your daily digital habits and gives you an explainable wellness score, plus a plan to improve it." />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧠</text></svg>" />
+<link rel="manifest" href="manifest.webmanifest" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=Orbitron:wght@600;700&family=JetBrains+Mono:wght@500&family=Baloo+2:wght@600&family=Playfair+Display:ital@1&family=Sora:wght@600;700&family=IBM+Plex+Sans:wght@500&family=Cairo:wght@500;700&family=Noto+Sans+SC:wght@500;700&display=swap" media="print" onload="this.media='all';this.onload=null">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=Orbitron:wght@600;700&family=JetBrains+Mono:wght@500&family=Baloo+2:wght@600&family=Playfair+Display:ital@1&family=Sora:wght@600;700&family=IBM+Plex+Sans:wght@500&family=Cairo:wght@500;700&family=Noto+Sans+SC:wght@500;700&display=swap"></noscript>
+
+<link rel="stylesheet" href="assets/css/variables.css" />
+<link rel="stylesheet" href="assets/css/base.css" />
+<link rel="stylesheet" href="assets/css/animations.css" />
+<link rel="stylesheet" href="assets/css/components.css" />
+<link rel="stylesheet" href="assets/css/processing.css" />
+<link rel="stylesheet" href="assets/css/landing.css" />
+<link rel="stylesheet" href="assets/css/modern.css" />
+</head>
+<body>
+
+<div class="bg-layer">
+  <canvas id="bgCanvas"></canvas>
+  <div class="blob blob--cyan blob--a" style="width:38vw;height:38vw;top:-10%;left:-8%;"></div>
+  <div class="blob blob--blue blob--b" style="width:32vw;height:32vw;bottom:-12%;right:-6%;"></div>
+  <div class="blob blob--purple blob--a" style="width:22vw;height:22vw;top:40%;left:60%;animation-delay:-8s;"></div>
+</div>
+
+<header class="navbar">
+  <div class="brand"><span class="brand-dot"></span> Digital Wellness AI</div>
+  <nav class="nav-links">
+    <a href="#features" data-i18n="nav_features">Features</a>
+    <a href="app.html" data-i18n="nav_app">Open App</a>
+  </nav>
+  <div class="nav-controls">
+    <div class="select-pill">
+      <select data-lang-select aria-label="Language">
+        <option value="en">EN</option>
+        <option value="fa">فا</option><option value="ar">AR</option>
+        <option value="zh">中文</option>
+      </select>
+    </div>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme"><span data-theme-icon>☀️</span></button>
+    <a class="btn btn-primary btn-sm btn-shine" href="app.html" data-i18n="nav_login">Log in</a>
+  </div>
+</header>
+
+<main>
+  <section class="hero container">
+    <span class="eyebrow reveal" data-i18n="hero_eyebrow">AI-powered digital wellness</span>
+    <h1 class="reveal text-gradient" data-i18n="hero_title">Know your screen habits before they know you.</h1>
+    <p class="lede reveal" data-i18n="hero_lede">A real machine-learning model reads your daily digital habits and gives you an honest, explainable wellness score — plus a plan to actually improve it.</p>
+    <div class="hero-cta reveal">
+      <a class="btn btn-primary btn-shine" href="app.html" data-i18n="hero_cta_primary">Get my wellness score</a>
+      <a class="btn btn-ghost" href="#features" data-i18n="hero_cta_secondary">See how it works</a>
+    </div>
+    <!-- The two model numbers are filled from GET /model-performance at
+         runtime (see landing.js), never hardcoded: the R² here had already
+         drifted stale once against a retrained model. They show the
+         VALIDATION figures, not the higher test ones - the test split is
+         reserved for a single final check and quoting it as a headline is
+         exactly the kind of claim that does not survive scrutiny. -->
+    <div class="hero-stats reveal">
+      <div class="hero-stat"><div class="num mono" id="statAccuracy">—</div><div class="lbl" data-i18n="stat_accuracy">classification accuracy (validation)</div></div>
+      <div class="hero-stat"><div class="num mono" id="statR2">—</div><div class="lbl" data-i18n="stat_r2">regression R² (validation)</div></div>
+      <div class="hero-stat"><div class="num mono">50+</div><div class="lbl" data-i18n="stat_features">signals analyzed</div></div>
+      <div class="hero-stat"><div class="num mono" id="liveCounter">1,204</div><div class="lbl" data-i18n="stat_users">checks run today</div></div>
+    </div>
+    <p class="hero-metrics-note muted reveal" id="heroMetricsNote" data-i18n="metrics_note">Measured on a validation split the model was not trained on. A separate test set is kept for a single final check and is not quoted here.</p>
+
+    <!-- C-6-1: the training data is synthetic and that has to be stated
+         plainly somewhere a visitor actually reads, not buried. -->
+    <div class="synthetic-disclosure reveal">
+      <span class="synthetic-badge" data-i18n="synthetic_badge">Trained on synthetic data</span>
+      <!-- data-i18n-html, not data-i18n: this string emphasises "your own
+           real answers" and the plain path sets textContent, which would
+           print the tag rather than apply it. -->
+      <p data-i18n-html="synthetic_note">About the data: the models were trained on a synthetic dataset rather than on diaries collected from real people. Your score, the factors behind it and every recommendation are computed from <strong>your own real answers</strong> by the same trained models throughout — what came from simulation is the pattern library they learned from, not anything about you. It is a wellness tool, not a medical device, and it does not diagnose anything.</p>
+    </div>
+  </section>
+
+  <section class="section container" id="features">
+    <div class="section-head reveal">
+      <span class="eyebrow" data-i18n="features_eyebrow">What you get</span>
+      <h2 data-i18n="features_title">One check-in, a full picture</h2>
+    </div>
+    <div class="feature-grid">
+      <div class="card feature-card reveal"><div class="ico">🔍</div><h3 data-i18n="f1_title">Explainable predictions</h3><p data-i18n="f1_desc">Every score comes with SHAP-based reasons.</p></div>
+      <div class="card feature-card reveal"><div class="ico">🧭</div><h3 data-i18n="f2_title">Personalized coaching</h3><p data-i18n="f2_desc">Guardrail-checked recommendations.</p></div>
+      <div class="card feature-card reveal"><div class="ico">🧬</div><h3 data-i18n="f3_title">Persona & cohort insight</h3><p data-i18n="f3_desc">See your behavioral persona.</p></div>
+      <div class="card feature-card reveal"><div class="ico">📈</div><h3 data-i18n="f4_title">Track your trend</h3><p data-i18n="f4_desc">Daily history and weekly summaries.</p></div>
+      <div class="card feature-card reveal"><div class="ico">📄</div><h3 data-i18n="f5_title">Downloadable reports</h3><p data-i18n="f5_desc">Export a clean PDF report.</p></div>
+      <div class="card feature-card reveal"><div class="ico">🔒</div><h3 data-i18n="f6_title">Private by design</h3><p data-i18n="f6_desc">Nothing sold, nothing shared.</p></div>
+    </div>
+  </section>
+
+  <section class="section container">
+    <div class="section-head reveal">
+      <span class="eyebrow" data-i18n="persona_eyebrow">Built for everyone</span>
+      <h2 data-i18n="persona_title">Whoever you are, this adapts to you</h2>
+    </div>
+    <div class="persona-strip reveal">
+      <div class="persona-chip"><span class="tag" data-i18n="persona_1_tag">Students & gamers</span><h4 data-i18n="persona_1_title">Late-night grind mode</h4><p data-i18n="persona_1_desc">Tuned for fragmented attention & night gaming.</p></div>
+      <div class="persona-chip"><span class="tag" data-i18n="persona_2_tag">Professionals</span><h4 data-i18n="persona_2_title">Focus & burnout signals</h4><p data-i18n="persona_2_desc">A serious, data-first tone.</p></div>
+      <div class="persona-chip"><span class="tag" data-i18n="persona_3_tag">Everyone else</span><h4 data-i18n="persona_3_title">General wellness</h4><p data-i18n="persona_3_desc">A balanced check-in for anyone.</p></div>
+    </div>
+  </section>
+
+  <section class="section container">
+    <div class="quote-block reveal">
+      <p data-i18n="quote_text">"The recommendations felt like they were actually reading my data."</p>
+      <cite data-i18n="quote_cite">— Early tester</cite>
+    </div>
+  </section>
+
+  <section class="section container">
+    <div class="card intake-card reveal">
+      <h3 class="text-center" data-i18n="intake_title">Before you dive in — what brings you here?</h3>
+      <p class="text-center" data-i18n="intake_sub">This just personalizes your experience. You can change it anytime.</p>
+      <div class="intake-chips" id="intakeChips">
+        <button class="chip-option" data-val="better_sleep" data-i18n="intake_opt_sleep">Better sleep</button>
+        <button class="chip-option" data-val="improve_focus" data-i18n="intake_opt_focus">More focus</button>
+        <button class="chip-option" data-val="improve_balance" data-i18n="intake_opt_balance">Life balance</button>
+        <button class="chip-option" data-val="curious" data-i18n="intake_opt_curious">Just curious</button>
+      </div>
+      <div class="text-center" style="margin-top:20px;">
+        <a href="app.html" class="btn btn-primary btn-shine" id="intakeCta" data-i18n="intake_cta">Continue to the app</a>
+      </div>
+      <p class="security-note" data-i18n="security_note">Your responses are used only to compute your own predictions.</p>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <p data-i18n="footer_rights">Digital Wellness AI — a research/demo project.</p>
+  <div>
+    <a href="terms.html" data-i18n="footer_terms">Terms</a>
+    <a href="terms.html#privacy" data-i18n="footer_privacy">Privacy</a>
+  </div>
+</footer>
+
+<div class="mascot-widget">
+  <div class="mascot-bubble" id="mascotBubble" role="status" aria-live="polite"></div>
+  <svg id="mascotBtn" class="mascot-btn mascot-orb" viewBox="0 0 100 100" role="button" aria-label="Guide character" tabindex="0">
+    <defs><radialGradient id="orbGrad5" cx="35%" cy="30%" r="75%"><stop offset="0%" stop-color="#7ffbe0"/><stop offset="55%" stop-color="#22f5c6"/><stop offset="100%" stop-color="#3aa7ff"/></radialGradient></defs>
+    <circle cx="50" cy="52" r="40" fill="url(#orbGrad5)"/>
+    <g class="mascot-brows"></g>
+    <g class="mascot-eye"><circle cx="36" cy="48" r="6" fill="#04140f"/><circle cx="64" cy="48" r="6" fill="#04140f"/></g>
+    <path class="mascot-mouth" d="M38 67 Q50 71 62 67" stroke="#04140f" stroke-width="4" fill="none" stroke-linecap="round"/>
+  </svg>
+</div>
+<script src="assets/js/core/icons.js"></script>
+<script src="assets/js/core/theme.js"></script>
+<script src="assets/js/core/motion.js"></script>
+<script src="assets/js/chrome/sound-engine.js"></script>
+<script src="assets/js/core/i18n.js"></script>
+<script src="assets/js/core/server-text.js"></script>
+<script src="assets/js/chrome/loading-messages.js"></script>
+<script src="assets/js/chrome/processing-screen.js"></script>
+<script src="assets/js/core/toast.js"></script>
+<script src="assets/js/core/sheet.js"></script>
+<script src="assets/js/chrome/particles.js"></script>
+<script src="assets/js/guide/guide-voice.js"></script>
+<script src="assets/js/chrome/mascot.js"></script>
+<script src="assets/js/chrome/celebrate.js"></script>
+<script src="assets/js/guide/guide-tips.js"></script>
+<script src="assets/js/guide/guide-content-controls.js"></script>
+<script src="assets/js/guide/guide-content-v3.js"></script>
+<script src="assets/js/guide/guide-click.js"></script>
+<script src="assets/js/guide/guide-content-insights.js"></script>
+<script src="assets/js/core/api.js"></script>
+<script src="assets/js/core/last-result.js"></script>
+<script src="assets/js/core/api-guard.js"></script>
+<script src="assets/js/chrome/app-chrome.js"></script>
+<script src="assets/js/pages/landing.js"></script>
+</body>
+</html>

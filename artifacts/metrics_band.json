@@ -1,0 +1,421 @@
+{
+  "task": "personal_week_band_half_width",
+  "method": "conformalized quantile regression (CQR)",
+  "target_coverage": 0.9,
+  "conformal_offset": 0.1501,
+  "best_constant_half_width": 6.334,
+  "shipped_constant_half_width": 6.0,
+  "beats_baseline": true,
+  "gate": {
+    "marginal_coverage_within_2pp_of_target": true,
+    "worst_volatility_tercile_fairer_than_best_constant": true
+  },
+  "results": {
+    "calibration": {
+      "model": {
+        "coverage": 0.9002,
+        "mean_half_width": 5.701,
+        "median_half_width": 5.55,
+        "half_width_spread": {
+          "p10": 3.389,
+          "p50": 5.55,
+          "p90": 8.376,
+          "min": 2.289,
+          "max": 14.69
+        },
+        "days": 11932,
+        "respondents": 628,
+        "coverage_by_volatility": {
+          "calm": {
+            "coverage": 0.9361,
+            "mean_half_width": 4.169,
+            "days": 3990
+          },
+          "middle": {
+            "coverage": 0.9131,
+            "mean_half_width": 5.888,
+            "days": 3971
+          },
+          "volatile": {
+            "coverage": 0.8512,
+            "mean_half_width": 7.055,
+            "days": 3971
+          }
+        },
+        "worst_tercile_coverage": 0.8512,
+        "worst_tercile_gap": 0.0488
+      },
+      "best_constant": {
+        "coverage": 0.9,
+        "mean_half_width": 6.334,
+        "median_half_width": 6.334,
+        "half_width_spread": {
+          "p10": 6.334,
+          "p50": 6.334,
+          "p90": 6.334,
+          "min": 6.334,
+          "max": 6.334
+        },
+        "days": 11932,
+        "respondents": 628,
+        "coverage_by_volatility": {
+          "calm": {
+            "coverage": 0.994,
+            "mean_half_width": 6.334,
+            "days": 3990
+          },
+          "middle": {
+            "coverage": 0.931,
+            "mean_half_width": 6.334,
+            "days": 3971
+          },
+          "volatile": {
+            "coverage": 0.7746,
+            "mean_half_width": 6.334,
+            "days": 3971
+          }
+        },
+        "worst_tercile_coverage": 0.7746,
+        "worst_tercile_gap": 0.1254
+      },
+      "shipped_constant_6": {
+        "coverage": 0.8843,
+        "mean_half_width": 6.0,
+        "median_half_width": 6.0,
+        "half_width_spread": {
+          "p10": 6.0,
+          "p50": 6.0,
+          "p90": 6.0,
+          "min": 6.0,
+          "max": 6.0
+        },
+        "days": 11932,
+        "respondents": 628,
+        "coverage_by_volatility": {
+          "calm": {
+            "coverage": 0.9915,
+            "mean_half_width": 6.0,
+            "days": 3990
+          },
+          "middle": {
+            "coverage": 0.9124,
+            "mean_half_width": 6.0,
+            "days": 3971
+          },
+          "volatile": {
+            "coverage": 0.7487,
+            "mean_half_width": 6.0,
+            "days": 3971
+          }
+        },
+        "worst_tercile_coverage": 0.7487,
+        "worst_tercile_gap": 0.1513
+      }
+    },
+    "validation": {
+      "model": {
+        "coverage": 0.908,
+        "mean_half_width": 5.697,
+        "median_half_width": 5.574,
+        "half_width_spread": {
+          "p10": 3.325,
+          "p50": 5.574,
+          "p90": 8.495,
+          "min": 2.427,
+          "max": 14.462
+        },
+        "days": 2489,
+        "respondents": 131,
+        "coverage_by_volatility": {
+          "calm": {
+            "coverage": 0.9522,
+            "mean_half_width": 4.064,
+            "days": 836
+          },
+          "middle": {
+            "coverage": 0.918,
+            "mean_half_width": 5.881,
+            "days": 817
+          },
+          "volatile": {
+            "coverage": 0.8541,
+            "mean_half_width": 7.149,
+            "days": 836
+          }
+        },
+        "worst_tercile_coverage": 0.8541,
+        "worst_tercile_gap": 0.0459
+      },
+      "best_constant": {
+        "coverage": 0.8963,
+        "mean_half_width": 6.334,
+        "median_half_width": 6.334,
+        "half_width_spread": {
+          "p10": 6.334,
+          "p50": 6.334,
+          "p90": 6.334,
+          "min": 6.334,
+          "max": 6.334
+        },
+        "days": 2489,
+        "respondents": 131,
+        "coverage_by_volatility": {
+          "calm": {
+            "coverage": 0.9964,
+            "mean_half_width": 6.334,
+            "days": 836
+          },
+          "middle": {
+            "coverage": 0.9217,
+            "mean_half_width": 6.334,
+            "days": 817
+          },
+          "volatile": {
+            "coverage": 0.7715,
+            "mean_half_width": 6.334,
+            "days": 836
+          }
+        },
+        "worst_tercile_coverage": 0.7715,
+        "worst_tercile_gap": 0.1285
+      },
+      "shipped_constant_6": {
+        "coverage": 0.8831,
+        "mean_half_width": 6.0,
+        "median_half_width": 6.0,
+        "half_width_spread": {
+          "p10": 6.0,
+          "p50": 6.0,
+          "p90": 6.0,
+          "min": 6.0,
+          "max": 6.0
+        },
+        "days": 2489,
+        "respondents": 131,
+        "coverage_by_volatility": {
+          "calm": {
+            "coverage": 0.9964,
+            "mean_half_width": 6.0,
+            "days": 836
+          },
+          "middle": {
+            "coverage": 0.9082,
+            "mean_half_width": 6.0,
+            "days": 817
+          },
+          "volatile": {
+            "coverage": 0.7452,
+            "mean_half_width": 6.0,
+            "days": 836
+          }
+        },
+        "worst_tercile_coverage": 0.7452,
+        "worst_tercile_gap": 0.1548
+      }
+    },
+    "test": {
+      "model": {
+        "coverage": 0.8935,
+        "mean_half_width": 5.683,
+        "median_half_width": 5.528,
+        "half_width_spread": {
+          "p10": 3.296,
+          "p50": 5.528,
+          "p90": 8.391,
+          "min": 2.207,
+          "max": 14.367
+        },
+        "days": 2489,
+        "respondents": 131,
+        "coverage_by_volatility": {
+          "calm": {
+            "coverage": 0.9402,
+            "mean_half_width": 4.073,
+            "days": 836
+          },
+          "middle": {
+            "coverage": 0.9009,
+            "mean_half_width": 5.87,
+            "days": 817
+          },
+          "volatile": {
+            "coverage": 0.8397,
+            "mean_half_width": 7.109,
+            "days": 836
+          }
+        },
+        "worst_tercile_coverage": 0.8397,
+        "worst_tercile_gap": 0.0603
+      },
+      "best_constant": {
+        "coverage": 0.8903,
+        "mean_half_width": 6.334,
+        "median_half_width": 6.334,
+        "half_width_spread": {
+          "p10": 6.334,
+          "p50": 6.334,
+          "p90": 6.334,
+          "min": 6.334,
+          "max": 6.334
+        },
+        "days": 2489,
+        "respondents": 131,
+        "coverage_by_volatility": {
+          "calm": {
+            "coverage": 0.9868,
+            "mean_half_width": 6.334,
+            "days": 836
+          },
+          "middle": {
+            "coverage": 0.9204,
+            "mean_half_width": 6.334,
+            "days": 817
+          },
+          "volatile": {
+            "coverage": 0.7644,
+            "mean_half_width": 6.334,
+            "days": 836
+          }
+        },
+        "worst_tercile_coverage": 0.7644,
+        "worst_tercile_gap": 0.1356
+      },
+      "shipped_constant_6": {
+        "coverage": 0.8795,
+        "mean_half_width": 6.0,
+        "median_half_width": 6.0,
+        "half_width_spread": {
+          "p10": 6.0,
+          "p50": 6.0,
+          "p90": 6.0,
+          "min": 6.0,
+          "max": 6.0
+        },
+        "days": 2489,
+        "respondents": 131,
+        "coverage_by_volatility": {
+          "calm": {
+            "coverage": 0.9844,
+            "mean_half_width": 6.0,
+            "days": 836
+          },
+          "middle": {
+            "coverage": 0.9119,
+            "mean_half_width": 6.0,
+            "days": 817
+          },
+          "volatile": {
+            "coverage": 0.7428,
+            "mean_half_width": 6.0,
+            "days": 836
+          }
+        },
+        "worst_tercile_coverage": 0.7428,
+        "worst_tercile_gap": 0.1572
+      }
+    }
+  },
+  "ablations": {
+    "note": "Three nested feature sets, each refitted and conformalised identically and scored on the same held-out respondents. sequence_only -> sequence_and_prior is what knowing the person's earlier weeks is worth; sequence_and_prior -> results.test.model is what the sleep/screen/stress fields are worth. Nested rather than two separate runs, so each difference is attributable to one block.",
+    "sequence_only": {
+      "coverage": 0.9052,
+      "mean_half_width": 5.881,
+      "median_half_width": 5.456,
+      "half_width_spread": {
+        "p10": 3.648,
+        "p50": 5.456,
+        "p90": 8.956,
+        "min": 2.257,
+        "max": 11.543
+      },
+      "days": 2489,
+      "respondents": 131,
+      "coverage_by_volatility": {
+        "calm": {
+          "coverage": 0.9629,
+          "mean_half_width": 4.959,
+          "days": 836
+        },
+        "middle": {
+          "coverage": 0.9168,
+          "mean_half_width": 5.911,
+          "days": 817
+        },
+        "volatile": {
+          "coverage": 0.8361,
+          "mean_half_width": 6.774,
+          "days": 836
+        }
+      },
+      "worst_tercile_coverage": 0.8361,
+      "worst_tercile_gap": 0.0639
+    },
+    "sequence_and_prior": {
+      "coverage": 0.8963,
+      "mean_half_width": 5.74,
+      "median_half_width": 5.491,
+      "half_width_spread": {
+        "p10": 3.416,
+        "p50": 5.491,
+        "p90": 8.439,
+        "min": 2.472,
+        "max": 12.86
+      },
+      "days": 2489,
+      "respondents": 131,
+      "coverage_by_volatility": {
+        "calm": {
+          "coverage": 0.9426,
+          "mean_half_width": 4.331,
+          "days": 836
+        },
+        "middle": {
+          "coverage": 0.9045,
+          "mean_half_width": 5.905,
+          "days": 817
+        },
+        "volatile": {
+          "coverage": 0.8421,
+          "mean_half_width": 6.987,
+          "days": 836
+        }
+      },
+      "worst_tercile_coverage": 0.8421,
+      "worst_tercile_gap": 0.0579
+    },
+    "full_model": {
+      "coverage": 0.8935,
+      "mean_half_width": 5.683,
+      "median_half_width": 5.528,
+      "half_width_spread": {
+        "p10": 3.296,
+        "p50": 5.528,
+        "p90": 8.391,
+        "min": 2.207,
+        "max": 14.367
+      },
+      "days": 2489,
+      "respondents": 131,
+      "coverage_by_volatility": {
+        "calm": {
+          "coverage": 0.9402,
+          "mean_half_width": 4.073,
+          "days": 836
+        },
+        "middle": {
+          "coverage": 0.9009,
+          "mean_half_width": 5.87,
+          "days": 817
+        },
+        "volatile": {
+          "coverage": 0.8397,
+          "mean_half_width": 7.109,
+          "days": 836
+        }
+      },
+      "worst_tercile_coverage": 0.8397,
+      "worst_tercile_gap": 0.0603
+    }
+  },
+  "honest_description": "Trained on synthetic per-respondent day sequences from the same grouped, leakage-checked split as the shipped models. Coverage is measured on held-out respondents, not held-out days of the same people. It says the band is calibrated on this data; it is not a claim about human behaviour."
+}

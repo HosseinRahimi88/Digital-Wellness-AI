@@ -1,0 +1,27 @@
+artifacts/archive_pre_feature_consistency_fix/health_classifier.pkl
+artifacts/archive_pre_feature_consistency_fix/health_regressor.pkl
+artifacts/archive_pre_feature_consistency_fix/persona_model.pkl
+artifacts/archive_pre_user_split_fix/health_classifier.pkl
+artifacts/archive_pre_user_split_fix/health_regressor.pkl
+artifacts/archive_pre_user_split_fix/persona_model.pkl
+data/archive_pre_user_split_fix/test.csv
+data/archive_pre_user_split_fix/train.csv
+data/archive_pre_user_split_fix/validation.csv
+data/test.csv
+data/test_augmented.csv
+data/train.csv
+data/train_augmented.csv
+data/validation_augmented.csv
+
+# ---------------------------------------------------------------
+# The files above are TRACKED IN GIT and are simply too large for this
+# archive. Restore them before committing, or `git add -A` will stage
+# their deletion:
+#
+#   data/train.csv, data/test.csv      copy from an existing checkout
+#   artifacts/archive_*/*.pkl          copy from an existing checkout
+#   data/*_augmented.csv               python3 -m models.augment_future_score
+#
+# Nothing here is needed to RUN the app - only to retrain it, and to
+# keep the repository complete.
+# ---------------------------------------------------------------

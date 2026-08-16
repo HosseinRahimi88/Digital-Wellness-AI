@@ -1,0 +1,92 @@
+# Digital Wellness AI - dependencies
+# Core data / ML
+#
+# scikit-learn is PINNED, not floored (`==`, not `>=`), because the
+# artifacts under artifacts/*.pkl are joblib/pickle dumps of fitted
+# sklearn Pipelines/estimators (see artifacts/model_info.json ->
+# "sklearn_version"). Pickle compatibility across sklearn *minor*
+# versions is not guaranteed - unpickling health_classifier.pkl /
+# health_regressor.pkl / persona_model.pkl under any other minor
+# version can raise ModuleNotFoundError (internal module paths such
+# as `_loss` moved between 1.8 and 1.9) or silently deserialize into
+# a subtly different estimator. If you retrain and re-save the
+# artifacts under a newer sklearn, bump this pin AND
+# artifacts/model_info*.json in the same change.
+pandas>=2.0
+numpy>=1.24,<2.5
+scikit-learn==1.8.0
+joblib>=1.3
+xgboost>=1.7        # optional: model_factory.py degrades gracefully if absent
+
+# Explainability
+#
+# numpy is capped at <2.5 above specifically because this package's
+# numba dependency (used by shap/utils/_clustering.py) hard-requires
+# numpy<=2.4 - `import shap` raises ImportError on numpy 2.5+
+# ("Numba needs NumPy 2.4 or less"). This was previously masked
+# everywhere in this codebase's own test suite by
+# tests/_test_support.py's offline shap stub (installed into
+# sys.modules before any test imports services.shap_service), so it
+# went unnoticed until building api/main.py and booting the FastAPI
+# backend with a real `uvicorn` process outside that test-only
+# stub-injection path, which surfaced it immediately. The Streamlit
+# app was equally exposed to this the whole time; it just never got
+# run standalone (outside pytest) in an environment where numpy had
+# drifted to 2.5+. Confirmed via full-suite re-run after this pin
+# (357/357 passing) that pinning numpy down doesn't affect anything
+# else - and doing so also fixes every test in the suite to exercise
+# the REAL shap.TreeExplainer instead of the offline ablation stub
+# (test-suite wall-clock time dropped by more than half as a result).
+shap>=0.44
+
+# App / visualization
+streamlit>=1.30
+plotly>=5.18
+
+# Reporting
+reportlab>=4.0
+
+# Accounts (Argon2 password hashing, ported from the Parisa project)
+pwdlib[argon2]>=0.2,<1.0
+
+# Access tokens for a future stateless HTTP/FastAPI layer
+# (utils/tokens.py) - not used by the current Streamlit UI.
+PyJWT>=2.9,<3.0
+
+# FastAPI backend (api/) - a thin HTTP interface over the same
+# services/ layer the Streamlit app uses; see api/main.py.
+#
+# fastapi/starlette are pinned to a range, not left fully open, for the
+# same reason as the scikit-learn pin above: an unconstrained install
+# resolved to an unfamiliar, very recent starlette internal-routing
+# change (app.routes stopped flattening included routers the same way)
+# that needed to be verified against before trusting it. This range is
+# additionally constrained to stay compatible with streamlit's own
+# transitive requirement (`starlette<1.4.0,>=0.46.0` as of streamlit
+# 1.61) so installing the API layer's dependencies can never silently
+# break the existing Streamlit app's dependency resolution.
+fastapi>=0.115,<0.120
+starlette>=0.46,<1.4
+pydantic>=2.5,<3.0
+pydantic-settings>=2.1,<3.0
+email-validator>=2.0,<3.0
+python-dotenv>=1.0,<2.0
+
+# Required by FastAPI's UploadFile/File() (api/routers/history.py's
+# CSV bulk-import endpoint) - FastAPI raises a clear but easy-to-miss
+# runtime error the first time that endpoint is hit without it installed.
+python-multipart>=0.0.9,<0.1
+
+# Testing (used by tests/, VSCode's test explorer, and the
+# "Run Full Test Suite" launch config in .vscode/launch.json).
+# httpx is required by fastapi.testclient.TestClient specifically -
+# not a general HTTP client dependency of the app itself.
+pytest>=8.0,<10.0
+httpx>=0.27,<1.0
+
+# C-5-9: Persian/Arabic in the PDF report. reportlab draws the code
+# points it is handed with no complex-script shaping, so Arabic script
+# comes out as isolated letters in the wrong order without these two.
+# Both are small and pure Python.
+arabic-reshaper>=3.0.0
+python-bidi>=0.4.2

@@ -1,0 +1,13 @@
+{
+  "model": "HistGradientBoostingRegressor(loss='quantile')",
+  "target_coverage": 0.9,
+  "conformal_offset": 0.1501,
+  "min_half_width": 1.5,
+  "max_half_width": 15.0,
+  "week_length": 7,
+  "n_features": 29,
+  "fit_rows": 27835,
+  "calibration_rows": 11932,
+  "fit_respondents": 1465,
+  "calibration_respondents": 628
+}
