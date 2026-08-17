@@ -1022,7 +1022,8 @@
   async function buildContext() {
     const ctx = { result: null, payload: null, history: null, progress: {}, insights: {}, persona: {}, plan: null, future: null, cohort: null, league: null };
     try { ctx.result = window.DWLastResult.get(); } catch (e) {}
-    try { ctx.payload = JSON.parse(localStorage.getItem('dwai_last_payload') || 'null'); } catch (e) {}
+    // Paired with the result - see DWLastResult.payload().
+    try { ctx.payload = window.DWLastResult.payload(); } catch (e) {}
 
     const api = window.DWApi;
     if (!api) return ctx;

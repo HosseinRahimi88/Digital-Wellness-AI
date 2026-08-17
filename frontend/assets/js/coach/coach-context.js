@@ -37,7 +37,10 @@
     try { return window.DWLastResult.get(); } catch (e) { return null; }
   }
   function localPayload() {
-    try { return JSON.parse(localStorage.getItem('dwai_last_payload') || 'null'); } catch (e) { return null; }
+    // Via DWLastResult, not straight out of localStorage: the answers
+    // and the result they produced are only usable as a pair, and a
+    // test check-in must not reach the Coach through either half.
+    try { return window.DWLastResult.payload(); } catch (e) { return null; }
   }
 
   /* Merge the browser-only pieces into the server digest. The server has

@@ -1,4 +1,5 @@
-/* DWLastResult — the most recent prediction, per account, with a server fallback.
+/* DWLastResult — the most recent RECORDED prediction, per account, with
+   a server fallback.
 
    WHAT WAS WRONG
    Eight modules read `localStorage.getItem('dwai_last_result')` directly,
@@ -16,6 +17,20 @@
        The same defect as the CSV library's, in a more sensitive place:
        this is somebody's health score.
 
+   AND THE ONE THIS MODULE NOW REFUSES
+   A prediction the server did NOT record - the "I'm only testing this"
+   tick, which posts `persist: false` - was cached here exactly like a
+   real check-in. Everything downstream then described a day that never
+   happened: with a real 87.67 on the server, a throwaway 53.06 was what
+   the Coach read back, and what the dashboard, the weekly plan and the
+   simulator started from. The user's own words for it: the coach
+   ignores the real assessment and answers about the test one.
+
+   Nothing downstream could have told the difference, because the flag
+   that distinguishes them (`persisted`, which /predict has always
+   returned) was thrown away at the cache boundary. So the boundary is
+   where it is enforced: this cache holds recorded days only.
+
    WHAT THIS DOES
    One place that owns the cache, with the account id in the key, and an
    `ensure()` that asks the server when the cache is empty. The server is
@@ -24,6 +39,15 @@
    page confidently telling a user something false about themselves. */
 (function () {
   const BASE_KEY = 'dwai_last_result';
+
+  /* A result the server recorded, as opposed to one it merely scored.
+     `persisted === false` is the explicit no. `undefined` is treated as
+     a yes on purpose: a day reopened from history, or restored by a
+     demo, carries no such flag and is unambiguously real. Only the
+     endpoint that can say "I did not save this" gets to say it. */
+  function isRecorded(result) {
+    return !!result && result.persisted !== false;
+  }
 
   /* The signed-in account, from the access token's `sub` claim.
      Decoded without verifying the signature, which is correct here and
@@ -47,7 +71,16 @@
   function get() {
     try {
       const raw = localStorage.getItem(key());
-      if (raw) return JSON.parse(raw);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        /* Self-heal a cache poisoned before this guard existed. A
+           browser that ran a test check-in on the old build still has
+           that result on disk, and it would otherwise keep answering
+           for the user until they checked in again. Dropped here rather
+           than left for each of the eight readers to remember. */
+        if (!isRecorded(parsed)) { clear(); return null; }
+        return parsed;
+      }
     } catch (e) {}
     /* One read of the old unscoped key, for somebody who checked in
        before this shipped and would otherwise find the app had
@@ -58,6 +91,7 @@
       if (!legacy) return null;
       localStorage.removeItem(BASE_KEY);
       const parsed = JSON.parse(legacy);
+      if (!isRecorded(parsed)) return null;
       if (parsed) set(parsed);
       return parsed;
     } catch (e) {
@@ -65,7 +99,13 @@
     }
   }
 
+  /* A result the server did not record is refused, and refused WITHOUT
+     touching what is already here: the user's real last check-in is
+     still their real last check-in after they run a test, and that is
+     precisely what the Coach should keep answering about. Returns null
+     so a caller cannot mistake the refusal for a store. */
   function set(result) {
+    if (result && !isRecorded(result)) return null;
     try {
       if (result) localStorage.setItem(key(), JSON.stringify(result));
       else localStorage.removeItem(key());
@@ -98,7 +138,18 @@
       if (!newest) return null;
       const detail = await window.DWApi.historyDetail(newest.date);
       const result = (detail && detail.result) || detail;
-      return result ? set(result) : null;
+      if (!result) return null;
+      /* Restoring the result orphans the payload. The server hands back
+         a recorded DAY; it does not hand back whatever this browser
+         happened to have in `dwai_last_payload`, which may be a
+         different day entirely - and, for a browser upgrading from the
+         build that cached test runs, is quite likely to be the answers
+         from a check-in that was never recorded. Two halves of a pair
+         from two different days is the failure this module exists to
+         prevent, so the stale half goes rather than being left to be
+         read beside a result it does not belong to. */
+      try { localStorage.removeItem('dwai_last_payload'); } catch (e2) {}
+      return set(result);
     } catch (e) {
       // A failed lookup is "we do not know", not "there is nothing".
       // The caller shows its empty state either way; what matters is
@@ -107,5 +158,25 @@
     }
   }
 
-  window.DWLastResult = { get, set, clear, ensure, key };
+  /* The ANSWERS behind the cached result, under the same rule.
+     `dwai_last_payload` is written beside `dwai_last_result` and read by
+     seven modules - the Coach, the weekly plan, the league, the
+     band-decision card and the simulator - each reaching into
+     localStorage directly. So the guard above only half worked: a
+     browser that ran a test check-in on the old build has BOTH keys
+     poisoned, and clearing one left the other answering. The two are a
+     pair or they are nothing - a result from one day beside the answers
+     from another is worse than neither - so they are read as a pair
+     here, and the payload is only handed back when the result standing
+     next to it survived. */
+  function payload() {
+    if (!get()) return null;
+    try {
+      return JSON.parse(localStorage.getItem('dwai_last_payload') || 'null');
+    } catch (e) {
+      return null;
+    }
+  }
+
+  window.DWLastResult = { get, set, clear, ensure, key, payload };
 })();

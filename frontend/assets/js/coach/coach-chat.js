@@ -75,7 +75,9 @@
   function loadContext() {
     let result = null, payload = null, persona = null;
     try { result = window.DWLastResult.get(); } catch (e) {}
-    try { payload = JSON.parse(localStorage.getItem('dwai_last_payload') || 'null'); } catch (e) {}
+    // Paired with the result above - see DWLastResult.payload(). A
+    // check-in the server did not record reaches neither.
+    try { payload = window.DWLastResult.payload(); } catch (e) {}
     persona = localStorage.getItem('dwai_last_persona');
     if (!result) return null;
     return {

@@ -54,11 +54,48 @@ class GoalSeekResult:
     best_score: Optional[float]
     distance: Optional[float]
     points: list[SweepPoint]
+    # Whether `best_value` actually gets to the target, or is only the
+    # furthest this one field can carry the reader. The old response had
+    # no way to say "it cannot be done from here" and so said nothing,
+    # which read as success.
+    reached: bool = False
+    # Where the reader is standing right now, so the answer can be a
+    # change rather than a bare number.
+    current_value: Optional[float] = None
+    current_score: Optional[float] = None
+    # The target is already met without touching this field.
+    already_there: bool = False
 
 
 _SCREEN_CATEGORY_FIELDS = (
     "social_min", "gaming_min", "work_study_min", "video_min", "other_min",
 )
+
+# Minutes of screen time that are a SUBSET of the day's total rather
+# than a part of the sum. night_ratio and pre_sleep_ratio divide these
+# by total_screen_min, so a value above the total produces a ratio above
+# 1.0 - which ValidationService rejects, one swept point at a time.
+#
+# Sweeping night_screen_min on an ordinary day did exactly that: the
+# first three points scored, the last six came back as gaps, and the
+# chart drew each gap as a score of zero. A wellness chart that appears
+# to fall off a cliff at 225 night-minutes, on a day whose whole screen
+# total is 210, is not a finding about the user - it is the sweep
+# leaving the range where a day can exist at all.
+_SCREEN_SUBSET_FIELDS = ("night_screen_min", "pre_sleep_screen_min")
+
+# Counts whose per-screen-hour DENSITY is a separate schema field with
+# its own, much tighter ceiling. app_opens_per_day tops out at 1000 and
+# app_open_density at 100, so on a 3.5-hour day anything past 350 opens
+# is a day the validator will not accept - and sweeping to 1000 spent
+# six of nine points outside it. Same silent-gap failure as the night
+# minutes above, from the same blind spot: a per-field bound cannot see
+# a rule that spans two fields.
+_DENSITY_DRIVEN_FIELDS = {
+    "notifications_per_day": "notification_density",
+    "pickups_per_day": "pickup_density",
+    "app_opens_per_day": "app_open_density",
+}
 
 
 class AdvancedWhatIfService:
@@ -134,6 +171,33 @@ class AdvancedWhatIfService:
             if total_max is not None:
                 hi = min(hi, max(float(lo), float(total_max) - others))
 
+        # The other cross-field rule the per-field bounds cannot see: a
+        # night or pre-sleep minute is one of the day's OWN minutes, so
+        # it cannot exceed the day's total. Sweeping past that point
+        # produced a ratio above 1.0 and a run of unscoreable days - see
+        # _SCREEN_SUBSET_FIELDS.
+        if base_user_data is not None and field in _SCREEN_SUBSET_FIELDS:
+            total = sum(
+                float(base_user_data.get(category, 0.0) or 0.0)
+                for category in _SCREEN_CATEGORY_FIELDS
+            )
+            if total > 0:
+                hi = min(hi, max(float(lo), total))
+
+        # And the third: a daily count divided by the day's screen hours
+        # has to land inside its own density field's ceiling. See
+        # _DENSITY_DRIVEN_FIELDS.
+        if base_user_data is not None and field in _DENSITY_DRIVEN_FIELDS:
+            total = sum(
+                float(base_user_data.get(category, 0.0) or 0.0)
+                for category in _SCREEN_CATEGORY_FIELDS
+            )
+            screen_hours = max(total, 1.0) / 60.0
+            density = FEATURE_SCHEMA.get(_DENSITY_DRIVEN_FIELDS[field])
+            density_max = density.maximum if density is not None else None
+            if density_max is not None and screen_hours > 0:
+                hi = min(hi, max(float(lo), float(density_max) * screen_hours))
+
         return float(lo), float(hi)
 
     @classmethod
@@ -185,11 +249,48 @@ class AdvancedWhatIfService:
     ) -> Optional[GoalSeekResult]:
         """
         Grid search (not a binary search) over `field`'s real range for
-        the value whose real predicted score is closest to
-        `target_score`. Grid search is deliberate: the model is
-        non-linear, so a monotonic relationship between the field and
-        the score can't be assumed - a binary search would silently
-        give a wrong answer wherever that assumption fails.
+        the value that REACHES `target_score`. Grid search is
+        deliberate: the model is non-linear, so a monotonic relationship
+        between the field and the score can't be assumed - a binary
+        search would silently give a wrong answer wherever that
+        assumption fails.
+
+        WHAT THIS USED TO ANSWER, AND WHY IT WAS THE WRONG QUESTION
+
+        It minimised `abs(score - target)` over the whole grid. That is
+        the value whose score is NEAREST the target - in either
+        direction. For anybody already above their target (which is
+        most people who set a reachable one), the nearest point is
+        therefore the one that damages their score the most, and the
+        page printed it under the heading "Best value found":
+
+            sleep_hours                    ->  0 hours    (score 85.95)
+            sleep_quality_1_10             ->  1 out of 10
+            stress_0_10                    -> 10 out of 10
+            physical_activity_min_per_day  ->  0 minutes
+
+        Every one of those is a real run against the real model on an
+        ordinary day, target 80, from a score of 87.67. A wellness app
+        telling somebody the best amount of sleep is none is not a
+        rounding error; it is the tool arguing for harm, confidently,
+        with a number beside it.
+
+        WHAT IT ANSWERS NOW
+
+        "Reaching a target" means scoring AT LEAST it. Three honest
+        outcomes, and the caller is told which one it got:
+
+          * already_there - the current value clears the target on its
+            own. Nothing to change, and the answer says so instead of
+            hunting for a way down to it.
+          * reached - at least one value scores >= target. Among those,
+            the one requiring the SMALLEST CHANGE from where the reader
+            actually is, because "sleep 7.5h" beats "sleep 15h" when
+            both qualify and one of them is a real thing a person does.
+          * not reached - no value of this field alone gets there. Then
+            best_value is the highest-scoring point, `reached` is False
+            and `distance` is the shortfall, so the page can say plainly
+            that this field cannot do it rather than implying it did.
 
         Returns None if every point failed to predict.
         """
@@ -198,12 +299,40 @@ class AdvancedWhatIfService:
         if not scored_points:
             return None
 
-        best = min(scored_points, key=lambda p: abs(p.score - target_score))
+        current_value = float(base_user_data.get(field, 0.0) or 0.0)
+        current_score: Optional[float] = None
+        try:
+            current_score = predictor.predict(
+                cls.build_scenario_input(base_user_data, {}), compute_shap=False,
+            ).regression_score
+        except Exception:  # noqa: BLE001 - the sweep still stands without it
+            logger.debug("Could not score the unchanged day for goal-seek.", exc_info=True)
+
+        reaching = [p for p in scored_points if p.score >= target_score]
+
+        if reaching:
+            # Least change wins. Ties (the grid is symmetric around the
+            # current value often enough) break towards the higher
+            # score, so the answer is never the weaker of two equals.
+            best = min(reaching, key=lambda p: (abs(p.value - current_value), -p.score))
+            reached = True
+        else:
+            best = max(scored_points, key=lambda p: p.score)
+            reached = False
+
+        already_there = current_score is not None and current_score >= target_score
+
         return GoalSeekResult(
             field=field,
             target_score=target_score,
             best_value=best.value,
             best_score=best.score,
-            distance=round(abs(best.score - target_score), 1),
+            # Still the gap between what this lands on and what was
+            # asked for - 0.0 whenever the target was actually reached.
+            distance=round(max(0.0, target_score - best.score), 1),
             points=points,
+            reached=reached,
+            current_value=round(current_value, 2),
+            current_score=current_score,
+            already_there=already_there,
         )

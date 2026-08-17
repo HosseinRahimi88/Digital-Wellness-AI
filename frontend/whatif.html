@@ -91,7 +91,14 @@
                it the reader wants to end up at. Percent rather than raw
                minutes because "cut my social time to 60%" is the shape
                the question actually takes; the resulting value is shown
-               beside it so nobody has to do the arithmetic. -->
+               beside it so nobody has to do the arithmetic.
+
+               The button is the part that was missing. These three
+               boxes were arithmetic and nothing more - the percentage
+               fed no request, and the question they pose ("what if I
+               cut this to 60%?") was never answered by anything on the
+               page. It now runs one real prediction at exactly that
+               value and says what the score does. -->
           <div class="sweep-controls" style="margin-top:var(--space-3);">
             <div class="field">
               <label data-i18n="whatif_field_now">This day's value</label>
@@ -105,7 +112,9 @@
               <label data-i18n="whatif_field_target_value">Which means</label>
               <input class="input" type="text" id="fieldTargetValue" readonly style="width:120px;" />
             </div>
+            <button class="btn btn-ghost" id="runFieldTargetBtn" data-i18n="whatif_pct_run">Score this value</button>
           </div>
+          <p class="muted" id="fieldTargetAnswer" style="font-size:.82rem;margin-top:6px;"></p>
           <div class="chart-canvas-wrap"><canvas id="sweepChart"></canvas></div>
           <p class="muted" id="sweepNote" style="font-size:.78rem;margin-top:8px;"></p>
         </div>

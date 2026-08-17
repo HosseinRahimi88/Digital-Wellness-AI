@@ -49,3 +49,17 @@ class FeatureSchemaField(BaseModel):
     choices: list[object] | None = None
     label: str
     description: str
+    # True when utils/feature_derivation.derive_features() computes this
+    # field from other answers and therefore OVERWRITES whatever is sent
+    # for it. Thirteen of the fifty-three are like this.
+    #
+    # It matters to any client offering a field for the user to change.
+    # The what-if simulator offered all forty-two numeric fields; on
+    # thirteen of them - total screen time, every ratio, every density,
+    # fragmentation, dependence - the sweep set the value, derivation
+    # immediately replaced it, and the chart came back a dead flat line
+    # across the whole range. Nothing errored, so it looked like a
+    # finding about the user rather than a field that cannot be swept.
+    #
+    # Measured, never hand-listed: see api/routers/schema.py.
+    derived: bool = False

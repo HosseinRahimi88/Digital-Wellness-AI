@@ -9,8 +9,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (canvas) window.DWParticles.initNetwork(canvas, { density: 0.00005, linkDist: 125, speed: 0.14 });
 
   let payload;
+  // Through DWLastResult, not straight out of localStorage: the answers
+  // and the result they produced are a pair, and a check-in the server
+  // did not record ("I'm only testing this") must not become the day
+  // the simulator reasons about. See DWLastResult.payload().
   try {
-    payload = JSON.parse(localStorage.getItem('dwai_last_payload') || 'null');
+    payload = window.DWLastResult.payload();
   } catch (e) {}
 
   /* The page used to require `dwai_last_payload` - a value only this
@@ -46,7 +50,36 @@ document.addEventListener('DOMContentLoaded', async () => {
     return;
   }
 
-  const numericFields = schemaList.filter((f) => (f.dtype === 'int' || f.dtype === 'float') && !f.choices);
+  /* Only fields the model actually reads FROM THE USER.
+     `f.derived` is the server's own measurement (see
+     api/routers/schema.py) of which fields derive_features() computes
+     and therefore overwrites. Thirteen of the forty-two were offered
+     here regardless - total screen time, every ratio, every density,
+     fragmentation, dependence - and sweeping any of them set a value
+     that derivation replaced a line later, so the chart came back
+     perfectly flat across the entire range. Nothing errored, which
+     made it read as a finding about the user rather than a field that
+     cannot be swept at all. Total screen time was the worst of them:
+     the most obvious thing to reach for on this page, and the one
+     guaranteed to say nothing. It moves when the five category minutes
+     move, and those are still here. */
+  /* And the ones that are not a habit at all. A sweep asks "what if I
+     did this differently tomorrow", so the list has to be things a
+     person can decide. These are not:
+
+       day_index             which day of the year it is
+       screen_ewma_baseline  a rolling average OF the user's own past
+       age                   not a decision, and sweeping it produced a
+                             0.37-point wobble presented as advice
+
+     Left in, the first two swept perfectly flat across their whole
+     range - an empty chart with no explanation - and the third invited
+     "be 87" as a wellness strategy. */
+  const NOT_A_HABIT = new Set(['day_index', 'screen_ewma_baseline', 'age']);
+  const numericFields = schemaList.filter(
+    (f) => (f.dtype === 'int' || f.dtype === 'float') && !f.choices
+      && !f.derived && !NOT_A_HABIT.has(f.name)
+  );
   const select = document.getElementById('sweepField');
   // `f.label` is the server's English schema label. DWCoachLabels holds
   // the same field names in all four languages and is what the Coach and
@@ -82,6 +115,25 @@ document.addEventListener('DOMContentLoaded', async () => {
   const targetValue = document.getElementById('fieldTargetValue');
   let snapshots = [];
 
+  /* Declared here, above the first renderer that reads them, rather
+     than beside the result blocks further down: `const` bindings are in
+     the temporal dead zone until their line runs, and renderFieldTarget
+     is called during setup. */
+  const t = (key) => (window.DWI18n && window.DWI18n.t ? window.DWI18n.t(key) : key);
+
+  // The server returns class names in English ("Healthy" / "At Risk");
+  // these are the display forms, keyed off that stable server value.
+  const CLASS_KEY = {
+    healthy: 'cls_healthy',
+    moderate: 'cls_moderate',
+    'at risk': 'cls_at_risk',
+    at_risk: 'cls_at_risk',
+  };
+  function className(raw) {
+    const key = CLASS_KEY[String(raw || '').trim().toLowerCase()];
+    return key ? t(key) : String(raw || '—');
+  }
+
   function currentFieldValue() {
     const raw = payload ? payload[select.value] : null;
     const n = Number(raw);
@@ -97,6 +149,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (now === null) {
       fieldNow.value = '—';
       targetValue.value = '—';
+      renderPctAnswer(null);
       return;
     }
     fieldNow.value = Math.round(now * 100) / 100;
@@ -104,6 +157,67 @@ document.addEventListener('DOMContentLoaded', async () => {
     targetValue.value = Number.isFinite(pct)
       ? Math.round(now * (pct / 100) * 100) / 100
       : '—';
+    renderPctAnswer(null);
+  }
+
+  /* ---- and what that percentage actually SCORES ---------------------
+     The three boxes above were arithmetic and nothing else: type 60,
+     watch a number appear, and no part of the page ever used it. The
+     question the control poses - "what if I cut this to 60%?" - was
+     never answered, by the sweep or by anything else. It is answered
+     here, with one real prediction at exactly that value, on the same
+     model every other number on this page comes from. */
+  const pctAnswer = document.getElementById('fieldTargetAnswer');
+  const pctRunBtn = document.getElementById('runFieldTargetBtn');
+  let lastPctAnswer = null;
+
+  function renderPctAnswer(state) {
+    if (state !== undefined) lastPctAnswer = state;
+    if (!pctAnswer) return;
+    if (!lastPctAnswer) { pctAnswer.textContent = ''; return; }
+    const { value, score, base, cls } = lastPctAnswer;
+    const delta = Math.round((score - base) * 10) / 10;
+    const key = delta > 0.05 ? 'whatif_pct_up' : (delta < -0.05 ? 'whatif_pct_down' : 'whatif_pct_same');
+    pctAnswer.textContent = t(key)
+      .replace('{value}', Math.round(value * 100) / 100)
+      .replace('{score}', Math.round(score * 10) / 10)
+      .replace('{delta}', Math.abs(delta))
+      .replace('{cls}', className(cls));
+  }
+
+  async function runFieldTarget() {
+    const now = currentFieldValue();
+    const pct = Number(targetPct.value);
+    if (now === null || !Number.isFinite(pct)) return;
+
+    // Held inside the field's own schema bounds, or the server refuses
+    // the day and the reader gets a validation error for typing 300%.
+    const spec = numericFields.find((f) => f.name === select.value) || {};
+    let value = now * (pct / 100);
+    if (spec.minimum !== null && spec.minimum !== undefined) value = Math.max(value, spec.minimum);
+    if (spec.maximum !== null && spec.maximum !== undefined) value = Math.min(value, spec.maximum);
+
+    if (pctRunBtn) pctRunBtn.disabled = true;
+    try {
+      /* Two real predictions: this day as it stands, and this day with
+         the one field moved. `persist: false` - the simulator asks
+         hypotheticals and must never write one into the user's history
+         or into what the Coach reads back. */
+      const [changed, base] = await Promise.all([
+        window.DWApi.predict({ ...payload, [select.value]: value }, false, false),
+        window.DWApi.predict({ ...payload }, false, false),
+      ]);
+      renderPctAnswer({
+        value,
+        score: changed.regression_score,
+        base: base.regression_score,
+        cls: changed.prediction,
+      });
+    } catch (e) {
+      window.DWToast.error(e.message);
+    } finally {
+      if (pctRunBtn) pctRunBtn.disabled = false;
+    }
   }
 
   function describeDay(entry) {
@@ -141,6 +255,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   select.addEventListener('change', renderFieldTarget);
   targetPct.addEventListener('input', renderFieldTarget);
+  if (pctRunBtn) pctRunBtn.addEventListener('click', runFieldTarget);
   renderFieldTarget();
   await buildDayPicker();
 
@@ -153,32 +268,29 @@ document.addEventListener('DOMContentLoaded', async () => {
      re-rendered on `dwai:langchange` from the cached response, exactly
      like the weekly plan and the insight cards. Switching language
      after running a sweep must not leave the old language on screen,
-     and must not silently re-POST to the model either. */
-  const t = (key) => (window.DWI18n && window.DWI18n.t ? window.DWI18n.t(key) : key);
-
-  // The server returns class names in English ("Healthy" / "At Risk");
-  // these are the display forms, keyed off that stable server value.
-  const CLASS_KEY = {
-    healthy: 'cls_healthy',
-    moderate: 'cls_moderate',
-    'at risk': 'cls_at_risk',
-    at_risk: 'cls_at_risk',
-  };
-  function className(raw) {
-    const key = CLASS_KEY[String(raw || '').trim().toLowerCase()];
-    return key ? t(key) : String(raw || '—');
-  }
+     and must not silently re-POST to the model either.
+     (`t` and `className` are declared further up - see the note there.) */
 
   let lastSweepClasses = null;
+  let lastSweepSpread = null;
   let lastGoalSeek = null;
 
   function renderSweepNote() {
     const note = document.getElementById('sweepNote');
     if (!note || !lastSweepClasses) return;
     const names = lastSweepClasses.map(className);
-    note.textContent = names.length > 1
+    const classLine = names.length > 1
       ? t('whatif_class_changes').replace('{classes}', names.join(' → '))
       : t('whatif_class_stays').replace('{cls}', names[0] || '—');
+    /* How far the score actually travelled. Without it, a 0.2-point
+       wobble and a 20-point swing read identically - both are "the
+       class stays Healthy" - and the reader has no way to tell a lever
+       that matters from one that does not. */
+    const spreadLine = lastSweepSpread === null ? ''
+      : ' ' + (lastSweepSpread < 1
+        ? t('whatif_spread_flat')
+        : t('whatif_spread').replace('{spread}', lastSweepSpread));
+    note.textContent = classLine + spreadLine;
   }
 
   function renderGoalSeek() {
@@ -189,11 +301,52 @@ document.addEventListener('DOMContentLoaded', async () => {
       wrap.innerHTML = `<p class="muted">${t('whatif_goal_none')}</p>`;
       return;
     }
-    const n = (v) => Math.round(v * 100) / 100;
+    const n = (v) => (v === null || v === undefined ? '—' : Math.round(v * 100) / 100);
+    const fieldName = fieldLabel(numericFields.find((f) => f.name === res.field) || { name: res.field });
+
+    /* Three outcomes, and the reader is told which one they got.
+       This block used to print "Best value found: <number>" for all of
+       them, including the case where the target was never reached - and
+       because the old search minimised |score - target| in EITHER
+       direction, that number was routinely the most harmful value in
+       the range: 0 hours of sleep, 10/10 stress, 0 minutes of exercise.
+       See services/insight/advanced_whatif_service.py's goal_seek. */
+    if (res.already_there) {
+      wrap.innerHTML = `
+        <p class="whatif-verdict whatif-verdict--good">${
+          t('whatif_goal_already')
+            .replace('{score}', n(res.current_score))
+            .replace('{target}', n(res.target_score))
+        }</p>
+        <div class="metric-row"><span class="name">${t('whatif_current_value').replace('{field}', fieldName)}</span><span class="value">${n(res.current_value)}</span></div>
+      `;
+      return;
+    }
+
+    if (!res.reached) {
+      wrap.innerHTML = `
+        <p class="whatif-verdict whatif-verdict--warn">${
+          t('whatif_goal_unreachable')
+            .replace('{field}', fieldName)
+            .replace('{target}', n(res.target_score))
+        }</p>
+        <div class="metric-row"><span class="name">${t('whatif_best_possible')}</span><span class="value">${n(res.best_score)}</span></div>
+        <div class="metric-row"><span class="name">${t('whatif_best_possible_at').replace('{field}', fieldName)}</span><span class="value">${n(res.best_value)}</span></div>
+        <div class="metric-row"><span class="name">${t('whatif_shortfall')}</span><span class="value">${n(res.distance)}</span></div>
+      `;
+      return;
+    }
+
     wrap.innerHTML = `
-      <div class="metric-row"><span class="name">${t('whatif_best_value')}</span><span class="value">${n(res.best_value)}</span></div>
+      <p class="whatif-verdict whatif-verdict--good">${
+        t('whatif_goal_reached')
+          .replace('{field}', fieldName)
+          .replace('{value}', n(res.best_value))
+          .replace('{score}', n(res.best_score))
+      }</p>
+      <div class="metric-row"><span class="name">${t('whatif_current_value').replace('{field}', fieldName)}</span><span class="value">${n(res.current_value)}</span></div>
+      <div class="metric-row"><span class="name">${t('whatif_needed_value')}</span><span class="value">${n(res.best_value)}</span></div>
       <div class="metric-row"><span class="name">${t('whatif_result_score')}</span><span class="value">${n(res.best_score)}</span></div>
-      <div class="metric-row"><span class="name">${t('whatif_distance')}</span><span class="value">${n(res.distance)}</span></div>
     `;
   }
 
@@ -209,6 +362,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     select.value = keep;
     renderSweepNote();
     renderGoalSeek();
+    renderPctAnswer();
   });
 
   async function runSweep() {
@@ -216,11 +370,29 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('runSweepBtn').disabled = true;
     try {
       const res = await window.DWApi.whatifSweep(payload, field, 9);
-      const values = res.points.map((p) => p.score ?? 0);
-      const labels = res.points.map((p) => Math.round(p.value * 10) / 10);
-      window.DWCharts.drawLineChart(sweepCanvas, values, labels, { minFloor: 0, maxCeil: 100 });
-      const distinctClasses = [...new Set(res.points.map((p) => p.prediction).filter(Boolean))];
+      /* A point the model could not score is DROPPED, not drawn as
+         zero. `p.score ?? 0` put a real-looking 0 on the chart for
+         every unscoreable day: sweeping night-screen minutes past the
+         day's own screen total made night_ratio exceed 1.0, the
+         validator refused those days, and the line fell off a cliff to
+         zero at 225 minutes. Nothing about that cliff came from the
+         model - it was the chart inventing the one number that says
+         "catastrophe" out of the server saying "no answer".
+
+         The server-side range cap now keeps the sweep inside days that
+         can exist, so gaps should be rare; this makes the chart honest
+         when one happens anyway rather than relying on that. */
+      const scored = res.points.filter((p) => p.score !== null && p.score !== undefined);
+      const values = scored.map((p) => p.score);
+      const labels = scored.map((p) => Math.round(p.value * 10) / 10);
+      window.DWCharts.drawLineChart(sweepCanvas, values, labels, {
+        minFloor: 0, maxCeil: 100, emptyText: t('whatif_no_points'),
+      });
+      const distinctClasses = [...new Set(scored.map((p) => p.prediction).filter(Boolean))];
       lastSweepClasses = distinctClasses;
+      lastSweepSpread = values.length
+        ? Math.round((Math.max(...values) - Math.min(...values)) * 10) / 10
+        : null;
       renderSweepNote();
     } catch (e) {
       window.DWToast.error(e.message);

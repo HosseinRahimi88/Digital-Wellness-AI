@@ -64,7 +64,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   let lastResult, lastPayload;
   try {
     lastResult = window.DWLastResult.get();
-    lastPayload = JSON.parse(localStorage.getItem('dwai_last_payload') || 'null');
+    // Paired with the result - see DWLastResult.payload(). A plan must
+    // never be built from a check-in the server did not record.
+    lastPayload = window.DWLastResult.payload();
   } catch (e) {}
 
   /* localStorage is the fast path, not the source of truth. This page

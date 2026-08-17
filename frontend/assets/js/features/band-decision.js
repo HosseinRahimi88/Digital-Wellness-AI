@@ -110,7 +110,8 @@
   async function decide(decision, card, onDecided) {
     card.querySelectorAll('button').forEach((b) => { b.disabled = true; });
     let payload = null;
-    try { payload = JSON.parse(localStorage.getItem('dwai_last_payload') || 'null'); } catch (e) {}
+    // Paired with the result - see DWLastResult.payload().
+    try { payload = window.DWLastResult.payload(); } catch (e) {}
     try {
       const result = await window.DWApi.planDayDecision(decision, payload || {});
       lastStatus = result;

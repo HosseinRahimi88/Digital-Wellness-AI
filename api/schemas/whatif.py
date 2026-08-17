@@ -35,5 +35,19 @@ class GoalSeekResponse(BaseModel):
     target_score: float | None = None
     best_value: float | None = None
     best_score: float | None = None
+    # The shortfall: how far below the target `best_score` still is.
+    # 0.0 whenever the target was actually reached.
     distance: float | None = None
+    # Whether `best_value` gets to the target at all. Without this the
+    # response could not distinguish "here is the value that does it"
+    # from "nothing this field can do gets there, here is its ceiling",
+    # and the page presented both as a found answer - see
+    # AdvancedWhatIfService.goal_seek.
+    reached: bool = False
+    # The reader's own value and score before anything changes, so the
+    # answer can be expressed as a change from where they are.
+    current_value: float | None = None
+    current_score: float | None = None
+    # The target is already met; nothing about this field needs to move.
+    already_there: bool = False
     points: list[SweepPointResponse] = []

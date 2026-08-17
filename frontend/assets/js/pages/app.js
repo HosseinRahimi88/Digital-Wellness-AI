@@ -1051,8 +1051,19 @@
       const result = await window.DWProcessing.run(
         window.DWApi.predict(payload, !state.excludeFromAnalysis, state.editToday), { flow: 'predict' }
       );
-      window.DWLastResult.set(result);
-      localStorage.setItem('dwai_last_payload', JSON.stringify(payload));
+      /* Only a day the server actually RECORDED becomes "your latest
+         result". The "I'm only testing this" tick posts persist:false,
+         and this used to cache it anyway - so a throwaway 53.06 stood
+         in for a real, recorded 87.67 everywhere afterwards: the Coach
+         answered about it, the dashboard showed it, the weekly plan and
+         the simulator started from it. DWLastResult.set() refuses a
+         non-persisted result outright; the payload is held to the same
+         rule here, because everything that reads one reads the other
+         and a mismatched pair is its own bug. */
+      if (result.persisted !== false) {
+        window.DWLastResult.set(result);
+        localStorage.setItem('dwai_last_payload', JSON.stringify(payload));
+      }
       if (state.excludeFromAnalysis) {
         window.DWToast.info(window.DWI18n.t('toast_not_recorded'));
       } else if (result.replaced_existing) {

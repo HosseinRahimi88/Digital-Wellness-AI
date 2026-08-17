@@ -147,7 +147,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   async function loadFuturePreview(futureWrap) {
     let payload;
-    try { payload = JSON.parse(localStorage.getItem('dwai_last_payload') || 'null'); } catch (e) { payload = null; }
+    // Paired with the result - see DWLastResult.payload().
+    try { payload = window.DWLastResult.payload(); } catch (e) { payload = null; }
     if (!payload) { futureWrap.classList.add('hidden'); return; }
 
     let result;

@@ -27,8 +27,36 @@ from services.identity.account_service import Account
 from services.insight.advanced_whatif_service import AdvancedWhatIfService
 from services.ml.prediction_service import PredictionService
 from services.ml.validation_service import ValidationService
+from utils.feature_derivation import derive_features
 
 router = APIRouter(prefix="/whatif", tags=["What-If Analysis"])
+
+
+def _validated(validator: ValidationService, user_data: dict):
+    """The same admission the /predict endpoint gives a day.
+
+    These two endpoints validated `payload.user_data` RAW, while
+    /predict validates `derive_features(user_data)`. The fourteen
+    derived columns - total_screen_min, the five ratios, the three
+    densities, fragmentation, dependence, the two baselines - are
+    computed, not typed, so a caller sending the same body /predict
+    accepts got back 422 "This field is required" fourteen times over
+    and the simulator did nothing at all.
+
+    It only ever LOOKED like it worked because the page happens to hold
+    an already-derived payload: /history/snapshots returns cleaned data,
+    and the check-in form derives client-side before POSTing. Any other
+    caller - the API docs' own example, a script, a page that starts
+    from raw answers - hit the wall.
+
+    Deriving here also means a sweep can never be handed a day whose
+    ratios disagree with its minutes, which is the same guarantee
+    build_scenario_input() gives every swept point after this one.
+    """
+    validation = validator.validate(derive_features(dict(user_data)))
+    if not validation.is_valid:
+        raise DomainValidationError(validation.errors)
+    return validation
 
 
 @router.post(
@@ -41,9 +69,7 @@ def sweep_field(
     validator: ValidationService = Depends(get_validation_service),
     predictor: PredictionService = Depends(get_prediction_service),
 ) -> SweepResponse:
-    validation = validator.validate(payload.user_data)
-    if not validation.is_valid:
-        raise DomainValidationError(validation.errors)
+    validation = _validated(validator, payload.user_data)
 
     points = AdvancedWhatIfService.sweep_field(
         validation.cleaned_data, predictor, payload.field, num_points=payload.num_points,
@@ -64,9 +90,7 @@ def goal_seek(
     validator: ValidationService = Depends(get_validation_service),
     predictor: PredictionService = Depends(get_prediction_service),
 ) -> GoalSeekResponse:
-    validation = validator.validate(payload.user_data)
-    if not validation.is_valid:
-        raise DomainValidationError(validation.errors)
+    validation = _validated(validator, payload.user_data)
 
     result = AdvancedWhatIfService.goal_seek(
         validation.cleaned_data, predictor, payload.field, payload.target_score,
@@ -82,5 +106,9 @@ def goal_seek(
         best_value=result.best_value,
         best_score=result.best_score,
         distance=result.distance,
+        reached=result.reached,
+        current_value=result.current_value,
+        current_score=result.current_score,
+        already_there=result.already_there,
         points=[SweepPointResponse(value=p.value, score=p.score, prediction=p.prediction) for p in result.points],
     )
